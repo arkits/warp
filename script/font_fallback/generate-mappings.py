@@ -17,13 +17,11 @@ Assumptions:
 
 Usage:
 1. Install the dependencies in `requirements.txt`.
-2. Make sure the gcloud CLI is installed and you are authed via `gcloud auth login`.
-3. Make sure you're running the script from `scripts/font_fallback`.
-4. Run `python3 generate-mappings.py`.
+2. Make sure you're running the script from `scripts/font_fallback`.
+3. Run `python3 generate-mappings.py`.
 '''
 
 import os
-import subprocess
 import sys
 from operator import itemgetter
 from fontTools.ttLib import TTFont
@@ -70,14 +68,10 @@ FONT_DOWNLOAD_DIR = "./downloaded_fonts"
 
 def download_fallback_fonts():
     if os.path.exists(FONT_DOWNLOAD_DIR):
-        # Fonts already exist, no need to download
         return
 
     os.mkdir(FONT_DOWNLOAD_DIR)
-    command = f"gcloud storage cp 'gs://warp-static-assets/fallback-fonts/**/*Regular*.ttf' '{FONT_DOWNLOAD_DIR}'"
-    return_code = subprocess.call(command, shell=True)
-    if return_code != 0:
-        sys.exit("Failed to download fonts from GCP")
+    sys.exit("Font download not available for external contributors")
 
 
 def get_global_order(font_name):

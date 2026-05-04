@@ -12,19 +12,16 @@ identical to the ones stored in the staging `warp-server-staging-static-assets`
 bucket.
 
 Usage:
-1. Make sure the gcloud CLI is installed and you are authed via `gcloud auth login`.
-2. Run `python3 generate_families.py`
-3. Manually inspect the name for each font. The script will generate the name in
+1. Run `python3 generate_families.py`
+2. Manually inspect the name for each font. The script will generate the name in
    title-case, but this isn't correct for some fonts (e.g. Noto Sans SC).
 '''
 
-import subprocess
 from collections import defaultdict
 
 
 def list_fonts():
-    command = "gcloud storage ls --recursive 'gs://warp-static-assets/fallback-fonts/**.ttf'"
-    return subprocess.check_output(command, shell=True, text=True).splitlines()
+    return []
 
 
 def generate_families(font_uris):
