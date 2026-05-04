@@ -124,16 +124,6 @@ jobs:
           prerelease: ${{ steps.get-config.outputs.is_prerelease }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Sentry release
-        if: ${{ steps.set_publish.outputs.should_publish == 'true' }}
-        uses: getsentry/action-release@5657c9e888b4e2cc85f4d29143ea4131fde4a73a # v3.6.0
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          SENTRY_ORG: warpdotdev
-          SENTRY_PROJECT: ${{ steps.get-config.outputs.sentry_project }}
-        with:
-          environment: ${{ steps.get-config.outputs.sentry_environment }}
-          version: ${{ steps.create_branch_and_tag.outputs.tag }}
 
   release_macos_single_arch:
     name: Build Release (macOS ${{ matrix.dmg_name_suffix }})
@@ -226,21 +216,6 @@ jobs:
           name: release-macos-${{ matrix.arch }}-${{ steps.get-config.outputs.channel }}
           path: ${{ steps.bundle_app.outputs.dmg_path }}
 
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debug symbols from frameworks to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.frameworks_dir }}
 
       # Create a tar archive instead of simply using upload-artifact so we can
       # preserve permissions and symlinks.  If we don't preserve symlinks, we'll
@@ -331,21 +306,6 @@ jobs:
           WARP_NOTARIZATION_APPLE_ID: ${{ secrets.WARP_NOTARIZATION_APPLE_ID }}
           WARP_NOTARIZATION_PASSWORD: ${{ secrets.WARP_NOTARIZATION_PASSWORD }}
 
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.dsym_folder_path }}
 
       - name: Add DMG to GitHub release assets
         if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
@@ -492,21 +452,6 @@ jobs:
           name: release-macos-cli-${{ matrix.arch }}-${{ steps.get-config.outputs.channel }}
           path: oz-${{ steps.get-config.outputs.channel }}-macos-${{ matrix.arch }}.tar.gz
 
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_cli.outputs.dsym_path }}
 
   release_linux_x86:
     name: Build Release (Linux x86_64)
@@ -618,22 +563,6 @@ jobs:
         shell: bash
         env:
           PKGDIR: ${{ steps.bundle_app.outputs.packages_dir }}
-
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.debug_executable_path }}
 
       - name: Add packages to GitHub release assets
         if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
@@ -774,22 +703,6 @@ jobs:
         shell: bash
         env:
           PKGDIR: ${{ steps.bundle_cli.outputs.packages_dir }}
-
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_cli.outputs.debug_executable_path }}
 
       - name: Add CLI packages to GitHub release assets
         if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
@@ -1042,14 +955,6 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
       # Install gcc 10, as gcc 9.5 has a bug with memcmp that is incompatible
       # with aws-lc-rs (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95189).
       - name: Install and configure gcc-10
@@ -1144,15 +1049,6 @@ jobs:
           release-tag: ${{ needs.prepare_release.outputs.release_tag }}
           arch: aarch64
           
-      - name: Upload app debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        # Important: we have to do this before the binary is overwritten by the CLI version, which has the same filename
-        run: |
-          script/sentry_upload_dif.sh
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.debug_executable_path }}
-        shell: bash
-
       # Bundle the CLI packages
 
       - name: Download CLI build artifacts
@@ -1188,14 +1084,6 @@ jobs:
           arch: aarch64
           artifact: cli
 
-      - name: Upload CLI debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_cli.outputs.debug_executable_path }}
-        shell: bash
-      
       # Common uploading steps
 
       - name: Sign Arch Linux packages
@@ -1317,22 +1205,6 @@ jobs:
               mv -- "$file" "${file%.br}"
           done
         shell: bash
-
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.debug_executable_path }}
 
       - name: Add packages to GitHub release assets
         if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
@@ -1495,30 +1367,6 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           SIGN_TOOL_CMD: ${{ steps.setup_signing.outputs.sign_tool_cmd }}
-
-      - name: Set up Sentry CLI
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        uses: matbour/setup-sentry-cli@3e938c54b3018bdd019973689ef984e033b0454b # v2.0.0
-        with:
-          token: ${{ secrets.SENTRY_RELEASE_TOKEN }}
-          organization: warpdotdev
-          project: ${{ steps.get-config.outputs.sentry_project }}
-
-      - name: Upload binary to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.build_binary.outputs.binary_path }}
-
-      - name: Upload debugging symbols to Sentry
-        if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}
-        run: |
-          script/sentry_upload_dif.sh
-        shell: bash
-        env:
-          DEBUG_FILE_OR_FOLDER_PATH: ${{ steps.bundle_app.outputs.pdb_file_path }}
 
       - name: Add installer to GitHub release assets
         if: ${{ needs.prepare_release.outputs.should_publish == 'true' }}

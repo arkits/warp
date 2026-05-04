@@ -150,17 +150,6 @@ ASSET_TARGET_DIR="$ASSET_TARGET_DIR" cargo build --target wasm32-unknown-unknown
 echo "Running wasm-bindgen on $CARGO_TARGET_OUTPUT_DIR/$WARP_BIN.wasm"
 wasm-bindgen --target web --out-dir "$OUT_DIR" --out-name "warp" --keep-debug --no-typescript "$CARGO_TARGET_OUTPUT_DIR/$WARP_BIN.wasm"
 
-WASM_BINARY_OUT="${OUT_DIR}/warp_bg.wasm"
-WASM_BINARY_DEBUG="${EXTRAS_DIR}/warp_bg.debug.wasm"
-
-if [[ "$NO_SPLIT" != "true" ]]; then
-  # Run Sentry's wasm-split binary to separate out debug information from the
-  # wasm binary.
-  #
-  # Binary releases of wasm-split can be found here:
-  # https://github.com/getsentry/symbolicator/releases
-  wasm-split "$WASM_BINARY_OUT" --debug-out "$WASM_BINARY_DEBUG" --strip --strip-names
-fi
 
 # If this is being run within a GitHub action, set an output variable with the
 # directory containing all built packages.

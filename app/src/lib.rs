@@ -750,14 +750,6 @@ fn init_common(launch_mode: &LaunchMode, timer: Option<&mut IntervalTimer>) -> R
     // for other entrypoints.
     init_feature_flags();
 
-    #[cfg(feature = "crash_reporting")]
-    if launch_mode.needs_crash_reporting() {
-        // Ensure that the main/root Sentry hub is initialized on the main
-        // thread.  PtySpawner creates a background thread to receive logs from
-        // the terminal server process, and we don't want it to be the host of
-        // the primary sentry::Hub.
-        sentry::Hub::main();
-    }
 
     if launch_mode.needs_profiling() {
         tracing::init()?;
@@ -821,15 +813,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
 
     // Collect errors that occur in run_internal() before the Sentry client is initialized,
     // so they can be replayed to Sentry once it's ready.
-    #[cfg_attr(
-        not(all(
-            feature = "release_bundle",
-            any(windows, any(target_os = "linux", target_os = "freebsd"))
-        )),
-        expect(unused_mut)
-    )]
-    let mut pre_sentry_errors: Vec<anyhow::Error> = Vec::new();
-
     #[cfg(all(
         feature = "release_bundle",
         any(target_os = "linux", target_os = "freebsd")
@@ -849,9 +832,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
             // it's better to run a second instance than potentially end up in a
             // state where Warp refuses to run even a first instance.
             Err(err) => {
-                let err = anyhow::Error::from(err).context("Failed to forward startup args");
-                log::error!("{err:#}");
-                pre_sentry_errors.push(err);
+                log::error!("Failed to forward startup args: {err:#}");
             }
         }
     }
@@ -872,9 +853,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
             // it's better to run a second instance than potentially end up in a
             // state where Warp refuses to run even a first instance.
             Err(err) => {
-                let err = anyhow::Error::from(err).context("Failed to forward startup args");
-                log::error!("{err:#}");
-                pre_sentry_errors.push(err);
+                log::error!("Failed to forward startup args: {err:#}");
             }
         }
     }
@@ -1037,7 +1016,6 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
             timer,
             startup_toml_parse_error,
             ctx,
-            pre_sentry_errors,
         );
 
         if ImprovedPaletteSearch::improved_search_enabled(ctx) {
@@ -1057,11 +1035,7 @@ fn initialize_app(
     mut timer: IntervalTimer,
     startup_toml_parse_error: Option<warpui_extras::user_preferences::Error>,
     ctx: &mut warpui::AppContext,
-    _pre_sentry_errors: impl IntoIterator<Item = anyhow::Error>,
 ) -> Option<AppState> {
-    // WARNING: Errors that happen here before crash_reporting::init will not be collected in
-    // Sentry. Only the dependencies of crash_reporting should be initialized here. Avoid adding
-    // any other stuff here, as failures will be silent. Push them to pre_sentry_errors instead.
     let data_domain = ChannelState::data_domain();
 
     // Register an implementation of the secure storage service.
@@ -1273,11 +1247,6 @@ fn initialize_app(
         } else {
             let is_crash_reporting_enabled = false;
         }
-    }
-    // Send buffered pre-init errors to Sentry now that the client is ready.
-    #[cfg(feature = "crash_reporting")]
-    for err in _pre_sentry_errors {
-        sentry::integrations::anyhow::capture_anyhow(&err);
     }
     timer.mark_interval_end("INIT_CRASH_REPORTING");
 
