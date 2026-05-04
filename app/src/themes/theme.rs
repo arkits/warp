@@ -40,12 +40,10 @@ const THUMBNAIL_MARGIN: f32 = 10.;
 )]
 #[schemars(description = "The color theme.", rename_all = "snake_case")]
 pub enum ThemeKind {
-    // Need an alias for backwards-compatibility: Originally we only had a single reward theme
-    // so it was named `ReferralReward`.
     #[serde(alias = "ReferralReward")]
-    #[schemars(skip)]
+    #[schemars(description = "Warp Referral")]
     SentReferralReward,
-    #[schemars(skip)]
+    #[schemars(description = "Referred to Warp")]
     ReceivedReferralReward,
     #[schemars(description = "Adeberry")]
     Adeberry,
@@ -316,6 +314,8 @@ impl WarpThemeConfig {
             (ThemeKind::Phenomenon, phenomenon()),
             (ThemeKind::SolarFlare, solar_flare()),
             (ThemeKind::Adeberry, adeberry()),
+            (ThemeKind::SentReferralReward, sent_referral_reward()),
+            (ThemeKind::ReceivedReferralReward, received_referral_reward()),
         ]);
         WarpThemeConfig { theme_map }
     }
