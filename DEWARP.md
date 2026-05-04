@@ -26,12 +26,15 @@ This branch removes internal-only dependencies to make the Warp repository more 
 ### Removed Features
 
 - **Referrals**: Referrals settings page, GraphQL queries/mutations, referral theme rewards
-- `crates/graphql/src/api/queries/get_referral_info.rs`
-- `crates/graphql/src/api/mutations/send_referral_invite_emails.rs`
-- `app/src/settings_view/referrals_page.rs`
-- `app/src/server/server_api/referral.rs`
-- `app/src/referral_theme_status.rs`
-- Referral SVG assets and reward themes (SentReferralReward, ReceivedReferralReward)
+  - `crates/graphql/src/api/queries/get_referral_info.rs`
+  - `crates/graphql/src/api/mutations/send_referral_invite_emails.rs`
+  - `app/src/settings_view/referrals_page.rs`
+  - `app/src/server/server_api/referral.rs`
+  - `app/src/referral_theme_status.rs`
+  - Referral SVG assets and reward themes (SentReferralReward, ReceivedReferralReward)
+
+- **Settings button menu items**: Removed Slack, Sign Up, and Upgrade from the top-left settings dropdown
+  - `app/src/workspace/view.rs`: Removed `JoinSlack`, `SignupAnonymousUser`, and `ShowUpgrade` menu items
 
 ## Behavior for External Contributors
 
@@ -39,3 +42,4 @@ This branch removes internal-only dependencies to make the Warp repository more 
 - Font fallbacks must be managed manually
 - Builds always use `warp-oss` binary
 - Referrals feature is unavailable
+- Settings button does not show Slack community link, Sign Up, or Upgrade prompts

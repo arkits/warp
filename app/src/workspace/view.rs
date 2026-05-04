@@ -8341,22 +8341,9 @@ impl Workspace {
                 .into_item(),
         );
 
-        items.extend([
-            MenuItemFields::new("Slack")
-                .with_on_select_action(WorkspaceAction::JoinSlack)
-                .into_item(),
-            MenuItem::Separator,
-        ]);
+        items.push(MenuItem::Separator);
 
-        if self.auth_state.is_anonymous_or_logged_out() {
-            items.push(
-                MenuItemFields::new("Sign up")
-                    .with_on_select_action(WorkspaceAction::SignupAnonymousUser)
-                    .into_item(),
-            );
-        }
-
-        // Check if the user is on any paid plan to determine whether to show "Billing and Usage" or "Upgrade"
+        // Check if the user is on any paid plan to determine whether to show "Billing and Usage"
         let is_on_paid_plan = UserWorkspaces::as_ref(app)
             .current_workspace()
             .map(|workspace| workspace.billing_metadata.is_user_on_paid_plan())
@@ -8368,12 +8355,6 @@ impl Workspace {
                     .with_on_select_action(WorkspaceAction::ShowSettingsPage(
                         SettingsSection::BillingAndUsage,
                     ))
-                    .into_item(),
-            );
-        } else {
-            items.push(
-                MenuItemFields::new("Upgrade")
-                    .with_on_select_action(WorkspaceAction::ShowUpgrade)
                     .into_item(),
             );
         }
