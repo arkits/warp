@@ -696,6 +696,7 @@ fn reopen_closed_session_menu_item(
 }
 
 #[test]
+#[ignore] // Ignored due to referrals feature removal
 fn test_reward_modal_no_overlap() {
     App::test((), |mut app| async move {
         initialize_app(&mut app);
@@ -716,6 +717,7 @@ fn test_reward_modal_no_overlap() {
 }
 
 #[test]
+#[ignore] // Ignored due to referrals feature removal
 fn test_reward_modal_shows_for_received_referral() {
     App::test((), |mut app| async move {
         initialize_app(&mut app);

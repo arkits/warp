@@ -6,7 +6,6 @@ pub mod integrations;
 pub mod managed_secrets;
 pub mod object;
 pub(crate) mod presigned_upload;
-pub mod referral;
 pub mod team;
 pub mod workspace;
 
@@ -31,7 +30,6 @@ use channel_versions::ChannelVersions;
 use futures::StreamExt;
 use object::ObjectClient;
 use prost::Message;
-use referral::ReferralsClient;
 use team::TeamClient;
 use url::Url;
 use warp_core::context_flag::ContextFlag;
@@ -1414,10 +1412,6 @@ impl ServerApiProvider {
     }
 
     pub fn get_auth_client(&self) -> Arc<dyn AuthClient> {
-        self.server_api.clone()
-    }
-
-    pub fn get_referrals_client(&self) -> Arc<dyn ReferralsClient> {
         self.server_api.clone()
     }
 

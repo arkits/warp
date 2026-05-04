@@ -295,11 +295,6 @@ impl WarpThemeConfig {
     pub fn new() -> Self {
         // preload with built-in themes
         let theme_map: HashMap<ThemeKind, WarpTheme> = HashMap::from_iter([
-            (ThemeKind::SentReferralReward, sent_referral_reward()),
-            (
-                ThemeKind::ReceivedReferralReward,
-                received_referral_reward(),
-            ),
             (ThemeKind::Dark, dark_theme()),
             (ThemeKind::Light, light_theme()),
             (ThemeKind::SolarizedDark, solarized_dark()),
