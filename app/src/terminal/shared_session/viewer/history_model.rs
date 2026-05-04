@@ -1,10 +1,6 @@
-use crate::terminal::HistoryEntry;
-use warpui::Entity;
-
-/// Responsible for managing the history of a shared session for a viewer.
 #[derive(Default)]
 pub struct SharedSessionHistoryModel {
-    entries: Vec<HistoryEntry>,
+    entries: Vec<crate::terminal::HistoryEntry>,
 }
 
 impl SharedSessionHistoryModel {
@@ -12,15 +8,15 @@ impl SharedSessionHistoryModel {
         Self::default()
     }
 
-    pub fn entries(&self) -> impl Iterator<Item = &HistoryEntry> {
+    pub fn entries(&self) -> impl Iterator<Item = &crate::terminal::HistoryEntry> {
         self.entries.iter()
     }
 
-    pub fn push(&mut self, entry: HistoryEntry) {
+    pub fn push(&mut self, entry: crate::terminal::HistoryEntry) {
         self.entries.push(entry);
     }
 }
 
-impl Entity for SharedSessionHistoryModel {
+impl warpui::Entity for SharedSessionHistoryModel {
     type Event = ();
 }

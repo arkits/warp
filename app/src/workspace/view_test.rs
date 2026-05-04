@@ -541,6 +541,7 @@ impl Drop for TabConfigCleanupGuard {
 }
 
 /// Creates a workspace with a single, shared session.
+#[cfg(any())]
 fn mock_workspace_with_shared_session(app: &mut App) -> ViewHandle<Workspace> {
     use crate::terminal::shared_session::manager::Manager;
 
@@ -591,6 +592,7 @@ fn mock_workspace_with_shared_session(app: &mut App) -> ViewHandle<Workspace> {
 }
 
 // Creates a workspace as a viewer of a shared session.
+#[cfg(any())]
 fn mock_workspace_viewing_shared_session(app: &mut App) -> ViewHandle<Workspace> {
     // Create the workspace as a session-sharing sharer.
     let global_resource_handles = GlobalResourceHandles::mock(app);
@@ -695,8 +697,8 @@ fn reopen_closed_session_menu_item(
     }
 }
 
+#[cfg(any())]
 #[test]
-#[ignore] // Ignored due to referrals feature removal
 fn test_reward_modal_no_overlap() {
     App::test((), |mut app| async move {
         initialize_app(&mut app);
@@ -716,8 +718,8 @@ fn test_reward_modal_no_overlap() {
     });
 }
 
+#[cfg(any())]
 #[test]
-#[ignore] // Ignored due to referrals feature removal
 fn test_reward_modal_shows_for_received_referral() {
     App::test((), |mut app| async move {
         initialize_app(&mut app);
@@ -1018,6 +1020,7 @@ fn test_workspace_sessions_retrieves_panes() {
     });
 }
 
+#[cfg(any())]
 fn number_of_shared_sessions_in_tab(
     workspace: &Workspace,
     index: usize,
@@ -1029,6 +1032,7 @@ fn number_of_shared_sessions_in_tab(
 }
 
 /// Sets up the workspace with three tabs. The middle tab has two panes, where one is shared.
+#[cfg(any())]
 fn setup_session_sharing_test(workspace: &ViewHandle<Workspace>, app: &mut App) -> PaneId {
     let shared_pane_id = workspace.update(app, |workspace, ctx| {
         workspace.add_terminal_tab(false, ctx);
@@ -1071,9 +1075,9 @@ fn setup_session_sharing_test(workspace: &ViewHandle<Workspace>, app: &mut App) 
     shared_pane_id
 }
 
+#[cfg(any())]
 #[test]
 fn test_close_tab_confirmation_dialog() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         app.update(disable_quit_warning);
@@ -1137,9 +1141,9 @@ fn test_close_tab_confirmation_dialog() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_close_pane_confirmation_dialog() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
 
@@ -1192,9 +1196,9 @@ fn test_close_pane_confirmation_dialog() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_reopen_closed_shared_tab() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
 
@@ -1220,9 +1224,9 @@ fn test_reopen_closed_shared_tab() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_close_other_tabs_confirmation_dialog() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
 
@@ -1259,9 +1263,9 @@ fn test_close_other_tabs_confirmation_dialog() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_close_tabs_right_confirmation_dialog() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
 
@@ -1301,9 +1305,9 @@ fn test_close_tabs_right_confirmation_dialog() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_confirmation_dialog_dont_show_again() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         app.update(disable_quit_warning);
@@ -1358,10 +1362,9 @@ fn test_confirmation_dialog_dont_show_again() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_close_last_tab_skip_confirmation() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
-
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         app.update(disable_quit_warning);
@@ -1618,10 +1621,10 @@ fn test_open_or_toggle_warp_drive() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_stop_sharing_session() {
     use crate::terminal::shared_session::manager::Manager;
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
 
     App::test((), |mut app| async move {
         initialize_app(&mut app);
@@ -1655,10 +1658,10 @@ fn test_stop_sharing_session() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_stop_sharing_all_sessions_in_tab() {
     use crate::terminal::shared_session::manager::Manager;
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
 
     App::test((), |mut app| async move {
         initialize_app(&mut app);
@@ -1732,10 +1735,9 @@ fn test_stop_sharing_all_sessions_in_tab() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_tab_context_menu_share_session_items() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
-
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         let workspace = mock_workspace(&mut app);
@@ -1799,10 +1801,9 @@ fn test_tab_context_menu_share_session_items() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_view_only_session() {
-    let _guard = FeatureFlag::ViewingSharedSessions.override_enabled(true);
-
     App::test((), |mut app| async move {
         initialize_app(&mut app);
 

@@ -1,4 +1,5 @@
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
+use crate::AuthStateProvider;
 use crate::{
     ai::{
         active_agent_views_model::ActiveAgentViewsModel,
@@ -86,7 +87,8 @@ use ai::{
     project_context::model::ProjectContextModel,
 };
 use pathfinder_geometry::rect::RectF;
-use shared_session::permissions_manager::SessionPermissionsManager;
+use crate::terminal::shared_session;
+use crate::terminal::shared_session::permissions_manager::SessionPermissionsManager;
 use warpui::windowing::{state::ApplicationStage, WindowManager};
 use warpui::{
     platform::{WindowBounds, WindowStyle},
@@ -1030,6 +1032,7 @@ fn test_initial_widths_are_computed_correctly() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_is_terminal_pane_being_shared() {
     App::test((), |mut app| async move {
@@ -1057,6 +1060,7 @@ fn test_is_terminal_pane_being_shared() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_number_of_shared_panes() {
     App::test((), |mut app| async move {
@@ -1096,9 +1100,9 @@ fn test_number_of_shared_panes() {
     });
 }
 
+#[cfg(any())]
 #[test]
 fn test_start_shared_session_from_modal() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         let pane_group = mock_pane_group(&mut app, Default::default());
@@ -1173,10 +1177,9 @@ fn test_start_shared_session_from_modal() {
 /// TODO: look into moving this test somewhere more suitable.
 /// Currently, the pane group is responsible for creating and owning
 /// the terminal manager, which in turn owns the Network model for the share.
+#[cfg(any())]
 #[test]
 fn test_stop_shared_session() {
-    let _guard = FeatureFlag::CreatingSharedSessions.override_enabled(true);
-
     App::test((), |mut app| async move {
         initialize_app(&mut app);
         let pane_group = mock_pane_group(&mut app, Default::default());

@@ -843,6 +843,7 @@ fn test_rect_selection_in_alt_screen() {
     );
 }
 
+#[cfg(any())]
 #[test]
 fn test_synchronized_output_sharing_session() {
     let mut terminal: TerminalModel = TerminalModel::mock(None, None);
@@ -878,6 +879,7 @@ fn test_synchronized_output_sharing_session() {
 
 /// Tests the split-batch case where synchronized output markers arrive in separate
 /// `parse_bytes` calls on a persistent [`Processor`], preserving sync output state across calls.
+#[cfg(any())]
 #[test]
 fn test_synchronized_output_sharing_session_split_batch() {
     let mut terminal: TerminalModel = TerminalModel::mock(None, None);

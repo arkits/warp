@@ -69,9 +69,8 @@ pub mod rich_history;
 pub mod safe_mode_settings;
 mod secret_regex_updater;
 pub mod session_settings;
-pub mod settings;
-mod share_block_modal;
 pub mod shared_session;
+pub mod settings;
 mod shell_launch_state;
 pub mod universal_developer_input;
 
@@ -91,7 +90,6 @@ pub(crate) mod cli_agent_sessions;
 
 pub use mock_terminal_manager::MockTerminalManager;
 use model_events::{ModelEvent, ModelEventDispatcher};
-pub use share_block_modal::{ShareBlockModal, ShareBlockModalEvent, ShareBlockType};
 pub use terminal_manager::TerminalManager;
 
 pub use block_list_settings::*;
@@ -122,7 +120,6 @@ const MIN_COLUMNS: usize = 2;
 pub const PTY_READS_BROADCAST_CHANNEL_SIZE: usize = 1024;
 
 pub fn init(app: &mut AppContext) {
-    share_block_modal::init(app);
     view::init(app);
 }
 
@@ -192,18 +189,8 @@ pub enum SizeUpdateReason {
     /// sizes that drive terminal size may have changed.
     AfterLayout,
 
-    /// The shared session sharer's size changed.
-    /// This is only applicable for shared session viewers.
-    ///
-    /// The resultant [`SizeUpdate`] will use the larger of the
-    /// sharer's and viewer's size.
     SharerSizeChanged { num_rows: usize, num_cols: usize },
 
-    /// A viewer reported its terminal size to the sharer.
-    /// This is only applicable for shared session sharers.
-    ///
-    /// The resultant [`SizeUpdate`] will use the viewer's reported
-    /// size directly (floored at 1 row and 1 column).
     ViewerSizeReported { num_rows: usize, num_cols: usize },
 }
 

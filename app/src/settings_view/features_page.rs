@@ -5,7 +5,6 @@ use crate::terminal::input::OPEN_COMPLETIONS_KEYBINDING_NAME;
 use crate::terminal::session_settings::WorkingDirectoryConfig;
 
 use lazy_static::lazy_static;
-use warp_core::context_flag::ContextFlag;
 use warpui::platform::GraphicsBackend;
 use warpui::rendering::GPUPowerPreference;
 use warpui::{elements::DispatchEventResult, platform::Cursor};
@@ -2557,11 +2556,9 @@ impl FeaturesPageView {
             session_widgets.push(Box::new(UndoCloseWidget::default()));
         }
 
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && ContextFlag::CreateSharedSession.is_enabled()
-            && session_settings
-                .should_confirm_close_session
-                .is_supported_on_current_platform()
+        if session_settings
+            .should_confirm_close_session
+            .is_supported_on_current_platform()
         {
             session_widgets.push(Box::new(ConfirmCloseSharedSessionWidget::default()));
         }

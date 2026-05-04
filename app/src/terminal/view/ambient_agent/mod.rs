@@ -29,7 +29,9 @@ use warp_core::features::FeatureFlag;
 use crate::ai::blocklist::agent_view::{AgentViewController, AgentViewState};
 use crate::ai::blocklist::BlocklistAIHistoryModel;
 use crate::pane_group::TerminalViewResources;
-use crate::terminal::shared_session;
+use crate::terminal::mock_terminal_manager::MockTerminalManager;
+use crate::terminal::shell::{ShellName, ShellType};
+use crate::terminal::ShellLaunchState;
 use crate::terminal::TerminalManager;
 use crate::terminal::TerminalView;
 use warpui::geometry::vector::Vector2F;
@@ -48,17 +50,19 @@ pub fn create_cloud_mode_view(
     ViewHandle<TerminalView>,
     ModelHandle<Box<dyn TerminalManager>>,
 ) {
-    // In Cloud Mode, ambient agent prompts are composed in an uninitialized session-sharing
-    // viewer pane. This lets us reuse the terminal input without a backing session, and
-    // then join the ambient agent session once it's ready.
-    let terminal_manager: ModelHandle<Box<dyn TerminalManager>> = ctx.add_model(|ctx| {
-        Box::new(shared_session::viewer::TerminalManager::new_deferred(
-            resources,
-            view_bounds_size,
-            window_id,
-            ctx,
-        )) as Box<dyn TerminalManager>
-    });
+    let terminal_manager = MockTerminalManager::create_model(
+        ShellLaunchState::ShellSpawned {
+            available_shell: None,
+            display_name: ShellName::blank(),
+            shell_type: ShellType::Zsh,
+        },
+        resources,
+        None,
+        None,
+        view_bounds_size,
+        window_id,
+        ctx,
+    );
 
     let terminal_view = terminal_manager.as_ref(ctx).view();
 
@@ -74,19 +78,11 @@ pub fn create_cloud_mode_view(
     };
     terminal_manager.update(ctx, |_, ctx| {
         ctx.subscribe_to_model(&view_model, move |manager, event, ctx| {
-            let Some(manager) = manager
-                .as_any_mut()
-                .downcast_mut::<shared_session::viewer::TerminalManager>()
-            else {
-                return;
-            };
+            let _ = manager;
+            let _ = ctx;
             match event {
-                AmbientAgentViewModelEvent::SessionReady { session_id } => {
-                    manager.connect_to_session(*session_id, ctx);
-                }
-                AmbientAgentViewModelEvent::FollowupSessionReady { session_id } => {
-                    manager.attach_followup_session(*session_id, ctx);
-                }
+                AmbientAgentViewModelEvent::SessionReady { .. }
+                | AmbientAgentViewModelEvent::FollowupSessionReady { .. } => {}
                 AmbientAgentViewModelEvent::EnteredSetupState
                 | AmbientAgentViewModelEvent::EnteredComposingState
                 | AmbientAgentViewModelEvent::DispatchedAgent

@@ -6,8 +6,6 @@ use std::path::PathBuf;
 use ai::skills::SkillReference;
 use command_corrections::Correction;
 use pathfinder_geometry::vector::Vector2F;
-use session_sharing_protocol::common::Role;
-use session_sharing_protocol::sharer::RoleUpdateReason;
 use warp_util::user_input::UserInput;
 use warpui::elements::HyperlinkUrl;
 use warpui::event::ModifiersState;
@@ -43,6 +41,8 @@ use crate::{
         },
     },
 };
+use session_sharing_protocol::common::Role;
+use session_sharing_protocol::sharer::RoleUpdateReason;
 
 use super::inline_banner::{
     AnonymousUserLoginBannerAction, AwsBedrockLoginBannerAction, AwsCliNotInstalledBannerAction,
@@ -287,6 +287,23 @@ pub enum TerminalAction {
     OpenWorkflowModalForAIWorkflow(Workflow),
     OpenWorkflowModalForBlock(BlockIndex),
     OpenWorkflowModalWithCloudWorkflow(SyncId),
+    OpenShareSessionModal {
+        source: SharedSessionActionSource,
+    },
+    StopSharingCurrentSession {
+        source: SharedSessionActionSource,
+    },
+    CopySharedSessionLink {
+        source: SharedSessionActionSource,
+    },
+    OpenSharedSessionOnDesktop {
+        source: SharedSessionActionSource,
+    },
+    OpenSharedSessionViewerRoleMenu,
+    MakeAllParticipantsReaders {
+        reason: RoleUpdateReason,
+    },
+    RequestSharedSessionRole(Role),
     AskAIAssistant {
         block_index: BlockIndex,
     },
@@ -306,26 +323,9 @@ pub enum TerminalAction {
     OpenBlockFilterEditor(BlockIndex),
     OnboardingFlow(OnboardingVersion),
     ImportSettings,
-    StopSharingCurrentSession {
-        source: SharedSessionActionSource,
-    },
-    OpenSharedSessionOnDesktop {
-        source: SharedSessionActionSource,
-    },
     ToggleBlockFilterOnSelectedOrLastBlock(ToggleBlockFilterSource),
-    OpenShareSessionModal {
-        source: SharedSessionActionSource,
-    },
-    CopySharedSessionLink {
-        source: SharedSessionActionSource,
-    },
     VimModeBanner(VimModeBannerAction),
     ToggleSnackbarInActivePane,
-    MakeAllParticipantsReaders {
-        reason: RoleUpdateReason,
-    },
-    OpenSharedSessionViewerRoleMenu,
-    RequestSharedSessionRole(Role),
     /// User selected a block inside an AI block's attached block menu so we jump to it and select
     /// it if possible.
     SelectAIAttachedBlock(BlockIndex),
@@ -448,10 +448,7 @@ impl fmt::Debug for TerminalAction {
         match self {
             Scroll { delta } => write!(f, "Scroll {{ delta: {delta} }}"),
             AltScroll { delta } => write!(f, "AltScroll {{ delta: {delta} }}"),
-            SharedSessionViewerAltScroll { new_scroll_top } => write!(
-                f,
-                "SharedSessionViewerAltScroll {{ new_scroll_top: {new_scroll_top} }}"
-            ),
+            SharedSessionViewerAltScroll { .. } => f.write_str("SharedSessionViewerAltScroll"),
             ScrollToTopOfBlock { topmost_block } => write!(
                 f,
                 "JumpToPreviousCommand {{ topmost_block: {topmost_block} }}"
@@ -584,6 +581,13 @@ impl fmt::Debug for TerminalAction {
             OpenWorkflowModalWithCloudWorkflow(_) => {
                 f.write_str("OpenWorkflowModalWithCloudWorkflow")
             }
+            OpenShareSessionModal { .. } => f.write_str("OpenShareSessionModal"),
+            StopSharingCurrentSession { .. } => f.write_str("StopSharingCurrentSession"),
+            CopySharedSessionLink { .. } => f.write_str("CopySharedSessionLink"),
+            OpenSharedSessionOnDesktop { .. } => f.write_str("OpenSharedSessionOnDesktop"),
+            OpenSharedSessionViewerRoleMenu => f.write_str("OpenSharedSessionViewerRoleMenu"),
+            MakeAllParticipantsReaders { .. } => f.write_str("MakeAllParticipantsReaders"),
+            RequestSharedSessionRole(_) => f.write_str("RequestSharedSessionRole"),
             OpenBlockListContextMenu => f.write_str("OpenBlockListContextMenu"),
             AskAIAssistant { block_index } => write!(f, "AskAIAssistant({block_index:?})"),
             TriggerSubshellBootstrap => f.write_str("TriggerSubshellBootstrap"),
@@ -598,24 +602,11 @@ impl fmt::Debug for TerminalAction {
             }
             OnboardingFlow(version) => write!(f, "OnboardingFlow({version:?})"),
             ImportSettings => write!(f, "ImportSettings"),
-            StopSharingCurrentSession { source } => {
-                write!(f, "StopSharingCurrentSession({source:?})")
-            }
-            OpenSharedSessionOnDesktop { source } => {
-                write!(f, "OpenSharedSessionOnDesktop({source:?})")
-            }
             ToggleBlockFilterOnSelectedOrLastBlock(_) => {
                 f.write_str("ToggleBlockFilterOnSelectedOrLastBlock")
             }
-            OpenShareSessionModal { source } => write!(f, "OpenShareSessionModal({source:?})"),
-            CopySharedSessionLink { .. } => f.write_str("CopySharedSessionLink"),
             VimModeBanner(action) => write!(f, "VimModeBanner({action:?})"),
             ToggleSnackbarInActivePane => write!(f, "ToggleSnackbarInActivePane"),
-            MakeAllParticipantsReaders { reason } => {
-                write!(f, "MakeAllParticipantsReaders {{ reason: {reason:?} }}")
-            }
-            OpenSharedSessionViewerRoleMenu => write!(f, "OpenSharedSessionViewerRoleMenu"),
-            RequestSharedSessionRole(role) => write!(f, "RequestSharedSessionRole({role:?})"),
             MiddleClickOnGrid { position } => {
                 write!(f, "MiddleClickonGrid {{ position: {position:?} }}")
             }

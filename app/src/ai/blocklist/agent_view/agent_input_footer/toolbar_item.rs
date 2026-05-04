@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::context_chips::{agent_footer_available_chips, available_chips, ContextChipKind};
 use crate::features::FeatureFlag;
-use crate::terminal::shared_session::SharedSessionStatus;
 use crate::ui_components::icons::Icon;
 
 use super::editor::AgentToolbarEditorMode;
@@ -61,7 +60,6 @@ pub enum AgentToolbarItemKind {
     // Renamed from ImageAttach; alias preserves existing user toolbar configs.
     #[serde(alias = "ImageAttach")]
     FileAttach,
-    ShareSession,
 
     // CLI agent only – opens settings to the Coding Agents section.
     Settings,
@@ -73,7 +71,7 @@ pub enum AgentToolbarItemKind {
 impl AgentToolbarItemKind {
     pub fn available_in(&self) -> ToolbarAvailability {
         match self {
-            Self::ContextChip(_) | Self::VoiceInput | Self::FileAttach | Self::ShareSession => {
+            Self::ContextChip(_) | Self::VoiceInput | Self::FileAttach => {
                 ToolbarAvailability::Both
             }
             Self::ModelSelector
@@ -86,25 +84,8 @@ impl AgentToolbarItemKind {
         }
     }
 
-    /// Whether this item should be visible to session viewers.
-    /// Items that control host settings or initiate actions on the host's
-    /// behalf are hidden from viewers.
-    pub fn available_to_session_viewer(
-        &self,
-        status: &SharedSessionStatus,
-        is_cloud_mode: bool,
-    ) -> bool {
-        match self {
-            Self::Settings | Self::ShareSession | Self::FileExplorer => !status.is_viewer(),
-            Self::FileAttach => !status.is_viewer() || is_cloud_mode,
-            Self::FastForwardToggle => !status.is_viewer() || status.is_executor(),
-            Self::ContextChip(_)
-            | Self::ModelSelector
-            | Self::NLDToggle
-            | Self::ContextWindowUsage
-            | Self::RichInput
-            | Self::VoiceInput => true,
-        }
+    pub fn available_to_session_viewer(&self, _is_cloud_mode: bool) -> bool {
+        true
     }
 
     pub fn display_label(&self) -> &'static str {
@@ -117,7 +98,6 @@ impl AgentToolbarItemKind {
             Self::ContextWindowUsage => "Context Usage",
             Self::FileExplorer => "File Explorer",
             Self::RichInput => "Rich Input",
-            Self::ShareSession => "/remote-control",
             Self::Settings => "Settings",
             Self::FastForwardToggle => "Fast Forward",
         }
@@ -133,7 +113,6 @@ impl AgentToolbarItemKind {
             Self::ContextWindowUsage => Some(Icon::ConversationContext0),
             Self::FileExplorer => Some(Icon::FileCopy),
             Self::RichInput => Some(Icon::TextInput),
-            Self::ShareSession => Some(Icon::Phone01),
             Self::Settings => Some(Icon::Settings),
             Self::FastForwardToggle => Some(Icon::FastForward),
         }
@@ -167,19 +146,13 @@ impl AgentToolbarItemKind {
 
     /// Default right-side items for the agent view footer.
     pub fn default_right() -> Vec<Self> {
-        let mut items = vec![
+        vec![
             Self::ContextChip(ContextChipKind::AgentPlanAndTodoList),
             Self::ContextWindowUsage,
             Self::ModelSelector,
-        ];
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && FeatureFlag::HOARemoteControl.is_enabled()
-        {
-            items.push(Self::ShareSession);
-        }
-        items.push(Self::VoiceInput);
-        items.push(Self::FileAttach);
-        items
+            Self::VoiceInput,
+            Self::FileAttach,
+        ]
     }
 
     /// All items available for the agent view footer configurator.
@@ -198,11 +171,6 @@ impl AgentToolbarItemKind {
         if FeatureFlag::FastForwardAutoexecuteButton.is_enabled() {
             items.push(Self::FastForwardToggle);
         }
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && FeatureFlag::HOARemoteControl.is_enabled()
-        {
-            items.push(Self::ShareSession);
-        }
         items
     }
 
@@ -212,13 +180,8 @@ impl AgentToolbarItemKind {
             Self::FileAttach,
             Self::VoiceInput,
             Self::ContextChip(ContextChipKind::GitDiffStats),
+            Self::FileExplorer,
         ];
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && FeatureFlag::HOARemoteControl.is_enabled()
-        {
-            items.push(Self::ShareSession);
-        }
-        items.push(Self::FileExplorer);
         if FeatureFlag::CLIAgentRichInput.is_enabled() {
             items.push(Self::RichInput);
         }
@@ -247,11 +210,6 @@ impl AgentToolbarItemKind {
             Self::VoiceInput,
             Self::Settings,
         ]);
-        if FeatureFlag::CreatingSharedSessions.is_enabled()
-            && FeatureFlag::HOARemoteControl.is_enabled()
-        {
-            items.push(Self::ShareSession);
-        }
         items
     }
 

@@ -72,7 +72,6 @@ use crate::{
 };
 use crate::{experiments, AgentNotificationsModel};
 use fuzzy_match::FuzzyMatchResult;
-use session_sharing_protocol::common::Role;
 use smol_str::SmolStr;
 use warp_completer::completer::{
     EngineFileType, Match, MatchStrategy, MatchedSuggestion, Priority, Suggestion,
@@ -167,6 +166,7 @@ pub fn initialize_app(app: &mut App) {
     // Add GlobalResourceHandlesProvider for persistence
     let user_default_shell_unsupported_banner_model_handle =
         app.add_model(|_| UserDefaultShellUnsupportedBannerState::default_value());
+    let tips_handle = app.add_model(|_| TipsCompleted::default());
     app.add_singleton_model(move |_ctx| {
         GlobalResourceHandlesProvider::new(GlobalResourceHandles {
             model_event_sender: None, // No persistence in tests
@@ -994,83 +994,6 @@ fn test_history_up_buffer_restoration() {
     });
 }
 
-#[test]
-fn test_history_up_for_shared_session_executor() {
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
-
-        // Initialize as shared session executor
-        // such that the history model isn't also initialized during bootstrapping
-        // TODO(maggs): Improve testing utils for session sharing
-        let tips_model = app.add_model(|_| TipsCompleted::default());
-        let (_, terminal) = app.add_window(WindowStyle::NotStealFocus, move |ctx| {
-            TerminalView::new_for_test(tips_model, None, ctx)
-        });
-        terminal.update(&mut app, |view, _| {
-            let mut model = view.model.lock();
-            model.block_list_mut().set_bootstrapped();
-            model
-                .block_list_mut()
-                .active_block_for_test()
-                .set_session_id(SessionId::from(0));
-            model.set_shared_session_status(SharedSessionStatus::ActiveViewer {
-                role: Role::Executor,
-            });
-        });
-
-        let (input, suggestions) = terminal.read(&app, |view, _ctx| {
-            let input = view.input().clone();
-            let input_suggestions = input.read(&app, |input, _ctx| input.input_suggestions.clone());
-            (input, input_suggestions)
-        });
-
-        input.update(&mut app, |input, ctx| {
-            // Initialize shared session history model
-            let shared_session_history_model = ctx.add_model(|_| SharedSessionHistoryModel::new());
-
-            // Simulate blocks
-            shared_session_history_model.update(ctx, |history_model, _ctx| {
-                history_model.push(HistoryEntry::for_completed_block(
-                    "echo foo".into(),
-                    &SerializedBlock::new_for_test("echo foo".as_bytes().to_vec(), vec![]),
-                ));
-
-                history_model.push(HistoryEntry::for_completed_block(
-                    "cd ~".into(),
-                    &SerializedBlock::new_for_test("cd ~".as_bytes().to_vec(), vec![]),
-                ));
-            });
-
-            input.shared_session_input_state = Some(SharedSessionInputState {
-                history_model: shared_session_history_model,
-                pending_command_execution_request: None,
-            });
-            input.editor_up(ctx);
-        });
-
-        // Arrow up displays history in the correct order for an empty buffer
-        suggestions.read(&app, |suggestions, _ctx| {
-            assert_eq!(suggestions.items().len(), 2);
-            assert_eq!(suggestions.item_text(0).as_str(), "echo foo");
-            assert_eq!(suggestions.item_text(1).as_str(), "cd ~");
-        });
-
-        // The buffer should contain the text of the last item
-        input.read(&app, |input, ctx| {
-            assert_eq!(input.buffer_text(ctx), "cd ~");
-        });
-
-        // Shared session executor should be able to navigate through history
-        input.update(&mut app, |input, ctx| {
-            input.editor_up(ctx);
-        });
-
-        // The buffer should contain the text of the second last item after another arrow-up
-        input.read(&app, |input, ctx| {
-            assert_eq!(input.buffer_text(ctx), "echo foo");
-        });
-    });
-}
 
 #[test]
 fn test_history_up_multiline() {

@@ -6,7 +6,7 @@
 pub mod input_context;
 mod pending_response_streams;
 pub mod response_stream;
-pub(super) mod shared_session;
+mod shared_session;
 mod slash_command;
 use input_context::{input_context_for_request, parse_context_attachments};
 pub use slash_command::*;
@@ -402,6 +402,21 @@ impl InputQuery {
 }
 
 impl BlocklistAIController {
+    fn get_current_response_initiator(&self) -> Option<ParticipantId> {
+        self.shared_session_state.get_current_response_initiator()
+    }
+
+    fn set_current_response_initiator(&mut self, participant_id: ParticipantId) {
+        self.shared_session_state
+            .set_current_response_initiator(participant_id);
+    }
+
+    fn get_sharer_participant_id(&self) -> Option<ParticipantId> {
+        self.shared_session_state.get_sharer_participant_id()
+    }
+
+    fn send_cancellation_to_viewers(&mut self, _ctx: &mut ModelContext<Self>) {}
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         input_model: ModelHandle<BlocklistAIInputModel>,
@@ -2446,36 +2461,6 @@ impl BlocklistAIController {
                 let history_model = BlocklistAIHistoryModel::handle(ctx);
                 match event {
                     Ok(event) => {
-                        // If this controller is part of a shared session, forward the entire response event to viewers first.
-                        if FeatureFlag::AgentSharedSessions.is_enabled() {
-                            let mut model = self.terminal_model.lock();
-                            if model.shared_session_status().is_sharer() {
-                                // Get the participant who initiated this response, falling back to the sharer if needed.
-                                let participant_id = self
-                                    .get_current_response_initiator()
-                                    .or_else(|| self.get_sharer_participant_id());
-
-                                // For forked conversations (e.g. when loading from cloud), include
-                                // the original conversation token so viewers can link the new
-                                // server-assigned token to their existing conversation.
-                                //
-                                // This token is cleared after the first Init event (see below),
-                                // so it's only sent once per forked conversation.
-                                let forked_from_token = history_model
-                                    .as_ref(ctx)
-                                    .conversation(&conversation_id)
-                                    .and_then(|conv| {
-                                        conv.forked_from_server_conversation_token()
-                                            .map(|t| t.as_str().to_string())
-                                    });
-
-                                model.send_agent_response_for_shared_session(
-                                    &event,
-                                    participant_id,
-                                    forked_from_token,
-                                );
-                            }
-                        }
                         let Some(event) = event.r#type else {
                             return;
                         };
@@ -2624,17 +2609,6 @@ impl BlocklistAIController {
                 }
 
                 if let Some(stream_cancellation) = &cancellation {
-                    // If this is a shared session, send a synthetic StreamFinished event to notify viewers
-                    // of any user-initiated cancellation. We skip FollowUpSubmitted because that's an internal
-                    // cancellation for continuing the conversation.
-                    if FeatureFlag::AgentSharedSessions.is_enabled()
-                        && !stream_cancellation
-                            .reason
-                            .is_follow_up_for_same_conversation()
-                    {
-                        self.send_cancellation_to_viewers(ctx);
-                    }
-
                     history_model.update(ctx, |history_model, ctx| {
                         history_model.mark_response_stream_cancelled(
                             &stream_id,

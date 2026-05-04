@@ -341,17 +341,6 @@ pub fn init(app: &mut AppContext) {
     );
     app.add_action("root_view:toggle_fullscreen", RootView::toggle_fullscreen);
 
-    if FeatureFlag::ViewingSharedSessions.is_enabled() {
-        app.add_global_action(
-            "root_view:join_shared_session",
-            open_shared_session_as_viewer,
-        );
-        app.add_action(
-            "root_view:join_shared_session_in_existing_window",
-            RootView::join_shared_session_in_existing_window,
-        );
-    }
-
     app.add_global_action(
         "root_view:open_conversation_viewer",
         open_conversation_viewer,
@@ -868,16 +857,6 @@ pub(crate) fn open_new_from_path(
         },
         ctx,
     )
-}
-
-/// Opens a new window and tries to join session identified by the session ID.
-fn open_shared_session_as_viewer(session_id: &SessionId, ctx: &mut AppContext) {
-    open_new_with_workspace_source(
-        NewWorkspaceSource::SharedSessionAsViewer {
-            session_id: *session_id,
-        },
-        ctx,
-    );
 }
 
 /// Opens a new window to view a persisted view-only cloud conversation.
