@@ -24,8 +24,6 @@ const TITLE_MARGIN_BOTTOM: f32 = 25.;
 // Constants for the subtitle
 const SUBTITLE_SENT_REFERRAL: &str =
     "You earned an exclusive Warp theme for referring someone to Warp.";
-const SUBTITLE_RECEIVED_REFERRAL: &str =
-    "You earned an exclusive Warp theme for being referred to Warp.";
 const SUBTITLE_FONT_SIZE: f32 = 14.;
 const SUBTITLE_MARGIN_BOTTOM: f32 = 40.;
 // Constants for the button
@@ -58,7 +56,6 @@ pub enum RewardEvent {
 #[derive(Clone, Copy)]
 pub enum RewardKind {
     SentReferralTheme,
-    ReceivedReferralTheme,
 }
 
 pub struct RewardView {
@@ -91,7 +88,6 @@ impl RewardView {
     fn subtitle(&self) -> &'static str {
         match self.kind {
             RewardKind::SentReferralTheme => SUBTITLE_SENT_REFERRAL,
-            RewardKind::ReceivedReferralTheme => SUBTITLE_RECEIVED_REFERRAL,
         }
     }
 
