@@ -34,6 +34,13 @@ Phase 1a progress:
   - Code compiles with zero errors (warnings only).
   - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
 
+Phase 2a progress:
+- Replaced `CloudPreferencesSyncer` with a no-op stub that emits `InitialLoadCompleted` on the next event-loop tick after `handle_user_fetched` is called. All cloud-to-local and local-to-cloud sync methods are no-ops. Settings continue to be persisted locally by `SettingsManager` via `settings.toml`.
+- Deleted `app/src/settings/cloud_preferences_syncer_tests.rs`.
+- Fixed `root_view.rs`: `AuthComplete + LoginSlide` now applies `pending_post_auth_onboarding_settings` directly instead of waiting for `CloudPreferencesSyncerEvent::InitialLoadCompleted`. The subscription to the syncer remains so `OneTimeModalModel` still receives the event.
+- Removed the TOML parse-error extraction in `lib.rs` (it was only used to gate the broken-file guard in the syncer's startup hash logic, which no longer runs).
+- Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
+
 Phase 1c progress:
 - **COMPLETED:** Deleted `app/src/billing/` and `app/src/pricing/mod.rs`, and removed their module declarations from `app/src/lib.rs`.
 - Removed `PricingInfoModel` singleton registration from app startup and test setup helpers.
@@ -42,6 +49,15 @@ Phase 1c progress:
 - Stopped ingesting `pricing_info` from workspace metadata into a deleted pricing singleton.
 - Removed the shared-object creation denied event path that opened the deleted billing modal.
 - Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
+
+Phase 3a/3b progress:
+- Added `local = ["skip_login"]` Cargo feature to `app/Cargo.toml`. Building with `--features local` produces a local-first binary.
+- Extended `auth_state.rs`: added `should_use_local_user()` (returns `cfg!(feature = "local")`); `should_use_test_user()` already covers it because `local` implies `skip_login`.
+- Added `get_or_create_local_user_id()` in `anonymous_id.rs`: generates a stable `local:<USER>:<uuid>` UID on first run and persists it in user preferences.
+- Added `User::local(uid)` in `user.rs`: populates display name from `$USER`, leaves email empty, marks the user as onboarded with no Firebase fields.
+- Updated `auth_state.rs::initialize()`: uses `User::local()` instead of `User::test()` when `should_use_local_user()` is true; credentials continue to be set to `Credentials::Test` via the existing `#[cfg(feature = "skip_login")]` gate (implied by `local`).
+- Added a comment in `oss.rs` documenting `cargo build --bin warp-oss --features local`.
+- Code compiles with zero errors under both default and `--features local` (`cargo check --package warp && cargo check --package warp --features local`).
 
 Phase 1b progress:
 - Removed the Teams settings page from settings registration and navigation.

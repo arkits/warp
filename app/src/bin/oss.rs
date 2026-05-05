@@ -9,6 +9,8 @@ use warp_core::{
 };
 
 // Simple wrapper around warp::run() for Warp OSS builds.
+// For a fully local-first build (no login required), compile with `--features local`:
+//   cargo build --bin warp-oss --features local
 fn main() -> Result<()> {
     let mut state = ChannelState::new(
         Channel::Oss,

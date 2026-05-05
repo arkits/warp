@@ -2807,6 +2807,14 @@ impl RootView {
                 } else if let AuthOnboardingState::LoginSlide { .. } = &self.auth_onboarding_state {
                     self.auth_onboarding_state
                         .complete_auth_and_create_workspace(ctx);
+                    // Apply onboarding settings stashed before the login slide.
+                    // Previously this was done when CloudPreferencesSyncerEvent::InitialLoadCompleted
+                    // fired; now we apply immediately so settings are not lost.
+                    if let Some(selected_settings) =
+                        self.pending_post_auth_onboarding_settings.take()
+                    {
+                        apply_onboarding_settings(&selected_settings, ctx);
+                    }
                     self.start_pending_tutorial(ctx);
                 } else if let AuthOnboardingState::NeedsSsoLink { .. } = &self.auth_onboarding_state
                 {

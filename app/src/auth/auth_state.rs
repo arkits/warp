@@ -17,7 +17,7 @@ use crate::{
 };
 
 use super::{
-    anonymous_id::get_or_create_anonymous_id,
+    anonymous_id::{get_or_create_anonymous_id, get_or_create_local_user_id},
     auth_manager::user_persistence::PersistedUser,
     credentials::Credentials,
     user::{AnonymousUserType, FirebaseAuthTokens, PersonalObjectLimits, PrincipalType, User},
@@ -83,7 +83,12 @@ impl AuthState {
         let state = Self::new(ctx);
 
         if Self::should_use_test_user() {
-            state.set_user(Some(User::test()));
+            let user = if Self::should_use_local_user() {
+                User::local(get_or_create_local_user_id(ctx))
+            } else {
+                User::test()
+            };
+            state.set_user(Some(user));
             #[cfg(any(test, feature = "integration_tests", feature = "skip_login"))]
             state.set_credentials(Some(Credentials::Test));
             return state;
@@ -131,6 +136,10 @@ impl AuthState {
         }
 
         state
+    }
+
+    fn should_use_local_user() -> bool {
+        cfg!(feature = "local")
     }
 
     fn should_use_test_user() -> bool {

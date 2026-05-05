@@ -184,6 +184,26 @@ impl User {
         }
     }
 
+    /// Creates a local-first user whose identity comes from the OS. No Firebase or email required.
+    pub fn local(uid: UserUid) -> Self {
+        let username = std::env::var("USER").unwrap_or_else(|_| "user".to_string());
+        Self {
+            local_id: uid,
+            metadata: UserMetadata {
+                email: String::new(),
+                display_name: Some(username),
+                photo_url: None,
+            },
+            is_onboarded: true,
+            needs_sso_link: false,
+            anonymous_user_type: None,
+            is_on_work_domain: false,
+            linked_at: None,
+            personal_object_limits: None,
+            principal_type: PrincipalType::User,
+        }
+    }
+
     pub fn is_user_anonymous(&self) -> bool {
         self.anonymous_user_type().is_some() && self.linked_at().is_none()
     }
