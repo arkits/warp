@@ -28,10 +28,6 @@ use crate::workspaces::user_workspaces::UserWorkspaces;
 use warp_completer::parsers::simple::top_level_command;
 use warp_util::path::EscapeChar;
 
-/// UID for the Uber team.
-/// See https://warp.metabaseapp.com/dashboard/1454?team_id=46347
-const UBER_TEAM_UID: &str = "BdVbYjy9LRZcZrYBemSfAF";
-
 /// Gemini brand blue color
 pub(crate) const GEMINI_BLUE: ColorU = ColorU {
     r: 66,
@@ -357,11 +353,8 @@ impl CLIAgent {
     }
 
     fn is_on_uber_team(user_workspaces: &UserWorkspaces) -> bool {
-        user_workspaces
-            .workspaces()
-            .iter()
-            .flat_map(|workspace| workspace.teams.iter())
-            .any(|team| team.uid.uid() == UBER_TEAM_UID)
+        let _ = user_workspaces;
+        false
     }
 }
 

@@ -1,4 +1,4 @@
-use super::{team::TeamClient, ServerApi};
+use super::ServerApi;
 use crate::workspaces::user_workspaces::WorkspacesMetadataResponse;
 use crate::workspaces::workspace::AiOverages;
 use anyhow::{anyhow, Result};
@@ -111,9 +111,7 @@ impl WorkspaceClient for ServerApi {
 
         match response.update_workspace_settings {
             UpdateWorkspaceSettingsResult::UpdateWorkspaceSettingsOutput(_) => {
-                TeamClient::workspaces_metadata(self)
-                    .await
-                    .map(|w| w.metadata)
+                Ok(WorkspacesMetadataResponse::local_empty())
             }
             UpdateWorkspaceSettingsResult::UserFacingError(error) => {
                 Err(anyhow!(get_user_facing_error_message(error)))
@@ -168,9 +166,7 @@ impl WorkspaceClient for ServerApi {
             Err(_) => Err(anyhow!("Failed to purchase add-on credits")),
             Ok(response) => match response.purchase_addon_credits {
                 PurchaseAddonCreditsResult::PurchaseAddonCreditsOutput(_) => {
-                    TeamClient::workspaces_metadata(self)
-                        .await
-                        .map(|w| w.metadata)
+                    Ok(WorkspacesMetadataResponse::local_empty())
                 }
                 PurchaseAddonCreditsResult::UserFacingError(error) => match error.error {
                     UserFacingErrorInterface::BudgetExceededError(budget_error) => {
@@ -210,9 +206,7 @@ impl WorkspaceClient for ServerApi {
 
         match response.update_workspace_settings {
             UpdateWorkspaceSettingsResult::UpdateWorkspaceSettingsOutput(_) => {
-                TeamClient::workspaces_metadata(self)
-                    .await
-                    .map(|w| w.metadata)
+                Ok(WorkspacesMetadataResponse::local_empty())
             }
             UpdateWorkspaceSettingsResult::UserFacingError(error) => {
                 Err(anyhow!(get_user_facing_error_message(error)))

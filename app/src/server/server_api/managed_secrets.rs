@@ -54,22 +54,9 @@ impl ManagedSecretsClient for ServerApi {
 
         match response.user {
             UserResult::UserOutput(output) => {
-                let mut team_configs = HashMap::new();
-                for workspace in output.user.workspaces {
-                    for team in workspace.teams {
-                        if let Some(config) = team.managed_secrets {
-                            // DO NOT inline the `insert` call into the `debug_assert!` macro. It will get compiled out in release builds.
-                            let prior_config = team_configs.insert(team.uid.into_inner(), config);
-                            debug_assert!(
-                                prior_config.is_none(),
-                                "Duplicate team UID returned from server"
-                            );
-                        }
-                    }
-                }
                 Ok(ManagedSecretConfigs {
                     user_secrets: output.user.managed_secrets,
-                    team_secrets: team_configs,
+                    team_secrets: HashMap::new(),
                 })
             }
             UserResult::UserFacingError(error) => {

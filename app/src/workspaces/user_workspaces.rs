@@ -1,9 +1,6 @@
-use super::{
-    team::{DiscoverableTeam, MembershipRole, Team},
-    workspace::{
-        AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting,
-        UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
-    },
+use super::workspace::{
+    AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting,
+    MembershipRole, Team, UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
 };
 use crate::{
     ai::llms::LLMModelHost,
@@ -16,7 +13,7 @@ use crate::{
     server::{
         experiments::{ServerExperiment, ServerExperiments, ServerExperimentsEvent},
         ids::ServerId,
-        server_api::{team::TeamClient, workspace::WorkspaceClient},
+        server_api::workspace::WorkspaceClient,
     },
     settings::{
         AISettings, AISettingsChangedEvent, CodeSettings, CodeSettingsChangedEvent, PrivacySettings,
@@ -36,7 +33,7 @@ use warp_graphql::workspace::FeatureModelChoice;
 use warpui::{AppContext, Entity, ModelContext, SingletonEntity, Tracked};
 
 #[cfg(test)]
-use crate::server::server_api::{team::MockTeamClient, workspace::MockWorkspaceClient};
+use crate::server::server_api::workspace::MockWorkspaceClient;
 
 #[cfg(test)]
 use crate::workspaces::workspace::{
@@ -68,10 +65,6 @@ pub enum UserWorkspacesEvent {
     GenerateStripeBillingPortalLinkRejected(anyhow::Error),
     ToggleTeamDiscoverabilitySuccess,
     ToggleTeamDiscoverabilityRejected(anyhow::Error),
-    JoinTeamWithTeamDiscoverySuccess,
-    JoinTeamWithTeamDiscoveryRejected(anyhow::Error),
-    FetchDiscoverableTeamsSuccess(Vec<DiscoverableTeam>),
-    FetchDiscoverableTeamsRejected(anyhow::Error),
     TransferTeamOwnershipSuccess,
     TransferTeamOwnershipRejected(anyhow::Error),
     SetTeamMemberRoleSuccess,
@@ -95,8 +88,6 @@ pub enum UserWorkspacesEvent {
 pub struct UserWorkspaces {
     current_workspace_uid: Tracked<Option<WorkspaceUid>>,
     workspaces: Tracked<Vec<Workspace>>,
-    joinable_teams: Vec<DiscoverableTeam>,
-    team_client: Arc<dyn TeamClient>,
     workspace_client: Arc<dyn WorkspaceClient>,
 }
 
@@ -105,8 +96,6 @@ pub struct UserWorkspaces {
 pub struct WorkspacesMetadataResponse {
     /// The list of workspaces the user is currently on.
     pub workspaces: Vec<Workspace>,
-    /// The list of discoverable teams that the user can join.
-    pub joinable_teams: Vec<DiscoverableTeam>,
     /// The list of experiments applicable to the user.
     pub experiments: Option<Vec<ServerExperiment>>,
     /// TODO(Tyler): Post-workspaces, move this into the workspace object.
@@ -114,6 +103,16 @@ pub struct WorkspacesMetadataResponse {
     /// It makes most sense to fetch this in workspaces which is queried every 10 minutes.
     /// This is list of available LLM models for the user.
     pub feature_model_choices: Option<FeatureModelChoice>,
+}
+
+impl WorkspacesMetadataResponse {
+    pub fn local_empty() -> Self {
+        Self {
+            workspaces: Vec::new(),
+            experiments: None,
+            feature_model_choices: None,
+        }
+    }
 }
 
 // A representation of all data we fetch at a single time via our 10 minute poll.
@@ -124,15 +123,9 @@ pub struct WorkspacesMetadataWithPricing {
     pub pricing_info: Option<warp_graphql::billing::PricingInfo>,
 }
 
-pub struct CreateTeamResponse {
-    pub workspace: Workspace,
-    pub team: Team,
-}
-
 impl UserWorkspaces {
     #[cfg(test)]
     pub fn mock(
-        team_client: Arc<dyn TeamClient>,
         workspace_client: Arc<dyn WorkspaceClient>,
         cached_workspaces: Vec<Workspace>,
         _ctx: &mut ModelContext<Self>,
@@ -143,8 +136,6 @@ impl UserWorkspaces {
         Self {
             current_workspace_uid: cached_workspaces.first().map(|w| w.uid).into(),
             workspaces: cached_workspaces.into(),
-            joinable_teams: Default::default(),
-            team_client,
             workspace_client,
         }
     }
@@ -152,7 +143,6 @@ impl UserWorkspaces {
     #[cfg(test)]
     pub fn default_mock(ctx: &mut ModelContext<Self>) -> Self {
         Self::mock(
-            Arc::new(MockTeamClient::new()),
             Arc::new(MockWorkspaceClient::new()),
             vec![],
             ctx,
@@ -160,7 +150,6 @@ impl UserWorkspaces {
     }
 
     pub fn new(
-        team_client: Arc<dyn TeamClient>,
         workspace_client: Arc<dyn WorkspaceClient>,
         cached_workspaces: Vec<Workspace>,
         current_workspace_uid: Option<WorkspaceUid>,
@@ -190,8 +179,6 @@ impl UserWorkspaces {
         Self {
             current_workspace_uid: current_workspace_uid.into(),
             workspaces: cached_workspaces.into(),
-            joinable_teams: Default::default(),
-            team_client,
             workspace_client,
         }
     }
@@ -215,16 +202,12 @@ impl UserWorkspaces {
         )
     }
 
-    pub fn team_from_uid(&self, team_uid: ServerId) -> Option<&Team> {
-        self.current_workspace()
-            .and_then(|w| w.teams.iter().find(|t| t.uid == team_uid))
+    pub fn team_from_uid(&self, _team_uid: ServerId) -> Option<&Team> {
+        None
     }
 
-    pub fn team_from_uid_across_all_workspaces(&self, team_uid: ServerId) -> Option<&Team> {
-        self.workspaces
-            .iter()
-            .flat_map(|w| w.teams.iter())
-            .find(|t| t.uid == team_uid)
+    pub fn team_from_uid_across_all_workspaces(&self, _team_uid: ServerId) -> Option<&Team> {
+        None
     }
 
     pub fn workspace_from_uid(&self, workspace_uid: WorkspaceUid) -> Option<&Workspace> {
@@ -266,75 +249,21 @@ impl UserWorkspaces {
     // Checks if the team has capacity for another shared notebook for their current
     // billing tier, given their current notebook count and delinquency status.
     pub fn has_capacity_for_shared_notebooks(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_notebooks: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_notebooks: usize,
     ) -> bool {
-        let current_shared_notebooks = CloudModel::as_ref(ctx)
-            .active_notebooks_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new notebooks.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_notebooks_policy {
-                // Allow new notebooks if policy is unlimited or if the number of notebooks
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_notebooks + new_shared_notebooks
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared notebooks limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     // Checks if the team has capacity for another shared workflow for their current
     // billing tier, given their current workflow count and delinquency status.
     pub fn has_capacity_for_shared_workflows(
-        team_uid: ServerId,
-        ctx: &AppContext,
-        new_shared_workflows: usize,
+        _team_uid: ServerId,
+        _ctx: &AppContext,
+        _new_shared_workflows: usize,
     ) -> bool {
-        let current_shared_workflows = CloudModel::as_ref(ctx)
-            .active_workflows_in_space(Space::Team { team_uid }, ctx)
-            .count();
-
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            // If the team is past due or unpaid, then don't allow new workflows.
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                return false;
-            }
-
-            if let Some(policy) = team.billing_metadata.tier.shared_workflows_policy {
-                // Allow new workflows if policy is unlimited or if the number of workflows
-                // is less than the limit.
-                policy.is_unlimited
-                    || current_shared_workflows + new_shared_workflows
-                        <= policy
-                            .limit
-                            .try_into()
-                            .expect("shared workflows limit should be within max i64 range")
-            } else {
-                // If no policy is set, then allow it to go through by default (should still be enforced server-side)
-                true
-            }
-        } else {
-            // If the team is not found, then allow it to go through by default (should still be enforced server-side)
-            true
-        }
+        true
     }
 
     /// Return the uid of user's current team (if any) without refreshing.
@@ -343,8 +272,7 @@ impl UserWorkspaces {
     }
 
     pub fn current_team_mut(&mut self) -> Option<&mut Team> {
-        self.current_workspace_mut()
-            .and_then(|w| w.teams.first_mut())
+        None
     }
 
     /// Note that the team is populated with dummy data until
@@ -352,7 +280,7 @@ impl UserWorkspaces {
     /// Consider whether you need to wait for the results of the fetch before checking the
     /// values of other fields.
     pub fn current_team(&self) -> Option<&Team> {
-        self.current_workspace().and_then(|w| w.teams.first())
+        None
     }
 
     /// Note that the workspace is populated with dummy data until the initial fetch
@@ -569,27 +497,15 @@ impl UserWorkspaces {
     // Returns a Vec of the user's active spaces, based on their
     // team membership.
     pub fn team_spaces(&self) -> Vec<Space> {
-        if let Some(workspace) = self.current_workspace() {
-            workspace
-                .teams
-                .iter()
-                .map(|team| Space::Team { team_uid: team.uid })
-                .collect()
-        } else {
-            // If the user has no workspace, they have no team spaces.
-            vec![]
-        }
+        vec![]
     }
 
     pub fn total_teammates_in_joinable_teams(&self) -> i64 {
-        self.joinable_teams
-            .iter()
-            .map(|team| team.num_members)
-            .sum()
+        0
     }
 
     pub fn num_joinable_teams(&self) -> usize {
-        self.joinable_teams.len()
+        0
     }
 
     // Returns a Vec of the user's active spaces, based on their
@@ -604,7 +520,6 @@ impl UserWorkspaces {
         }
 
         let mut spaces = Vec::new();
-        spaces.extend(self.team_spaces().iter());
 
         if FeatureFlag::SharedWithMe.is_enabled()
             && CloudModel::as_ref(ctx).has_directly_shared_objects(self, ctx)
@@ -629,7 +544,7 @@ impl UserWorkspaces {
     // does not directly identify an owner (it's the space for shared objects), returns `None`.
     pub fn space_to_owner(&self, space: Space, ctx: &AppContext) -> Option<Owner> {
         match space {
-            Space::Team { team_uid } => Some(Owner::Team { team_uid }),
+            Space::Team { .. } => None,
             Space::Personal => self.personal_drive(ctx),
             Space::Shared => None,
         }
@@ -651,24 +566,12 @@ impl UserWorkspaces {
                     Space::Shared
                 }
             }
-            Owner::Team { team_uid } => {
-                if !FeatureFlag::SharedWithMe.is_enabled()
-                    || self.team_from_uid_across_all_workspaces(team_uid).is_some()
-                {
-                    Space::Team { team_uid }
-                } else {
-                    Space::Shared
-                }
-            }
+            Owner::Team { .. } => Space::Shared,
         }
     }
 
     pub fn has_teams(&self) -> bool {
-        if let Some(workspace) = self.current_workspace() {
-            !workspace.teams.is_empty()
-        } else {
-            false
-        }
+        false
     }
 
     pub fn has_workspaces(&self) -> bool {
@@ -689,36 +592,7 @@ impl UserWorkspaces {
 
     /// Checks if any workspace's service agreement sunsetted_to_build_ts field has changed.
     fn has_sunsetted_to_build_data_changed(&self, new_workspaces: &[Workspace]) -> bool {
-        for new_workspace in new_workspaces {
-            // Find the corresponding old workspace
-            let old_workspace = self.workspaces.iter().find(|w| w.uid == new_workspace.uid);
-
-            if let Some(old_workspace) = old_workspace {
-                // Check if any team's service agreement sunsetted_to_build_ts changed
-                for new_team in &new_workspace.teams {
-                    let old_team = old_workspace.teams.iter().find(|t| t.uid == new_team.uid);
-
-                    if let Some(old_team) = old_team {
-                        let old_sunsetted = old_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        let new_sunsetted = new_team
-                            .billing_metadata
-                            .service_agreements
-                            .first()
-                            .and_then(|sa| sa.sunsetted_to_build_ts);
-
-                        // Detect if it changed from None to Some or changed value
-                        if old_sunsetted != new_sunsetted {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
+        let _ = new_workspaces;
         false
     }
 
@@ -744,18 +618,6 @@ impl UserWorkspaces {
         ctx.notify();
     }
 
-    pub fn update_joinable_teams(
-        &mut self,
-        joinable_teams: Vec<DiscoverableTeam>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        self.joinable_teams.clone_from(&joinable_teams);
-        ctx.emit(UserWorkspacesEvent::FetchDiscoverableTeamsSuccess(
-            joinable_teams,
-        ));
-        ctx.notify();
-    }
-
     // TODO follow up with moving other modifying calls out of UserWorkspaces to TeamUpdateManager
     fn on_workspaces_updated(
         &mut self,
@@ -765,10 +627,8 @@ impl UserWorkspaces {
         match result {
             Ok(response) => {
                 let workspaces = response.metadata.workspaces;
-                let joinable_teams = response.metadata.joinable_teams;
 
                 self.update_workspaces(workspaces.clone(), ctx);
-                self.update_joinable_teams(joinable_teams, ctx);
 
                 // Check if the current workspace is still in the list of workspaces.
                 // If it's not, then set the current workspace to the first workspace in the list.
@@ -792,32 +652,14 @@ impl UserWorkspaces {
         }
     }
 
-    pub fn team_created(
-        &mut self,
-        create_team_response: &CreateTeamResponse,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        self.workspaces.push(create_team_response.workspace.clone());
-        self.set_current_workspace_uid(create_team_response.workspace.uid, ctx);
-        self.notify_and_emit_teams_changed(ctx);
-    }
-
     pub fn remove_user_from_team(
         &mut self,
-        user_uid: UserUid,
-        team_uid: ServerId,
-        entrypoint: CloudObjectEventEntrypoint,
+        _user_uid: UserUid,
+        _team_uid: ServerId,
+        _entrypoint: CloudObjectEventEntrypoint,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .remove_user_from_team(user_uid, team_uid, entrypoint)
-                    .await
-            },
-            Self::on_workspaces_updated,
-        );
+        ctx.notify();
     }
 
     fn on_add_invite_link_domain_restrictions(
@@ -837,21 +679,11 @@ impl UserWorkspaces {
 
     pub fn add_invite_link_domain_restrictions(
         &mut self,
-        team_uid: ServerId,
-        domains: Vec<String>,
+        _team_uid: ServerId,
+        _domains: Vec<String>,
         ctx: &mut ModelContext<Self>,
     ) {
-        for domain in domains {
-            let team_client = self.team_client.clone();
-            let _ = ctx.spawn(
-                async move {
-                    team_client
-                        .add_invite_link_domain_restriction(team_uid, domain)
-                        .await
-                },
-                Self::on_add_invite_link_domain_restrictions,
-            );
-        }
+        ctx.notify();
     }
 
     fn on_delete_invite_link_domain_restriction(
@@ -871,19 +703,11 @@ impl UserWorkspaces {
 
     pub fn delete_invite_link_domain_restriction(
         &mut self,
-        team_uid: ServerId,
-        domain_uid: ServerId,
+        _team_uid: ServerId,
+        _domain_uid: ServerId,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .delete_invite_link_domain_restriction(team_uid, domain_uid)
-                    .await
-            },
-            Self::on_delete_invite_link_domain_restriction,
-        );
+        ctx.notify();
     }
 
     fn on_email_invite_sent(
@@ -903,17 +727,11 @@ impl UserWorkspaces {
 
     pub fn send_email_invites(
         &mut self,
-        team_uid: ServerId,
-        emails: Vec<String>,
+        _team_uid: ServerId,
+        _emails: Vec<String>,
         ctx: &mut ModelContext<Self>,
     ) {
-        for email in emails {
-            let team_client = self.team_client.clone();
-            let _ = ctx.spawn(
-                async move { team_client.send_team_invite_email(team_uid, email).await },
-                Self::on_email_invite_sent,
-            );
-        }
+        ctx.notify();
     }
 
     pub fn on_is_invite_link_enabled_set(
@@ -933,19 +751,11 @@ impl UserWorkspaces {
 
     pub fn set_is_invite_link_enabled(
         &mut self,
-        team_uid: ServerId,
-        new_value: bool,
+        _team_uid: ServerId,
+        _new_value: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .set_is_invite_link_enabled(team_uid, new_value)
-                    .await
-            },
-            Self::on_is_invite_link_enabled_set,
-        );
+        ctx.notify();
     }
 
     pub fn on_invite_links_reset(
@@ -963,93 +773,30 @@ impl UserWorkspaces {
         ctx.notify();
     }
 
-    pub fn reset_invite_links(&mut self, team_uid: ServerId, ctx: &mut ModelContext<Self>) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move { team_client.reset_invite_links(team_uid).await },
-            Self::on_invite_links_reset,
-        );
-    }
-
-    pub fn on_team_discoverability_set(
-        &mut self,
-        result: Result<WorkspacesMetadataWithPricing>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        match result {
-            Err(err) => ctx.emit(UserWorkspacesEvent::ToggleTeamDiscoverabilityRejected(err)),
-            Ok(result) => {
-                self.on_workspaces_updated(Ok(result), ctx);
-                ctx.emit(UserWorkspacesEvent::ToggleTeamDiscoverabilitySuccess);
-            }
-        };
+    pub fn reset_invite_links(&mut self, _team_uid: ServerId, ctx: &mut ModelContext<Self>) {
         ctx.notify();
     }
 
     pub fn set_team_discoverability(
         &mut self,
-        team_uid: ServerId,
-        discoverable: bool,
+        _team_uid: ServerId,
+        _discoverable: bool,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .set_team_discoverability(team_uid, discoverable)
-                    .await
-            },
-            Self::on_team_discoverability_set,
-        );
-    }
-
-    pub fn on_join_team_with_team_discovery(
-        &mut self,
-        result: Result<WorkspacesMetadataWithPricing>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        match result {
-            Err(err) => ctx.emit(UserWorkspacesEvent::JoinTeamWithTeamDiscoveryRejected(err)),
-            Ok(result) => {
-                self.on_workspaces_updated(Ok(result), ctx);
-                ctx.emit(UserWorkspacesEvent::JoinTeamWithTeamDiscoverySuccess);
-            }
-        };
         ctx.notify();
     }
 
     pub fn join_team_with_team_discovery(
         &mut self,
-        team_uid: ServerId,
+        _team_uid: ServerId,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move { team_client.join_team_with_team_discovery(team_uid).await },
-            Self::on_join_team_with_team_discovery,
-        );
-    }
-
-    fn on_fetch_discoverable_teams(
-        &mut self,
-        teams: Result<Vec<DiscoverableTeam>, anyhow::Error>,
-        ctx: &mut ModelContext<Self>,
-    ) {
-        match teams {
-            Err(e) => ctx.emit(UserWorkspacesEvent::FetchDiscoverableTeamsRejected(e)),
-            Ok(teams) => {
-                self.update_joinable_teams(teams, ctx);
-            }
-        }
+        ctx.notify();
     }
 
     /// Make request to get list of discoverable teams for a user
     pub fn fetch_discoverable_teams(&mut self, ctx: &mut ModelContext<Self>) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move { team_client.get_discoverable_teams().await },
-            Self::on_fetch_discoverable_teams,
-        );
+        ctx.notify();
     }
 
     fn on_team_ownership_transferred(
@@ -1069,14 +816,10 @@ impl UserWorkspaces {
 
     pub fn transfer_team_ownership(
         &mut self,
-        new_owner_email: String,
+        _new_owner_email: String,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move { team_client.transfer_team_ownership(new_owner_email).await },
-            Self::on_team_ownership_transferred,
-        );
+        ctx.notify();
     }
 
     fn on_team_member_role_set(
@@ -1096,20 +839,12 @@ impl UserWorkspaces {
 
     pub fn set_team_member_role(
         &mut self,
-        user_uid: UserUid,
-        team_uid: ServerId,
-        role: MembershipRole,
+        _user_uid: UserUid,
+        _team_uid: ServerId,
+        _role: MembershipRole,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .set_team_member_role(user_uid, team_uid, role)
-                    .await
-            },
-            Self::on_team_member_role_set,
-        );
+        ctx.notify();
     }
 
     pub fn on_delete_team_invite(
@@ -1129,19 +864,11 @@ impl UserWorkspaces {
 
     pub fn delete_team_invite(
         &mut self,
-        team_uid: ServerId,
-        invitee_email: String,
+        _team_uid: ServerId,
+        _invitee_email: String,
         ctx: &mut ModelContext<Self>,
     ) {
-        let team_client = self.team_client.clone();
-        let _ = ctx.spawn(
-            async move {
-                team_client
-                    .delete_team_invite(team_uid, invitee_email)
-                    .await
-            },
-            Self::on_delete_team_invite,
-        );
+        ctx.notify();
     }
 
     pub fn on_generate_upgrade_link(

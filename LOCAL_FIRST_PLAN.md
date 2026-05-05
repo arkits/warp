@@ -43,6 +43,22 @@ Phase 1c progress:
 - Removed the shared-object creation denied event path that opened the deleted billing modal.
 - Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
 
+Phase 1b progress:
+- Removed the Teams settings page from settings registration and navigation.
+- Deleted the orphaned Teams settings implementation files: `app/src/settings_view/teams_page.rs` and `app/src/settings_view/tab_menu.rs`.
+- Removed Teams settings deep links and root-view actions; legacy `warp://settings/teams` / team settings links now route to Account settings instead of opening team management.
+- Removed team-management telemetry variants that were only emitted by the deleted Teams page.
+- Removed the menu binding/custom action for “Open Team Settings”.
+- Removed Drive create/join team sections and their event/action plumbing.
+- Deleted `app/src/server/server_api/team.rs` and removed the `TeamClient` from `ServerApi`, `UserWorkspaces`, and app startup wiring.
+- Replaced `TeamUpdateManager` with a local-first no-op compatibility model that only updates the selected workspace locally.
+- Stopped fetching remote workspace metadata through the team API; workspace metadata refreshes now return an empty local response.
+- Removed discoverable/joinable team state, GraphQL discoverable-team conversion, create-team response plumbing, and server-team conversion into runtime workspace state.
+- Deleted `app/src/workspaces/team.rs`; retained the few legacy workspace/team cache shapes inside `workspace.rs` while the remaining workspace model is simplified.
+- Stopped writing team rows, workspace-team rows, team settings, and team members from workspace metadata into SQLite. Existing team tables are left as legacy read/migration compatibility for now.
+- Removed team-derived managed secret configs and the hardcoded Uber team CLI-agent special case.
+- Code compiles with zero errors after this slice (`cargo check --package warp`; warnings only).
+
 ---
 
 ## Guiding Principle

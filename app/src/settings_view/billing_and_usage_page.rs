@@ -55,11 +55,10 @@ use crate::{
         ToastFlavor,
     },
     workspaces::{
-        team::Team,
         update_manager::TeamUpdateManager,
         user_profiles::UserProfiles,
         user_workspaces::{UserWorkspaces, UserWorkspacesEvent},
-        workspace::{CustomerType, Workspace},
+        workspace::{CustomerType, Team, Workspace},
     },
     WorkspaceAction,
 };

@@ -1,5 +1,4 @@
 use super::{
-    team::{DiscoverableTeam, MembershipRole, Team, TeamMember},
     user_profiles::UserProfileWithUID,
     user_workspaces::WorkspacesMetadataResponse,
     workspace::{
@@ -7,8 +6,8 @@ use super::{
         AiPermissionsSettings, AmbientAgentsPolicy, BillingMetadata,
         CloudConversationStorageSettings, CodebaseContextSettings, CustomerType, DelinquencyStatus,
         EmailInvite, EnterpriseSecretRegex, HostEnablementSetting, InstanceShape,
-        InviteLinkDomainRestriction, LinkSharingSettings, LlmSettings, SandboxedAgentSettings,
-        SecretRedactionSettings, SessionSharingPolicy, SharedNotebooksPolicy,
+        InviteLinkDomainRestriction, LinkSharingSettings, LlmSettings, MembershipRole,
+        SandboxedAgentSettings, SecretRedactionSettings, SessionSharingPolicy, SharedNotebooksPolicy,
         SharedWorkflowsPolicy, TelemetryDataCollectionPolicy, TelemetrySettings, Tier,
         UgcCollectionEnablementSetting, UgcCollectionSettings, UgcDataCollectionPolicy,
         UsageBasedPricingPolicy, WarpAiPolicy, Workspace, WorkspaceInviteCode, WorkspaceMember,
@@ -68,14 +67,14 @@ use warp_graphql::{
         get_conversation_usage as gql_usage, get_workspaces_metadata_for_user::User as GqlUser,
     },
     subscriptions::get_warp_drive_updates::WarpDriveUpdate,
-    user::{DiscoverableTeamData as GqlDiscoverableTeamData, PublicUserProfile},
+    user::PublicUserProfile,
     workspace::{
         AdminEnablementSetting as GqlAdminEnablementSetting, AiAutonomyValue as GqlAiAutonomyValue,
         AiPermissionsSettings as GqlAiPermissionsSettings,
         ComputerUseAutonomyValue as GqlComputerUseAutonomyValue, EmailInvite as GqlEmailInvite,
         HostEnablementSetting as GqlHostEnablementSetting,
         InviteLinkDomainRestriction as GqlInviteLinkDomainRestriction,
-        MembershipRole as GqlMembershipRole, Team as GqlTeam, TeamMember as GqlTeamMember,
+        MembershipRole as GqlMembershipRole,
         UgcCollectionEnablementSetting as GqlUgcCollectionEnablementSetting,
         Workspace as GqlWorkspace, WorkspaceMember as GqlWorkspaceMember,
         WorkspaceMemberUsageInfo as GqlWorkspaceMemberUsageInfo,
@@ -85,16 +84,6 @@ use warp_graphql::{
 };
 
 pub const PLACEHOLDER_WORKSPACE_UID: &str = "NOT_A_REAL_WORKSPACE_UID";
-
-impl From<GqlTeamMember> for TeamMember {
-    fn from(gql_team_member: GqlTeamMember) -> TeamMember {
-        Self {
-            uid: UserUid::new(&gql_team_member.uid.into_inner()),
-            email: gql_team_member.email,
-            role: gql_team_member.role.into(),
-        }
-    }
-}
 
 impl From<GqlMembershipRole> for MembershipRole {
     fn from(role: GqlMembershipRole) -> Self {
@@ -840,53 +829,6 @@ impl From<GqlWorkspaceSettings> for WorkspaceSettings {
     }
 }
 
-impl Team {
-    pub fn from_gql(gql_workspace: GqlWorkspace, gql_team: GqlTeam) -> Team {
-        Self {
-            // TEAM FIELDS
-            // These fields will persist in the Team rust type even after we finish
-            // rolling out workspaces.
-            uid: ServerId::from_string_lossy(gql_team.uid.inner()),
-            name: gql_team.name.clone(),
-            members: gql_team
-                .members
-                .clone()
-                .into_iter()
-                .map(|gql_member| gql_member.into())
-                .collect(),
-
-            // WORKSPACE FIELDS
-            // TODO(skambashi): The fields below are derived from the workspace. We should
-            // remove these from the Team rust type and use the values in the parent
-            // Workspace instead.
-            invite_code: gql_workspace
-                .invite_code
-                .clone()
-                .map(|code| WorkspaceInviteCode { code: code.clone() }),
-            pending_email_invites: gql_workspace
-                .pending_email_invites
-                .clone()
-                .into_iter()
-                .map(|gql_email_invite| gql_email_invite.into())
-                .collect(),
-            invite_link_domain_restrictions: gql_workspace
-                .invite_link_domain_restrictions
-                .clone()
-                .into_iter()
-                .map(|gql_domain_restriction| gql_domain_restriction.into())
-                .collect(),
-            billing_metadata: gql_workspace.billing_metadata.clone().into(),
-            stripe_customer_id: gql_workspace
-                .stripe_customer_id
-                .as_ref()
-                .map(|id| id.clone().into_inner()),
-            organization_settings: gql_workspace.settings.clone().into(),
-            is_eligible_for_discovery: gql_workspace.is_eligible_for_discovery,
-            has_billing_history: gql_workspace.has_billing_history,
-        }
-    }
-}
-
 impl From<GqlWorkspace> for Workspace {
     fn from(gql_workspace: GqlWorkspace) -> Workspace {
         Self {
@@ -896,12 +838,7 @@ impl From<GqlWorkspace> for Workspace {
                 .stripe_customer_id
                 .as_ref()
                 .map(|id| id.clone().into_inner()),
-            teams: gql_workspace
-                .teams
-                .clone()
-                .into_iter()
-                .map(|gql_team| Team::from_gql(gql_workspace.clone(), gql_team))
-                .collect(),
+            teams: Vec::new(),
             billing_metadata: gql_workspace.billing_metadata.clone().into(),
             bonus_grants_purchased_this_month: gql_workspace
                 .bonus_grants_info
@@ -961,13 +898,6 @@ impl From<GqlUser> for WorkspacesMetadataResponse {
             .map(|gql_workspace| gql_workspace.into())
             .collect();
 
-        let joinable_teams = gql_user
-            .discoverable_teams
-            .clone()
-            .into_iter()
-            .map(|gql_joinable_team| gql_joinable_team.into())
-            .collect();
-
         let experiments = gql_user
             .experiments
             .and_then(|experiments| convert_to_server_experiment!(experiments));
@@ -975,7 +905,6 @@ impl From<GqlUser> for WorkspacesMetadataResponse {
         // TODO(skambashi) refactor to return back workspaces, and not teams
         WorkspacesMetadataResponse {
             workspaces,
-            joinable_teams,
             experiments,
             feature_model_choices,
         }
@@ -1341,17 +1270,6 @@ impl TryFrom<CloudObjectWithDescendants> for ServerCloudObject {
             CloudObjectWithDescendants::Notebook(notebook) => Ok(ServerCloudObject::Notebook(notebook.try_into()?)),
             CloudObjectWithDescendants::Workflow(workflow) => Ok(ServerCloudObject::Workflow(Box::new(workflow.try_into()?))),
             CloudObjectWithDescendants::Unknown => Err(anyhow::anyhow!("Unable to convert cloud object with descendants type")),
-        }
-    }
-}
-
-impl From<GqlDiscoverableTeamData> for DiscoverableTeam {
-    fn from(gql_discoverable_team: GqlDiscoverableTeamData) -> DiscoverableTeam {
-        Self {
-            team_uid: gql_discoverable_team.team_uid.into_inner(),
-            num_members: i64::from(gql_discoverable_team.num_members),
-            name: gql_discoverable_team.name,
-            team_accepting_invites: gql_discoverable_team.team_accepting_invites,
         }
     }
 }

@@ -6,7 +6,6 @@ pub mod integrations;
 pub mod managed_secrets;
 pub mod object;
 pub(crate) mod presigned_upload;
-pub mod team;
 pub mod workspace;
 
 use crate::ai::ambient_agents::AmbientAgentTaskId;
@@ -30,7 +29,6 @@ use channel_versions::ChannelVersions;
 use futures::StreamExt;
 use object::ObjectClient;
 use prost::Message;
-use team::TeamClient;
 use url::Url;
 use warp_core::context_flag::ContextFlag;
 use warp_core::errors::{register_error, AnyhowErrorExt, ErrorExt};
@@ -1420,10 +1418,6 @@ impl ServerApiProvider {
     }
 
     pub fn get_workspace_client(&self) -> Arc<dyn WorkspaceClient> {
-        self.server_api.clone()
-    }
-
-    pub fn get_team_client(&self) -> Arc<dyn TeamClient> {
         self.server_api.clone()
     }
 
