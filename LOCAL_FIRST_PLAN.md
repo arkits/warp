@@ -50,6 +50,25 @@ Phase 1c progress:
 - Removed the shared-object creation denied event path that opened the deleted billing modal.
 - Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
 
+Phase 2b progress:
+- Added `LocalObjectClient` (implements `ObjectClient`): `fetch_changed_objects` returns `Ok(InitialLoadResponse::default())` so the UpdateManager completes initial load; all write operations return errors that the SyncQueue handles gracefully without retrying. Wired into `SyncQueue`, `UpdateManager`, and `Listener` in `lib.rs` — Drive objects persist locally via SQLite, cloud sync attempts fail silently.
+- Deleted `app/src/drive/cloud_action_confirmation_dialog.rs` (no call sites outside `mod.rs`).
+- Deleted `app/src/cloud_object/grab_edit_access_modal.rs` and removed all references from `notebook.rs`, `active_notebook_data.rs`, `notebook_tests.rs`. In local mode the user is always the sole editor.
+- Deleted `app/src/drive/sharing/dialog/` (2315 lines of sharing-dialog UI and ACL logic). Removed `SharingDialog` field and `share_dialog_open_for` state from `DriveIndex`, `ConversationListView`, and the conversation-list item renderer. Made `toggle_share_dialog` a no-op. Removed `drive::sharing::dialog::init(ctx)` from app startup.
+- The `drive/sharing/mod.rs` and `style.rs` files remain — they export `ContentEditability`, `SharingAccessLevel`, `ShareableObject`, and extension traits still referenced elsewhere. Full cleanup in Phase 5/6.
+- Code compiles with zero errors (`cargo check --package warp`; warnings only).
+
+Phase 2c progress:
+- Added `cfg!(feature = "local")` early-return guard to `fetch_ambient_agent_tasks_and_cloud_convo_metadata` in `agent_conversations_model.rs`. When running with `--features local`, no cloud AI task/conversation-metadata fetches are attempted; conversations already stored in local SQLite continue to load normally.
+- `persisted_workspace.rs` is workspace-LSP tracking (not cloud AI sync), so no change needed there.
+- AI memory (`FeatureFlag::AIMemories`) is cloud-backed; left for a later phase as it requires its own stub.
+- Code compiles with zero errors (`cargo check --package warp --features local`).
+
+Phase 4a progress:
+- Added `cfg!(feature = "local")` early-return to both `refresh_authed_models` and `refresh_public_models` in `app/src/ai/llms.rs`. In local mode, the server is never queried for model availability; `LLMPreferences` starts from the cached models (or `ModelsByFeature::default()` which includes the "auto" model). BYO API key model list is unaffected.
+- `DisableReason::RequiresUpgrade` and `AtCapacity` variants are left in place; they are never used when the server fetch is skipped.
+- Code compiles with zero errors (`cargo check --package warp --features local`).
+
 Phase 3a/3b progress:
 - Added `local = ["skip_login"]` Cargo feature to `app/Cargo.toml`. Building with `--features local` produces a local-first binary.
 - Extended `auth_state.rs`: added `should_use_local_user()` (returns `cfg!(feature = "local")`); `should_use_test_user()` already covers it because `local` implies `skip_login`.

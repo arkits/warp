@@ -1060,6 +1060,10 @@ impl AgentConversationsModel {
     /// Fetches tasks and cloud conversation metadata async. Cloud conversation metadata is merged with
     /// metadata stored in local db in the BlocklistAIHistoryModel
     fn fetch_ambient_agent_tasks_and_cloud_convo_metadata(&mut self, ctx: &mut ModelContext<Self>) {
+        if cfg!(feature = "local") {
+            return;
+        }
+
         let Some(creator_uid) = AuthStateProvider::as_ref(ctx)
             .get()
             .user_id()
