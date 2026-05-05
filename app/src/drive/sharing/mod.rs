@@ -18,7 +18,6 @@ use crate::{
     workspaces::{user_profiles::UserProfiles, user_workspaces::UserWorkspaces},
 };
 
-pub mod dialog;
 mod style;
 
 // Re-export types from warp_server_client.
