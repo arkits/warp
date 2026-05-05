@@ -41,7 +41,6 @@ use crate::{
     },
     appearance::Appearance,
     cloud_object::{
-        grab_edit_access_modal::{GrabEditAccessModal, GrabEditAccessModalEvent},
         model::{
             persistence::{CloudModel, CloudModelEvent, UpdateSource},
             view::{Editor, EditorState},
@@ -238,7 +237,6 @@ pub struct NotebookView {
     details_bar: DetailsBar,
     title: ViewHandle<EditorView>,
     input: ViewHandle<RichTextEditorView>,
-    grab_edit_access_modal: ViewHandle<GrabEditAccessModal>,
     focused: bool,
     last_focused_component: FocusedComponent,
     active_notebook_data: ModelHandle<ActiveNotebookData>,
@@ -409,11 +407,6 @@ impl NotebookView {
             notebook.handle_input_editor_event(event, ctx);
         });
 
-        let grab_edit_access_modal = ctx.add_typed_action_view(|_| GrabEditAccessModal::new());
-        ctx.subscribe_to_view(&grab_edit_access_modal, |notebook, _, event, ctx| {
-            notebook.handle_grab_edit_access_modal_event(event, ctx);
-        });
-
         let user_workspaces = UserWorkspaces::handle(ctx);
         ctx.observe(&user_workspaces, Self::on_user_workspaces_update);
 
@@ -434,7 +427,6 @@ impl NotebookView {
             details_bar: DetailsBar::new(),
             title,
             input,
-            grab_edit_access_modal,
             focused: false,
             last_focused_component: FocusedComponent::Input,
             active_notebook_data,
@@ -691,34 +683,6 @@ impl NotebookView {
     }
 
     /// Handle an event from the [`GrabEditAccessModal`]. This lets users steal edit access from
-    /// other users.
-    fn handle_grab_edit_access_modal_event(
-        &mut self,
-        event: &GrabEditAccessModalEvent,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        match event {
-            GrabEditAccessModalEvent::Close => {
-                self.active_notebook_data
-                    .update(ctx, |active_notebook_data, ctx| {
-                        active_notebook_data.show_grab_edit_access_modal = false;
-                        ctx.notify();
-                    });
-            }
-            GrabEditAccessModalEvent::GrabEditAccess => {
-                self.active_notebook_data
-                    .update(ctx, |active_notebook_data, ctx| {
-                        active_notebook_data.show_grab_edit_access_modal = false;
-                        ctx.notify();
-                    });
-                log::info!("Explicitly grabbing edit access, stealing from active editor");
-                self.grab_edit_access(false, ctx);
-                self.send_telemetry_action(NotebookTelemetryAction::GrabEditingBaton, ctx);
-            }
-        }
-        ctx.notify();
-    }
-
     /// Reload an updated notebook.
     fn handle_notebook_updated(&mut self, notebook: &CloudNotebook, ctx: &mut ViewContext<Self>) {
         self.set_title(&notebook.model().title, ctx);
@@ -1159,23 +1123,10 @@ impl NotebookView {
     pub fn grab_edit_access_or_display_access_dialog(&mut self, ctx: &mut ViewContext<Self>) {
         let active_notebook_data = self.active_notebook_data.as_ref(ctx);
         if active_notebook_data.has_conflicts(ctx) {
-            // Do not attempt to grab edit access if there are conflicts.
             return;
         }
 
-        let current_editor = active_notebook_data
-            .current_editor(ctx)
-            .unwrap_or(Editor::no_editor());
-        if current_editor.state == EditorState::OtherUserActive {
-            self.active_notebook_data.update(ctx, |data, ctx| {
-                data.show_grab_edit_access_modal = true;
-                ctx.notify();
-            });
-        } else {
-            log::info!("Explicitly grabbing edit access, no active editor");
-            self.grab_edit_access(true, ctx);
-        }
-
+        self.grab_edit_access(true, ctx);
         self.focus_input(ctx);
         ctx.notify();
     }
@@ -2228,13 +2179,7 @@ impl View for NotebookView {
             ),
         };
 
-        if self
-            .active_notebook_data
-            .as_ref(app)
-            .show_grab_edit_access_modal
-        {
-            stack.add_child(ChildView::new(&self.grab_edit_access_modal).finish());
-        }
+
 
         if self
             .active_notebook_data

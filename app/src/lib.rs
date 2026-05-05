@@ -219,7 +219,11 @@ use crate::notebooks::CloudNotebook;
 use crate::palette::PaletteMode;
 use crate::persistence::PersistenceWriter;
 use crate::projects::ProjectManagementModel;
-use crate::server::cloud_objects::{listener::Listener, update_manager::UpdateManager};
+use crate::server::cloud_objects::{
+    listener::Listener,
+    local_object_client::LocalObjectClient,
+    update_manager::UpdateManager,
+};
 use crate::server::experiments::ServerExperiments;
 use crate::server::sync_queue::{QueueItem, SyncQueue};
 use crate::session_management::{RunningSessionSummary, SessionNavigationData};
@@ -1585,7 +1589,7 @@ fn initialize_app(
     ctx.add_singleton_model(|ctx| {
         SyncQueue::new(
             all_queue_items,
-            server_api_provider.as_ref(ctx).get_cloud_objects_client(),
+            LocalObjectClient::new(),
             ctx,
         )
     });
@@ -1633,7 +1637,7 @@ fn initialize_app(
     ctx.add_singleton_model(|ctx| {
         UpdateManager::new(
             persistence_writer.sender(),
-            server_api_provider.as_ref(ctx).get_cloud_objects_client(),
+            LocalObjectClient::new(),
             ctx,
         )
     });
@@ -1699,7 +1703,7 @@ fn initialize_app(
     ctx.add_singleton_model(|_| ActiveSession::default());
     ctx.add_singleton_model(|ctx| {
         Listener::new(
-            server_api_provider.as_ref(ctx).get_cloud_objects_client(),
+            LocalObjectClient::new(),
             ctx,
         )
     });
