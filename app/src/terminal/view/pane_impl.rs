@@ -1,7 +1,6 @@
 //! This module contains the implementation of `BackingView` for `TerminalView`, as well as
 //! business logic for integrating the terminal view with the pane infra (`crate::pane_group`).
 use super::ambient_agent::is_cloud_agent_pre_first_exchange;
-use super::shared_session::adapter::Kind as SharedSessionKind;
 use super::{Event, PaneConfiguration, TerminalAction, TerminalViewState};
 use crate::ai::agent::conversation::{AIConversation, ConversationStatus};
 use crate::ai::blocklist::agent_view::agent_view_bg_fill;
@@ -25,9 +24,6 @@ use crate::settings::app_installation_detection::{
 };
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::model::terminal_model::ConversationTranscriptViewerStatus;
-use crate::terminal::shared_session::participant_avatar_view::render_participants_and_role_elements;
-use crate::terminal::shared_session::render_util::shared_session_indicator_color;
-use crate::terminal::shared_session::SharedSessionActionSource;
 use crate::terminal::TerminalManager;
 use crate::terminal::TerminalView;
 use crate::ui_components::agent_icon::terminal_view_agent_icon_variant;
@@ -389,7 +385,7 @@ impl TerminalView {
             None
         };
 
-        let mut left_of_overflow = self.render_shared_session_header_content(app);
+        let mut left_of_overflow = None;
 
         let mut icon_button_count: u32 = 0;
 
@@ -777,11 +773,6 @@ impl TerminalView {
             );
         }
 
-        None
-    }
-
-    /// Render shared session header content (participant avatars and role controls).
-    fn render_shared_session_header_content(&self, _app: &AppContext) -> Option<Box<dyn Element>> {
         None
     }
 

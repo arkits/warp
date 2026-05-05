@@ -17,7 +17,6 @@ use warpui::{AppContext, Element, Entity, SingletonEntity as _, View, ViewContex
 use crate::features::FeatureFlag;
 use crate::menu::MenuItemFields;
 use crate::modal::{Modal, ModalEvent, MODAL_PADDING, MODAL_WIDTH};
-use crate::pricing::{PricingInfoModel, PricingInfoModelEvent};
 use crate::send_telemetry_from_ctx;
 use crate::server::telemetry::{AutoReloadModalAction, TelemetryEvent};
 use crate::settings_view::create_discount_badge;
@@ -63,16 +62,6 @@ fn send_auto_reload_dismissed_telemetry<V: View>(ctx: &mut ViewContext<V>) {
 
 impl EnableAutoReloadModalBody {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
-        ctx.subscribe_to_model(
-            &PricingInfoModel::handle(ctx),
-            |me, _, event, ctx| match event {
-                PricingInfoModelEvent::PricingInfoUpdated => {
-                    me.update_addon_credits_options(ctx);
-                    ctx.notify();
-                }
-            },
-        );
-
         ctx.subscribe_to_model(
             &UserWorkspaces::handle(ctx),
             |me, _handle, event, ctx| {
@@ -139,10 +128,7 @@ impl EnableAutoReloadModalBody {
     }
 
     fn update_addon_credits_options(&mut self, ctx: &mut ViewContext<Self>) {
-        self.addon_credits_options = PricingInfoModel::as_ref(ctx)
-            .addon_credits_options()
-            .map(|opts| opts.to_vec())
-            .unwrap_or_default();
+        self.addon_credits_options.clear();
 
         let base_rate = self
             .addon_credits_options

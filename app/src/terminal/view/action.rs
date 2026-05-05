@@ -19,7 +19,6 @@ use crate::code_review::telemetry_event::CodeReviewPaneEntrypoint;
 use crate::server::telemetry::{AgentModeRewindEntrypoint, PaletteSource, ToggleBlockFilterSource};
 use crate::terminal::available_shells::AvailableShell;
 use crate::terminal::model::completions::ShellCompletion;
-use crate::terminal::shared_session::SharedSessionActionSource;
 use crate::terminal::ssh::error::SshErrorBlockAction;
 use crate::terminal::view::inline_banner::AgentModeSetupSpeedbumpBannerAction;
 use crate::terminal::view::passive_suggestions::PromptSuggestionResolution;
@@ -41,9 +40,6 @@ use crate::{
         },
     },
 };
-use session_sharing_protocol::common::Role;
-use session_sharing_protocol::sharer::RoleUpdateReason;
-
 use super::inline_banner::{
     AnonymousUserLoginBannerAction, AwsBedrockLoginBannerAction, AwsCliNotInstalledBannerAction,
     OpenInWarpBannerAction, VimModeBannerAction,
@@ -287,23 +283,6 @@ pub enum TerminalAction {
     OpenWorkflowModalForAIWorkflow(Workflow),
     OpenWorkflowModalForBlock(BlockIndex),
     OpenWorkflowModalWithCloudWorkflow(SyncId),
-    OpenShareSessionModal {
-        source: SharedSessionActionSource,
-    },
-    StopSharingCurrentSession {
-        source: SharedSessionActionSource,
-    },
-    CopySharedSessionLink {
-        source: SharedSessionActionSource,
-    },
-    OpenSharedSessionOnDesktop {
-        source: SharedSessionActionSource,
-    },
-    OpenSharedSessionViewerRoleMenu,
-    MakeAllParticipantsReaders {
-        reason: RoleUpdateReason,
-    },
-    RequestSharedSessionRole(Role),
     AskAIAssistant {
         block_index: BlockIndex,
     },
@@ -581,13 +560,6 @@ impl fmt::Debug for TerminalAction {
             OpenWorkflowModalWithCloudWorkflow(_) => {
                 f.write_str("OpenWorkflowModalWithCloudWorkflow")
             }
-            OpenShareSessionModal { .. } => f.write_str("OpenShareSessionModal"),
-            StopSharingCurrentSession { .. } => f.write_str("StopSharingCurrentSession"),
-            CopySharedSessionLink { .. } => f.write_str("CopySharedSessionLink"),
-            OpenSharedSessionOnDesktop { .. } => f.write_str("OpenSharedSessionOnDesktop"),
-            OpenSharedSessionViewerRoleMenu => f.write_str("OpenSharedSessionViewerRoleMenu"),
-            MakeAllParticipantsReaders { .. } => f.write_str("MakeAllParticipantsReaders"),
-            RequestSharedSessionRole(_) => f.write_str("RequestSharedSessionRole"),
             OpenBlockListContextMenu => f.write_str("OpenBlockListContextMenu"),
             AskAIAssistant { block_index } => write!(f, "AskAIAssistant({block_index:?})"),
             TriggerSubshellBootstrap => f.write_str("TriggerSubshellBootstrap"),

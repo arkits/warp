@@ -202,10 +202,6 @@ use repo_metadata::RemoteRepositoryIdentifier;
 #[cfg(target_family = "wasm")]
 use url::Url;
 
-use crate::billing::shared_objects_creation_denied_modal::{
-    SharedObjectsCreationDeniedModal, SharedObjectsCreationDeniedModalEvent,
-};
-
 #[cfg(target_family = "wasm")]
 use crate::wasm_nux_dialog::WasmNUXDialog;
 
@@ -254,7 +250,7 @@ use crate::remote_server::manager::RemoteServerManager;
 #[cfg(feature = "local_fs")]
 use crate::remote_server::manager::RemoteServerManagerEvent;
 use crate::terminal::keys_settings::KeysSettings;
-use crate::terminal::shared_session::SharedSessionActionSource;
+
 
 use crate::ai::blocklist::agent_view::editor::{AgentToolbarEditorEvent, AgentToolbarEditorModal};
 use crate::prompt::editor_modal::{
@@ -992,7 +988,6 @@ pub struct Workspace {
     tab_bar_pinned_by_popup: bool,
     user_menu: ViewHandle<Menu<WorkspaceAction>>,
     native_modal: ViewHandle<NativeModal>,
-    shared_objects_creation_denied_modal: ViewHandle<SharedObjectsCreationDeniedModal>,
     shown_staging_banner_count: u32,
 
     // When user's open WEB for the first time, we ask them to select a preference of
@@ -2964,25 +2959,6 @@ impl Workspace {
 
         let native_modal = Self::build_native_modal_view(ctx);
 
-        let shared_objects_creation_denied_modal =
-            ctx.add_typed_action_view(|ctx| SharedObjectsCreationDeniedModal::new(None, ctx));
-        ctx.subscribe_to_view(
-            &shared_objects_creation_denied_modal,
-            |me, _, event, ctx| match event {
-                SharedObjectsCreationDeniedModalEvent::Close => {
-                    me.current_workspace_state
-                        .is_shared_objects_creation_denied_modal_open = false;
-                    ctx.notify();
-                }
-                SharedObjectsCreationDeniedModalEvent::TeamSettings => {
-                    me.show_settings_with_section(Some(SettingsSection::Teams), ctx);
-                    me.current_workspace_state
-                        .is_shared_objects_creation_denied_modal_open = false;
-                    ctx.notify();
-                }
-            },
-        );
-
         ctx.subscribe_to_model(&AISettings::handle(ctx), |me, _, event, ctx| match event {
             AISettingsChangedEvent::IsAnyAIEnabled { .. }
             | AISettingsChangedEvent::ShowConversationHistory { .. } => {
@@ -3116,7 +3092,6 @@ impl Workspace {
             tab_bar_pinned_by_popup: false,
             user_menu,
             native_modal,
-            shared_objects_creation_denied_modal,
             file_upload_sessions: Default::default(),
             ai_fact_view,
             left_panel_open: false,
@@ -4082,65 +4057,15 @@ impl Workspace {
         );
     }
 
-    fn open_share_session_modal(&mut self, index: usize, ctx: &mut ViewContext<Self>) {
-        if index >= self.tab_count() {
-            return;
-        }
-        self.set_active_tab_index(index, ctx);
-    }
-
-    fn stop_sharing_all_panes_in_tab(
-        &mut self,
-        pane_group: &WeakViewHandle<PaneGroup>,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let _ = pane_group.upgrade(ctx);
-    }
-
-    fn stop_sharing_session(
-        &mut self,
-        terminal_view_id: &EntityId,
-        source: SharedSessionActionSource,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let _ = (terminal_view_id, source, ctx);
-    }
-
-    fn copy_shared_session_link_from_tab(&mut self, tab_index: usize, ctx: &mut ViewContext<Self>) {
-        let _ = (tab_index, ctx);
-    }
-
     fn subscribe_to_shared_session_manager(ctx: &mut ViewContext<Self>) {
         let _ = ctx;
     }
 
-    fn copy_shared_session_link(
-        &mut self,
-        session_id: &SharedSessionId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        ctx.clipboard().write(ClipboardContent::plain_text(
-            terminal::shared_session::join_link(session_id),
-        ));
 
-        self.toast_stack.update(ctx, |toast_stack, ctx| {
-            let toast = DismissibleToast::default("Remote control link copied.".to_string());
-            toast_stack.add_ephemeral_toast(toast, ctx);
-        });
-    }
 
     // Returns true if the focused pane is the viewer of a shared session
-    pub fn is_shared_session_viewer_focused(&self, app: &AppContext) -> bool {
-        self.active_tab_pane_group()
-            .as_ref(app)
-            .active_session_view(app)
-            .is_some_and(|view| {
-                view.as_ref(app)
-                    .model
-                    .lock()
-                    .shared_session_status()
-                    .is_viewer()
-            })
+    pub fn is_shared_session_viewer_focused(&self, _app: &AppContext) -> bool {
+        false
     }
 
     pub fn is_conversation_transcript_viewer_focused(&self, app: &AppContext) -> bool {
@@ -4175,12 +4100,6 @@ impl Workspace {
                 });
             }
 
-            // Check for shared session (viewer or writer)
-            if model.shared_session_status().is_sharer_or_viewer() {
-                return Some(SimplifiedWasmTabBarContent::SharedSession {
-                    task_id: model.ambient_agent_task_id(),
-                });
-            }
         }
 
         // Check if focused pane is a Warp Drive object
@@ -11122,8 +11041,7 @@ impl Workspace {
         ctx: &mut ViewContext<Self>,
     ) {
         let terminal_view_for_active_pane = self.active_session_view(ctx).filter(|_| {
-            self.get_active_session_terminal_model(ctx)
-                .is_some_and(|model| !model.lock().shared_session_status().is_viewer())
+            self.get_active_session_terminal_model(ctx).is_some()
                 && FeatureFlag::AgentView.is_enabled()
         });
 
@@ -11623,7 +11541,6 @@ impl Workspace {
                         controller.send_user_query_in_conversation_no_lrc_subagent(
                             prompt,
                             forked_conversation_id,
-                            None,
                             ctx,
                         );
                     });
@@ -12525,19 +12442,8 @@ impl Workspace {
         self.active_tab_pane_group().as_ref(ctx).left_panel_open
     }
 
-    fn is_readonly_shared_session_active(&self, ctx: &mut ViewContext<Self>) -> bool {
-        let active_terminal_view = self
-            .active_tab_pane_group()
-            .as_ref(ctx)
-            .active_session_view(ctx);
-
-        active_terminal_view.is_some_and(|view| {
-            view.as_ref(ctx)
-                .model
-                .lock()
-                .shared_session_status()
-                .is_reader()
-        })
+    fn is_readonly_shared_session_active(&self, _ctx: &mut ViewContext<Self>) -> bool {
+        false
     }
 
     fn handle_settings_pane_event(
@@ -14291,9 +14197,6 @@ impl Workspace {
             }
             DrivePanelEvent::FocusWarpDrive => {
                 ctx.focus(&self.left_panel_view);
-            }
-            DrivePanelEvent::OpenSharedObjectsCreationDeniedModal(object_type, team_uid) => {
-                self.open_shared_objects_creation_denied_modal(*object_type, *team_uid, ctx)
             }
             DrivePanelEvent::AttachPlanAsContext(id) => {
                 self.attach_plan_as_context(*id, ctx);
@@ -16054,52 +15957,6 @@ impl Workspace {
         ctx.notify();
     }
 
-    fn open_shared_objects_creation_denied_modal(
-        &mut self,
-        object_type: DriveObjectType,
-        team_uid: ServerId,
-        ctx: &mut ViewContext<Self>,
-    ) {
-        let team = UserWorkspaces::as_ref(ctx).team_from_uid(team_uid);
-        if let Some(team) = team {
-            let current_user_email = self.auth_state.user_email().unwrap_or_default();
-            let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-            let team_uid = team.uid;
-            let is_delinquent_due_to_payment_issue =
-                team.billing_metadata.is_delinquent_due_to_payment_issue();
-            let customer_type = team.billing_metadata.customer_type;
-
-            // Send telemetry event only if the team is not delinquent. If the team is
-            // delinquent, then they haven't technically hit any tier limits are just in a
-            // restricted state.
-            if !is_delinquent_due_to_payment_issue {
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::TierLimitHit(TierLimitHitEvent {
-                        team_uid: team.uid,
-                        feature: object_type.to_string(),
-                    }),
-                    ctx
-                );
-            }
-
-            self.current_workspace_state
-                .is_shared_objects_creation_denied_modal_open = true;
-            self.shared_objects_creation_denied_modal
-                .update(ctx, |modal, ctx| {
-                    modal.update_modal_state(
-                        team_uid,
-                        object_type,
-                        has_admin_permissions,
-                        is_delinquent_due_to_payment_issue,
-                        customer_type,
-                        ctx,
-                    );
-                });
-            ctx.focus(&self.shared_objects_creation_denied_modal);
-            ctx.notify();
-        }
-    }
-
     /// Opens the workflow modal in the provided space and folder with no existing content (i.e. a new workflow modal).
     fn open_workflow_modal(
         &mut self,
@@ -16115,15 +15972,6 @@ impl Workspace {
         // - open_workflow_modal_with_command
         let owner = match space {
             Space::Team { team_uid } => {
-                if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1) {
-                    self.open_shared_objects_creation_denied_modal(
-                        DriveObjectType::Workflow,
-                        team_uid,
-                        ctx,
-                    );
-                    return;
-                }
-
                 Owner::Team { team_uid }
             }
             Space::Shared => {
@@ -19825,7 +19673,6 @@ impl TypedActionView for Workspace {
                                         controller.send_user_query_in_conversation(
                                             query,
                                             conversation_id,
-                                            None,
                                             ctx,
                                         );
                                     },
@@ -20656,18 +20503,6 @@ impl TypedActionView for Workspace {
                 // perform nested updates on the workspace.
                 ctx.dispatch_global_action("app:undo_close", ());
             }
-            OpenShareSessionModal(index) => {
-                self.open_share_session_modal(*index, ctx);
-            }
-            StopSharingSessionFromTabMenu { terminal_view_id } => {
-                self.stop_sharing_session(terminal_view_id, SharedSessionActionSource::Tab, ctx)
-            }
-            StopSharingAllSessionsInTab { pane_group } => {
-                self.stop_sharing_all_panes_in_tab(pane_group, ctx)
-            }
-            CopySharedSessionLinkFromTab { tab_index } => {
-                self.copy_shared_session_link_from_tab(*tab_index, ctx)
-            }
             AddWindow => {
                 ctx.dispatch_global_action("root_view:open_new", ());
             }
@@ -20757,7 +20592,6 @@ impl TypedActionView for Workspace {
                                         query.to_owned(),
                                         None,
                                         EntrypointType::UserInitiated,
-                                        None,
                                         ctx,
                                     );
                                 },
@@ -22258,13 +22092,6 @@ impl View for Workspace {
 
         if self.current_workspace_state.is_theme_deletion_modal_open {
             stack.add_child(ChildView::new(&self.theme_deletion_modal).finish());
-        }
-
-        if self
-            .current_workspace_state
-            .is_shared_objects_creation_denied_modal_open
-        {
-            stack.add_child(ChildView::new(&self.shared_objects_creation_denied_modal).finish());
         }
 
         if self.current_workspace_state.is_reward_modal_open {

@@ -39,7 +39,6 @@ use crate::{
     },
     menu::{Event as MenuEvent, Menu, MenuItem, MenuItemFields},
     modal::{Modal, ModalEvent, ModalViewState},
-    pricing::{PricingInfoModel, PricingInfoModelEvent},
     send_telemetry_from_ctx,
     server::{ids::ServerId, telemetry::TelemetryEvent},
     settings::ai::AISettings,
@@ -251,15 +250,6 @@ impl BillingAndUsagePageView {
 
         ctx.subscribe_to_model(&AIRequestUsageModel::handle(ctx), |_, _, _, ctx| {
             ctx.notify()
-        });
-
-        ctx.subscribe_to_model(&PricingInfoModel::handle(ctx), |me, _handle, event, ctx| {
-            #[allow(irrefutable_let_patterns)]
-            if let PricingInfoModelEvent::PricingInfoUpdated = event {
-                me.update_addon_credits_options(ctx);
-                me.refresh_addon_credits_settings(ctx);
-                ctx.notify();
-            }
         });
 
         let usage_history_model = ctx.add_model(UsageHistoryModel::new);
@@ -628,10 +618,7 @@ impl BillingAndUsagePageView {
     }
 
     fn update_addon_credits_options(&mut self, ctx: &mut ViewContext<Self>) {
-        self.addon_credits_options = PricingInfoModel::as_ref(ctx)
-            .addon_credits_options()
-            .map(|opts| opts.to_vec())
-            .unwrap_or_default();
+        self.addon_credits_options.clear();
         self.addon_credit_denomination_buttons = self
             .addon_credits_options
             .iter()

@@ -1,6 +1,5 @@
 use crate::ai::{AIRequestUsageModel, AIRequestUsageModelEvent};
 use crate::auth::AuthStateProvider;
-use crate::pricing::{PricingInfoModel, PricingInfoModelEvent};
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -13,7 +12,7 @@ use thousands::Separable;
 use warp_core::send_telemetry_from_ctx;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::theme::{Fill, WarpTheme};
-use warp_graphql::billing::{PlanPricing, StripeSubscriptionPlan};
+use warp_graphql::billing::PlanPricing;
 use warpui::elements::{
     Align, Border, CacheOption, ChildAnchor, ConstrainedBox, Container, CornerRadius,
     CrossAxisAlignment, DropShadow, Flex, FormattedTextElement, HighlightedHyperlink, Image,
@@ -55,16 +54,6 @@ pub struct FreeTierLimitHitModal {
 impl FreeTierLimitHitModal {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
         ctx.subscribe_to_model(
-            &PricingInfoModel::handle(ctx),
-            |_, _, event, ctx| match event {
-                PricingInfoModelEvent::PricingInfoUpdated => {
-                    ctx.unsubscribe_to_model(&PricingInfoModel::handle(ctx));
-                    ctx.notify();
-                }
-            },
-        );
-
-        ctx.subscribe_to_model(
             &AIRequestUsageModel::handle(ctx),
             |_, _, event, ctx| match event {
                 AIRequestUsageModelEvent::RequestUsageUpdated => {
@@ -89,9 +78,8 @@ impl FreeTierLimitHitModal {
         }
     }
 
-    fn get_build_plan_details(app: &AppContext) -> Option<&PlanPricing> {
-        let pricing_model = PricingInfoModel::handle(app).as_ref(app);
-        pricing_model.plan_pricing(&StripeSubscriptionPlan::Build)
+    fn get_build_plan_details(_app: &AppContext) -> Option<&PlanPricing> {
+        None
     }
 
     fn render_checklist_item_dynamic(

@@ -9,8 +9,6 @@ use session_sharing_protocol::common::SessionId;
 use crate::ai::agent::UserQueryMode;
 use crate::ai::ambient_agents::{AmbientAgentTask, AmbientAgentTaskState};
 use crate::server::server_api::ai::{MockAIClient, SpawnAgentResponse, TaskStatusMessage};
-use crate::terminal::shared_session;
-
 use super::{spawn_task, submit_run_followup, AmbientAgentEvent, SessionJoinInfo};
 
 fn task_with(
@@ -395,7 +393,7 @@ fn session_join_info_falls_back_to_session_id() {
     assert_eq!(join_info.session_id, Some(session_id));
     assert_eq!(
         join_info.session_link,
-        shared_session::join_link(&session_id)
+        Some(format!("local-session-disabled:{}", session_id))
     );
 }
 

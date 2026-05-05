@@ -70,7 +70,6 @@ pub enum DrivePanelEvent {
         in_subshell: bool,
     },
     OpenSearch,
-    OpenSharedObjectsCreationDeniedModal(DriveObjectType, ServerId),
     OpenTeamSettingsPage,
     OpenAIFactCollection,
     OpenMCPServerCollection,
@@ -305,11 +304,6 @@ impl DrivePanel {
                 self.open_workflow_modal_with_existing(*workflow_id, ctx)
             }
             DriveIndexEvent::FocusWarpDrive => ctx.emit(DrivePanelEvent::FocusWarpDrive),
-            DriveIndexEvent::OpenSharedObjectsCreationDeniedModal(object_type, team_uid) => ctx
-                .emit(DrivePanelEvent::OpenSharedObjectsCreationDeniedModal(
-                    *object_type,
-                    *team_uid,
-                )),
             DriveIndexEvent::InvokeEnvVarCollectionInSubshell(id) => {
                 let cloud_model = CloudModel::as_ref(ctx);
                 let object = cloud_model.get_by_uid(&id.uid());
@@ -368,27 +362,11 @@ impl DrivePanel {
                         CloudObjectTypeAndId::Notebook(_) => {
                             if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1)
                             {
-                                // If team has reached the limit for notebooks, show the modal
-                                // and return early.
-                                ctx.emit(DrivePanelEvent::OpenSharedObjectsCreationDeniedModal(
-                                    DriveObjectType::Notebook {
-                                        is_ai_document: false,
-                                    },
-                                    team_uid,
-                                ));
-                                return;
                             }
                         }
                         CloudObjectTypeAndId::Workflow(_) => {
                             if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1)
                             {
-                                // If team has reached the limit for workflows, show the modal
-                                // and return early.
-                                ctx.emit(DrivePanelEvent::OpenSharedObjectsCreationDeniedModal(
-                                    DriveObjectType::Workflow,
-                                    team_uid,
-                                ));
-                                return;
                             }
                         }
                         _ => (),

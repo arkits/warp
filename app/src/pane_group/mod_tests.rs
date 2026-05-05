@@ -36,7 +36,6 @@ use crate::{
     notebooks::{
         editor::keys::NotebookKeybindings, manager::NotebookManager, notebook::NotebookView,
     },
-    pricing::PricingInfoModel,
     resource_center::TipsCompleted,
     search::files::model::FileSearchModel,
     server::{
@@ -87,8 +86,6 @@ use ai::{
     project_context::model::ProjectContextModel,
 };
 use pathfinder_geometry::rect::RectF;
-use crate::terminal::shared_session;
-use crate::terminal::shared_session::permissions_manager::SessionPermissionsManager;
 use warpui::windowing::{state::ApplicationStage, WindowManager};
 use warpui::{
     platform::{WindowBounds, WindowStyle},
@@ -154,7 +151,6 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|ctx| {
         AIRequestUsageModel::new_for_test(ServerApiProvider::as_ref(ctx).get_ai_client(), ctx)
     });
-    app.add_singleton_model(SessionPermissionsManager::new);
     app.add_singleton_model(LLMPreferences::new);
     #[cfg(feature = "voice_input")]
     app.add_singleton_model(voice_input::VoiceInput::new);
@@ -177,7 +173,6 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| WorkspaceRegistry::new());
     app.add_singleton_model(UndoCloseStack::new);
     app.add_singleton_model(|_| IgnoredSuggestionsModel::new(vec![]));
-    app.add_singleton_model(|_| PricingInfoModel::new());
     app.add_singleton_model(AIDocumentModel::new);
     app.add_singleton_model(|_| History::new(vec![]));
     app.add_singleton_model(|_| GitHubAuthNotifier::new());
@@ -1032,236 +1027,12 @@ fn test_initial_widths_are_computed_correctly() {
     });
 }
 
-#[cfg(any())]
-#[test]
-fn test_is_terminal_pane_being_shared() {
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
 
-        let pane_group = mock_pane_group(&mut app, Default::default());
-        pane_group.update(&mut app, |panes, ctx| {
-            assert!(!panes.is_terminal_pane_being_shared(ctx));
 
-            // Add another pane; the pane group should still be "unshared".
-            panes.add_terminal_pane(Direction::Left, None, ctx);
-            assert!(!panes.is_terminal_pane_being_shared(ctx));
-
-            // Make one of the terminal panes shared. There is now at least one terminal pane being shared.
-            panes
-                .terminal_session_by_pane_index(0)
-                .expect("terminal pane exists")
-                .terminal_manager(ctx)
-                .as_ref(ctx)
-                .model()
-                .lock()
-                .set_shared_session_status(SharedSessionStatus::ActiveSharer);
-            assert!(panes.is_terminal_pane_being_shared(ctx));
-        });
-    });
-}
-
-#[cfg(any())]
-#[test]
-fn test_number_of_shared_panes() {
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
-        let pane_group = mock_pane_group(&mut app, Default::default());
-
-        pane_group.update(&mut app, |panes, ctx| {
-            // We have two terminal sessions. Neither is shared
-            let first_pane_id = get_newly_created_pane_id(panes, &[]);
-            panes.add_terminal_pane(Direction::Up, None, ctx);
-            assert_eq!(panes.number_of_shared_sessions(ctx), 0);
-
-            // Make one pane shared
-            panes
-                .terminal_manager(0, ctx)
-                .unwrap()
-                .as_ref(ctx)
-                .model()
-                .lock()
-                .set_shared_session_status(SharedSessionStatus::ActiveSharer);
-            assert_eq!(panes.number_of_shared_sessions(ctx), 1);
-
-            // Make both panes shared
-            panes
-                .terminal_manager(1, ctx)
-                .unwrap()
-                .as_ref(ctx)
-                .model()
-                .lock()
-                .set_shared_session_status(SharedSessionStatus::ActiveSharer);
-            assert_eq!(panes.number_of_shared_sessions(ctx), 2);
-
-            // Close a pane
-            panes.close_pane(first_pane_id, ctx);
-            assert_eq!(panes.number_of_shared_sessions(ctx), 1);
-        });
-    });
-}
-
-#[cfg(any())]
-#[test]
-fn test_start_shared_session_from_modal() {
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
-        let pane_group = mock_pane_group(&mut app, Default::default());
-
-        pane_group.update(&mut app, |pane_group, ctx| {
-            let terminal_pane = pane_group.terminal_session_by_pane_index(0).unwrap();
-            let terminal_pane_id = terminal_pane.terminal_pane_id();
-            let terminal_model = terminal_pane.terminal_manager(ctx).as_ref(ctx).model();
-
-            assert!(matches!(
-                terminal_model.lock().shared_session_status(),
-                SharedSessionStatus::NotShared
-            ));
-
-            pane_group.open_share_session_modal(
-                terminal_pane_id,
-                SharedSessionActionSource::PaneHeader,
-                ctx,
-            );
-            assert!(pane_group.terminal_with_open_share_session_modal.is_some());
-            assert_eq!(
-                pane_group
-                    .share_session_modal
-                    .as_ref(ctx)
-                    .terminal_pane_id(),
-                Some(terminal_pane_id)
-            );
-
-            pane_group.handle_share_session_modal_event(
-                &ShareSessionModalEvent::StartSharing {
-                    terminal_pane_id,
-                    scrollback_type: SharedSessionScrollbackType::None,
-                    source: SharedSessionActionSource::PaneHeader,
-                },
-                ctx,
-            );
-            assert!(pane_group.terminal_with_open_share_session_modal.is_none());
-            assert!(matches!(
-                terminal_model.lock().shared_session_status(),
-                SharedSessionStatus::SharePending
-            ));
-        });
-
-        // Wait for one tick of the event loop for the share to be started.
-        pane_group.read(&app, |pane_group, ctx| {
-            let terminal_view = pane_group
-                .terminal_view_at_pane_index(0, ctx)
-                .unwrap()
-                .to_owned();
-            let model = terminal_view.as_ref(ctx).model.lock();
-            assert!(matches!(
-                model.shared_session_status(),
-                SharedSessionStatus::ActiveSharer
-            ));
-
-            let manager = shared_session::manager::Manager::as_ref(ctx);
-            let shared_views = manager.shared_views(ctx).collect_vec();
-            assert_eq!(shared_views.len(), 1);
-            assert_eq!(shared_views[0].id(), terminal_view.id());
-
-            let terminal_pane = pane_group.terminal_session_by_pane_index(0).unwrap();
-            assert!(terminal_pane
-                .pane_view()
-                .as_ref(ctx)
-                .header()
-                .as_ref(ctx)
-                .has_shareable_object(ctx));
-        });
-    });
-}
 
 /// TODO: look into moving this test somewhere more suitable.
 /// Currently, the pane group is responsible for creating and owning
 /// the terminal manager, which in turn owns the Network model for the share.
-#[cfg(any())]
-#[test]
-fn test_stop_shared_session() {
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
-        let pane_group = mock_pane_group(&mut app, Default::default());
-
-        // Start the shared session.
-        pane_group.update(&mut app, |pane_group, ctx| {
-            let terminal_pane = pane_group.terminal_session_by_pane_index(0).unwrap();
-            terminal_pane
-                .terminal_manager(ctx)
-                .update(ctx, |terminal_manager, ctx| {
-                    let terminal_view = terminal_manager.view();
-                    terminal_view.update(ctx, |terminal_view, ctx| {
-                        terminal_view.attempt_to_share_session(
-                            SharedSessionScrollbackType::None,
-                            None,
-                            SessionSourceType::default(),
-                            false,
-                            ctx,
-                        );
-                    });
-                })
-        });
-
-        // Wait for one tick of the event loop for the share to be started.
-        pane_group.read(&app, |pane_group, ctx| {
-            let terminal_model = pane_group
-                .terminal_session_by_pane_index(0)
-                .unwrap()
-                .to_owned()
-                .terminal_manager(ctx)
-                .as_ref(ctx)
-                .model();
-            assert!(matches!(
-                terminal_model.lock().shared_session_status(),
-                SharedSessionStatus::ActiveSharer
-            ));
-        });
-
-        // Stop the shared session.
-        pane_group.update(&mut app, |pane_group, ctx| {
-            let terminal_pane = pane_group.terminal_session_by_pane_index(0).unwrap();
-            terminal_pane
-                .terminal_manager(ctx)
-                .update(ctx, |terminal_manager, ctx| {
-                    let terminal_view = terminal_manager.view();
-                    terminal_view.update(ctx, |terminal_view, ctx| {
-                        terminal_view
-                            .stop_sharing_session(SharedSessionActionSource::PaneHeader, ctx);
-                    });
-                });
-        });
-
-        // Ensure the state is correct after stopping.
-        pane_group.update(&mut app, |pane_group, ctx| {
-            let terminal_pane = pane_group.terminal_session_by_pane_index(0).unwrap();
-            let terminal_manager = terminal_pane
-                .terminal_manager(ctx)
-                .as_ref(ctx)
-                .as_any()
-                .downcast_ref::<TerminalManager>()
-                .unwrap();
-            let terminal_model = terminal_pane.terminal_manager(ctx).as_ref(ctx).model();
-
-            assert!(terminal_manager.session_sharer().borrow().is_none());
-            assert!(matches!(
-                terminal_model.lock().shared_session_status(),
-                SharedSessionStatus::NotShared
-            ));
-
-            let manager = shared_session::manager::Manager::as_ref(ctx);
-            let shared_views = manager.shared_views(ctx).collect_vec();
-            assert!(shared_views.is_empty());
-
-            assert!(!terminal_pane
-                .pane_view()
-                .as_ref(ctx)
-                .header()
-                .as_ref(ctx)
-                .has_shareable_object(ctx));
-        });
-    });
-}
 
 #[test]
 fn test_navigation_skips_hidden_closed_panes() {

@@ -34,7 +34,6 @@ mod pending_user_query;
 pub(crate) mod plugin_instructions_block;
 pub mod rich_content;
 mod shell_terminated_banner;
-mod shared_session;
 pub mod ssh_file_upload;
 pub(crate) mod ssh_remote_server_choice_view;
 pub(crate) mod ssh_remote_server_failed_banner;
@@ -1078,8 +1077,6 @@ struct InlineBannersState {
 
     alias_expansion_banner: AliasExpansionBanner,
 
-    shared_session_banner_state: SharedSessionBanners,
-
     /// Information for a banner which notifies the user that the
     /// shell process has terminated, or None if there is no
     /// banner to display.
@@ -1116,35 +1113,6 @@ impl InlineBannersState {
     }
 }
 
-/// Banners that we include in the blocklist to delimit
-/// the start and endpoints of the shared session status, if any.
-#[derive(Copy, Clone, Default)]
-pub enum SharedSessionBanners {
-    /// There aren't any shared session banners.
-    #[default]
-    None,
-
-    /// This session is currently being shared, so
-    /// we only have a started banner.
-    ActiveShare {
-        started_banner_id: InlineBannerId,
-        started_at: DateTime<Local>,
-        is_remote_control: bool,
-    },
-
-    /// This session is not actively being shared, but
-    /// it was shared at some point, so we have start and
-    /// end banners.
-    LastShared {
-        started_banner_id: InlineBannerId,
-        started_at: DateTime<Local>,
-        is_remote_control: bool,
-
-        ended_banner_id: InlineBannerId,
-        ended_at: DateTime<Local>,
-    },
-}
-
 /// Helper struct for creating SizeUpdates.
 #[derive(Debug)]
 struct SizeUpdateBuilder {
@@ -1163,25 +1131,6 @@ impl SizeUpdateBuilder {
         // Refreshing doesn't actually change pane size or content element size.
         Self {
             update_reason: SizeUpdateReason::Refresh,
-            last_size,
-            new_pane_size_px: last_size.pane_size_px(),
-        }
-    }
-
-    fn for_shared_session_update(last_size: SizeInfo, num_rows: usize, num_cols: usize) -> Self {
-        // Shared session updates don't change the actual pane / content sizes.
-        Self {
-            update_reason: SizeUpdateReason::SharerSizeChanged { num_rows, num_cols },
-            last_size,
-            new_pane_size_px: last_size.pane_size_px(),
-        }
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
-    fn for_viewer_size_report(last_size: SizeInfo, num_rows: usize, num_cols: usize) -> Self {
-        // Viewer size reports don't change the sharer's actual pane size.
-        Self {
-            update_reason: SizeUpdateReason::ViewerSizeReported { num_rows, num_cols },
             last_size,
             new_pane_size_px: last_size.pane_size_px(),
         }
@@ -1211,34 +1160,12 @@ impl SizeUpdateBuilder {
             ctx,
         );
 
-        // Capture the pane-computed natural size before shared session adjustments.
-        let natural_rows = new_size.rows;
-        let natural_cols = new_size.columns;
-
-        let new_size = match self.update_reason {
-            SizeUpdateReason::SharerSizeChanged { num_rows, num_cols } => {
-                // For a shared session viewer, we want to use the larger
-                // of our own size and the sharer's size. So we adjust
-                // the number of rows and columns to be the greater
-                // of our own and the sharer's.
-                let rows = num_rows.max(new_size.rows);
-                let cols = num_cols.max(new_size.columns);
-                new_size.with_rows_and_columns(rows, cols)
-            }
-            SizeUpdateReason::ViewerSizeReported { num_rows, num_cols } => {
-                // Use the viewer's reported size directly so the PTY
-                // matches the viewer's viewport (floored at 1).
-                new_size.with_rows_and_columns(num_rows.max(1), num_cols.max(1))
-            }
-            _ => {
-                if let Some((viewer_rows, viewer_cols)) = view.active_viewer_driven_size {
-                    // Sharer honoring a viewer's reported size: use the viewer's
-                    // dimensions so AfterLayout doesn't override back to the sharer's natural size.
-                    new_size.with_rows_and_columns(viewer_rows.max(1), viewer_cols.max(1))
-                } else {
-                    new_size
-                }
-            }
+        let new_size = if let Some((viewer_rows, viewer_cols)) = view.active_viewer_driven_size {
+            // Sharer honoring a viewer's reported size: use the viewer's
+            // dimensions so AfterLayout doesn't override back to the sharer's natural size.
+            new_size.with_rows_and_columns(viewer_rows.max(1), viewer_cols.max(1))
+        } else {
+            new_size
         };
 
         // Adjust the gap size to maintain the model invariant that the height of the
@@ -1301,8 +1228,6 @@ impl SizeUpdateBuilder {
             last_size: self.last_size,
             new_size,
             new_gap_height,
-            natural_rows,
-            natural_cols,
         }
     }
 }
@@ -1376,8 +1301,6 @@ pub enum ContextMenuAction {
     OpenConversationShareDialog {
         conversation_id: AIConversationId,
     },
-    OpenShareSessionModal,
-    StopSharing,
     /// Copy the AI block prompt text
     CopyAIBlockQuery {
         ai_block_view_id: EntityId,
@@ -1477,9 +1400,7 @@ impl fmt::Debug for ContextMenuAction {
             EditCLIAgentToolbar => f.write_str("EditCLIAgentToolbar"),
             AskAI(_) => f.write_str("AskAIAssistant"),
             OpenWorkflowModal => f.write_str("OpenWorkflowModal"),
-            OpenShareSessionModal => f.write_str("OpenShareSessionModal"),
             CopyBlockFilteredOutputs => f.write_str("CopyBlockFilteredOutput"),
-            StopSharing => f.write_str("StopSharing"),
             CopyAIDebuggingLink { .. } => f.write_str("CopyAIDebuggingLink"),
             CopyAIBlockQuery { .. } => f.write_str("CopyAIBlockPrompt"),
             CopyAIBlockOutput { .. } => f.write_str("CopyAIBlockOutput"),
@@ -6563,14 +6484,6 @@ impl TerminalView {
 
     pub fn insert_conversation_ended_tombstone(&mut self, _ctx: &mut ViewContext<Self>) {}
 
-    pub fn force_report_viewer_terminal_size(&mut self, _ctx: &mut ViewContext<Self>) {}
-
-    pub fn shared_session_presence_manager(
-        &self,
-    ) -> Option<ModelHandle<crate::terminal::shared_session::presence_manager::PresenceManager>> {
-        None
-    }
-
     pub fn ssh_file_upload(&self) -> &ViewHandle<FileUpload> {
         &self.ssh_file_upload
     }
@@ -7244,9 +7157,6 @@ impl TerminalView {
             }));
         }
 
-        self.model
-            .lock()
-            .send_write_to_pty_events_for_shared_session(chars);
     }
 
     fn update_scroll_position_locking(
@@ -12123,7 +12033,6 @@ impl TerminalView {
                         EntrypointType::Onboarding {
                             chip_type: *chip_type,
                         },
-                        None,
                         ctx,
                     )
                 });
@@ -14371,12 +14280,6 @@ impl TerminalView {
     }
 
     fn resize_internal(&mut self, size_update: SizeUpdate, ctx: &mut ViewContext<Self>) {
-        // Viewer-driven sizing: report the viewer's natural size to the sharer.
-        // This runs before the early-return so the initial report on viewer join
-        // fires even when the pane size hasn't changed yet.
-        // The resize-reason check prevents loops (SharerSizeChanged is never re-reported).
-        self.maybe_report_viewer_terminal_size(&size_update, ctx);
-
         // If this isn't an actionable resize, there's nothing to do.
         if !(size_update.anything_changed() || size_update.is_refresh()) {
             return;
@@ -14412,16 +14315,6 @@ impl TerminalView {
 
         // Notify subscribers.
         ctx.emit(Event::Resize { size_update });
-    }
-
-    /// If we're a viewer eligible for viewer-driven sizing, report our natural
-    /// terminal size to the sharer — but only when the resize was NOT caused by
-    /// the sharer (which would create a loop).
-    fn maybe_report_viewer_terminal_size(
-        &mut self,
-        _size_update: &SizeUpdate,
-        _ctx: &mut ViewContext<Self>,
-    ) {
     }
 
     /// This handler is called after *every* terminal view layout with the
@@ -19853,12 +19746,7 @@ impl TerminalView {
             InputEvent::OpenPluginInstructionsPane(agent, kind) => {
                 ctx.emit(Event::OpenPluginInstructionsPane(*agent, *kind));
             }
-            InputEvent::StartRemoteControl => {
-                log::warn!("Remote control is unavailable in local-first mode");
-            }
-            // Shared session events are no-ops in local-first mode.
-            InputEvent::OpenShareSessionModal
-            | InputEvent::EditorUpdated { .. }
+            InputEvent::EditorUpdated { .. }
             | InputEvent::SendAgentPrompt { .. }
             | InputEvent::CancelSharedSessionConversation { .. } => {}
         }
@@ -21859,7 +21747,6 @@ impl TerminalView {
             ),
             selection_range,
             block_banner,
-            self.inline_banners_state.shared_session_banner_state,
             self.input_size_at_last_frame(app).unwrap_or_default(),
             self.inline_menu_positioner.clone(),
             None,
@@ -22575,8 +22462,7 @@ impl TerminalView {
                     }
                 }
             }
-            // Shared session actions are no-ops in local-first mode.
-            OpenShareSessionModal | StopSharing => {}
+
         }
     }
 
@@ -23915,8 +23801,6 @@ impl TypedActionView for TerminalView {
             | AliasExpansionBanner(_)
             | VimModeBanner(_)
             | InsertMostRecentCommandCorrection
-            | StopSharingCurrentSession { .. }
-            | RequestSharedSessionRole(_)
             | OnboardingFlow(_)
             | ImportSettings
             | DragAndDropFiles(_)
@@ -23982,11 +23866,6 @@ impl TypedActionView for TerminalView {
             | OpenWorkflowModalForAIWorkflow(_)
             | OpenWorkflowModalForBlock(_)
             | OpenWorkflowModalWithCloudWorkflow(_)
-            | OpenShareSessionModal { .. }
-            | OpenSharedSessionViewerRoleMenu
-            | CopySharedSessionLink { .. }
-            | OpenSharedSessionOnDesktop { .. }
-            | MakeAllParticipantsReaders { .. }
             | AskAIAssistant { .. }
             | ToggleSnackbarInActivePane
             | SetInputModeAgent
@@ -25077,14 +24956,7 @@ impl TypedActionView for TerminalView {
                     self.open_cli_agent_rich_input(CLIAgentInputEntrypoint::CtrlG, ctx);
                 }
             }
-            // Shared session actions are no-ops in local-first mode.
-            OpenShareSessionModal { .. }
-            | StopSharingCurrentSession { .. }
-            | CopySharedSessionLink { .. }
-            | MakeAllParticipantsReaders { .. }
-            | OpenSharedSessionViewerRoleMenu
-            | RequestSharedSessionRole(_)
-            | OpenSharedSessionOnDesktop { .. } => {}
+
         }
     }
 }

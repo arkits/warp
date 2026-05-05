@@ -1,5 +1,4 @@
 use crate::auth::AuthStateProvider;
-use crate::pricing::PricingInfoModel;
 use crate::ui_components::blended_colors;
 use crate::ui_components::icons::Icon;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -11,7 +10,6 @@ use pathfinder_geometry::vector::vec2f;
 use thousands::Separable;
 use warp_core::ui::appearance::Appearance;
 use warp_core::ui::theme::Fill;
-use warp_graphql::billing::StripeSubscriptionPlan;
 use warpui::elements::{
     Align, CacheOption, ChildAnchor, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
     DropShadow, Expanded, Flex, FormattedTextElement, HighlightedHyperlink, Image,
@@ -167,17 +165,15 @@ impl CloudAgentCapacityModal {
             .with_child(Container::new(subtitle).with_margin_bottom(16.).finish());
 
         if can_upgrade {
-            let (target_plan, agent_multiplier, extra_benefits) = match customer_type {
+            let (agent_multiplier, extra_benefits) = match customer_type {
                 CustomerType::Build | CustomerType::BuildMax => {
-                    (StripeSubscriptionPlan::BuildBusiness, "2x", vec!["SSO"])
+                    ("2x", vec!["SSO"])
                 }
                 // Free tier or a legacy plan.
-                _ => (StripeSubscriptionPlan::Build, "5x", vec![]),
+                _ => ("5x", vec![]),
             };
 
-            let plan_pricing = PricingInfoModel::handle(app)
-                .as_ref(app)
-                .plan_pricing(&target_plan);
+            let plan_pricing: Option<&warp_graphql::billing::PlanPricing> = None;
 
             // Pricing text based on plan type and actual pricing
             let pricing_text = if customer_type == CustomerType::Free {

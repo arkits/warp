@@ -9,9 +9,7 @@ use crate::ai::blocklist::agent_view::agent_input_footer::{
     AgentInputFooter, AgentInputFooterEvent,
 };
 use crate::terminal::cli_agent_sessions::{CLIAgentInputEntrypoint, CLIAgentSessionsModel};
-use crate::terminal::shared_session::{SharedSessionActionSource, SharedSessionScrollbackType};
 use base64::Engine;
-use session_sharing_protocol::sharer::SessionSourceType;
 use warpui::clipboard::{ClipboardContent, ImageData};
 mod warpify_footer;
 
@@ -230,12 +228,6 @@ impl TerminalView {
             }
             UseAgentToolbarEvent::ToggleFileExplorer(cli_agent) => {
                 self.toggle_file_tree(Some((*cli_agent).into()), ctx);
-            }
-            UseAgentToolbarEvent::StartRemoteControl { .. } => {
-                log::warn!("Remote control is unavailable in local-first mode");
-            }
-            UseAgentToolbarEvent::StopRemoteControl => {
-                log::warn!("Remote control is unavailable in local-first mode");
             }
             UseAgentToolbarEvent::OpenRichInput => {
                 if self.has_active_cli_agent_input_session(ctx) {
@@ -1162,12 +1154,6 @@ pub enum UseAgentToolbarEvent {
     ToggleCodeReviewPane(CLIAgent),
     /// Toggle the file explorer (from CLI agent view).
     ToggleFileExplorer(CLIAgent),
-    /// Start remote control (one-click share without modal).
-    StartRemoteControl {
-        scrollback_type: SharedSessionScrollbackType,
-    },
-    /// Stop remote control (stop the active shared session).
-    StopRemoteControl,
     /// Open the rich input editor for composing a prompt.
     OpenRichInput,
     /// Hide the rich input editor (same as Escape).

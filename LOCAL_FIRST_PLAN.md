@@ -10,6 +10,38 @@ Phase 1a progress:
 - User-visible session-sharing entry points have been removed or made inert: terminal command-palette bindings, pane-header menu items, Drive menu item, `/remote-control`, root shared-session actions, and `warp://shared_session` URI parsing.
 - The session-sharing server URL override has been removed from CLI args/env parsing, channel config, and child-process environment propagation.
 - The original shared-session implementation files have been deleted, with a temporary no-op compatibility layer still present under `app/src/terminal/shared_session/` and `app/src/terminal/view/shared_session/` while remaining call sites are unwound.
+- **Recent:** Unwound additional call sites and removed dead code:
+  - Deleted `app/src/terminal/view/shared_session/` (completely unused adapter module).
+  - Deleted unused submodules from `app/src/terminal/shared_session/`: `participant_avatar_view`, `render_util`, `role_change_modal`, `viewer/`.
+  - Removed `SharedSessionBanners` and all related banner state/rendering code from `terminal/view.rs` and `terminal/block_list_element.rs`.
+  - Removed `PresenceManager`, `presence_avatars`, and `text_selection_color` references from `terminal/block_list_element.rs`.
+  - Removed shared-session size update logic: deleted `SharerSizeChanged` and `ViewerSizeReported` from `SizeUpdateReason`, removed `for_shared_session_update`, `for_viewer_size_report`, `maybe_report_viewer_terminal_size`, `force_report_viewer_terminal_size`, and `natural_rows`/`natural_cols` from `SizeUpdate`.
+  - Removed `send_write_to_pty_events_for_shared_session` from `terminal/model/terminal_model.rs` and `terminal/view.rs`.
+  - Removed `shared_session_presence_manager` from `TerminalView` and its usage in `ai/blocklist/block/view_impl.rs`.
+  - Simplified `workspace/view.rs`: `is_shared_session_viewer_focused`, `is_readonly_shared_session_active`, and shared-session tab-bar checks now return `false` without referencing the shared session module.
+  - Removed `copy_shared_session_link` helper and `SessionPermissionsManager` subscription from `terminal/universal_developer_input.rs`.
+  - **COMPLETED:** The entire `app/src/terminal/shared_session/` compatibility layer has been deleted (all 9 remaining files).
+  - **COMPLETED:** The entire `app/src/terminal/view/shared_session/` adapter module has been deleted.
+  - Removed `SharedSessionActionSource`, `SharedSessionScrollbackType`, and all shared-session action variants from `TerminalAction`, `ContextMenuAction`, `InputEvent`, `UseAgentToolbarEvent`, and `WorkspaceAction` enums.
+  - Removed all shared-session match arms and handlers across `terminal/view.rs`, `terminal/input.rs`, `workspace/view.rs`, `workspace/action.rs`, `terminal/view/use_agent_footer/mod.rs`, and `terminal/view/action.rs`.
+  - Removed `shared_session_response_initiator` and all `participant_id` shared-session plumbing from `ai/blocklist/controller.rs` and `ai/blocklist/controller/slash_command.rs`.
+  - Removed `shared_session_state` module from `ai/blocklist/controller/`.
+  - Removed `shared_session_status` field usage from `ai/blocklist/block/view_impl/output.rs`.
+  - Removed `is_shared_session_viewer()` method and all call sites from `ai/blocklist/action_model/execute.rs`.
+  - Removed `shared_session_status`, `set_shared_session_status`, and `is_shared_session_viewer` methods from `terminal/model/terminal_model.rs`.
+  - Removed `is_reader()` and `is_viewer()` checks from `terminal/universal_developer_input.rs`, `terminal/alt_screen/alt_screen_element.rs`, `terminal/profile_model_selector.rs`, `workspace/view/wasm_view.rs`, and `ai/blocklist/agent_view/agent_message_bar.rs`.
+  - Removed all shared-session-related test code from `workspace/view_test.rs`, `pane_group/mod_tests.rs`, `terminal/input_test.rs`, `test_util/terminal.rs`, `drive/index_test.rs`, `pane_group/pane/view/header/mod_test.rs`, and `ai/ambient_agents/spawn_tests.rs`.
+  - Code compiles with zero errors (warnings only).
+  - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
+
+Phase 1c progress:
+- **COMPLETED:** Deleted `app/src/billing/` and `app/src/pricing/mod.rs`, and removed their module declarations from `app/src/lib.rs`.
+- Removed `PricingInfoModel` singleton registration from app startup and test setup helpers.
+- Removed pricing subscriptions and plan-price lookups from onboarding, teams settings, billing/usage views, buy-credits UI, auto-reload UI, and plan/capacity modals.
+- Replaced addon credit option lists with empty local data so deleted pricing metadata is no longer required.
+- Stopped ingesting `pricing_info` from workspace metadata into a deleted pricing singleton.
+- Removed the shared-object creation denied event path that opened the deleted billing modal.
+- Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
 
 ---
 

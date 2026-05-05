@@ -18,7 +18,6 @@ use crate::auth::auth_view_modal::AuthViewVariant;
 use crate::auth::{AuthStateProvider, UserUid};
 use crate::menu::{self, Menu, MenuItem, MenuItemFields};
 use crate::modal::{Modal, ModalEvent, ModalViewState};
-use crate::pricing::PricingInfoModel;
 use crate::view_components::ToastFlavor;
 use crate::workspaces::team::{MembershipRole, TeamDeleteDisabledReason};
 use crate::{
@@ -437,7 +436,6 @@ pub struct TeamsPageView {
     // ModelHandle<UserWorkspaces>. That's because eventually we'll be handling more than one workspace.
     user_workspaces: ModelHandle<UserWorkspaces>,
     ai_request_usage_model: ModelHandle<AIRequestUsageModel>,
-    pricing_info_model: ModelHandle<PricingInfoModel>,
     cloud_model: ModelHandle<CloudModel>,
     invite_view: TeamsInviteOption,
     team_members_mouse_state_handles: Vec<MouseStateHandle>,
@@ -669,8 +667,6 @@ impl TeamsPageView {
             me.update_approved_domains_state(ctx);
         });
 
-        let pricing_info_model = PricingInfoModel::handle(ctx);
-
         let appearance = Appearance::as_ref(ctx);
         let font_size = appearance.ui_font_size();
         let create_team_editor = Self::editor(
@@ -809,7 +805,6 @@ impl TeamsPageView {
             },
             user_workspaces,
             ai_request_usage_model: AIRequestUsageModel::handle(ctx),
-            pricing_info_model,
             cloud_model,
             invite_view: TeamsInviteOption::default(),
             team_members_mouse_state_handles,
@@ -1757,23 +1752,9 @@ struct TeamsWidget {
 
 impl TeamsWidget {
     /// Gets the per-seat costs (monthly and yearly) for the current team plan.
-    /// Returns None if pricing info is unavailable or the plan doesn't support per-seat pricing.
-    fn get_per_seat_costs(
-        &self,
-        team_metadata: &Team,
-        pricing_info_model: &PricingInfoModel,
-    ) -> Option<(f64, f64)> {
-        let stripe_subscription_plan = (&team_metadata.billing_metadata).try_into().ok()?;
-        let plan_pricing = pricing_info_model.plan_pricing(&stripe_subscription_plan)?;
-        let monthly_cost = plan_pricing.monthly_plan_price_per_month_usd_cents as f64 / 100.;
-        let yearly_cost = plan_pricing.yearly_plan_price_per_month_usd_cents as f64 * 12. / 100.;
-        Some((monthly_cost, yearly_cost))
-    }
-
     fn render_team_member_cost_info(
         &self,
-        team_metadata: &Team,
-        pricing_info_model: &PricingInfoModel,
+        _team_metadata: &Team,
         appearance: &Appearance,
         has_admin_permissions: bool,
     ) -> Box<dyn Element> {
@@ -1783,15 +1764,8 @@ impl TeamsWidget {
             "Your admin will be charged for a portion of the team member's usage of Warp."
         };
 
-        let additional_members_cost_money_msg = if let Some((monthly_cost, yearly_cost)) =
-            self.get_per_seat_costs(team_metadata, pricing_info_model)
-        {
-            format!("Additional members are billed at your plan's per-user rate: ${monthly_cost:.0}/month or ${yearly_cost:.0}/year, depending on your billing interval. {prorated_message}")
-        } else {
-            format!(
-                "Additional members are billed at your plan's per-user rate. {prorated_message}"
-            )
-        };
+        let additional_members_cost_money_msg =
+            format!("Additional members are billed at your plan's per-user rate. {prorated_message}");
 
         let horizontal_padding = 16.;
         let theme = appearance.theme();
@@ -2278,11 +2252,9 @@ impl TeamsWidget {
     ) -> Box<dyn Element> {
         let mut invitation_section = Flex::column();
 
-        let pricing_info_model = view.pricing_info_model.as_ref(app);
         if team_metadata.billing_metadata.is_on_stripe_paid_plan() {
             let pricing_alert = self.render_team_member_cost_info(
                 team_metadata,
-                pricing_info_model,
                 appearance,
                 has_admin_permissions,
             );

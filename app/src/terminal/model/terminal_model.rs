@@ -1189,20 +1189,6 @@ impl TerminalModel {
         self.is_dummy_cloud_mode_session
     }
 
-    pub fn shared_session_status(&self) -> &crate::terminal::shared_session::SharedSessionStatus {
-        &crate::terminal::shared_session::SharedSessionStatus::NotShared
-    }
-
-    pub fn set_shared_session_status(
-        &mut self,
-        _status: crate::terminal::shared_session::SharedSessionStatus,
-    ) {
-    }
-
-    pub fn is_shared_session_viewer(&self) -> bool {
-        false
-    }
-
     pub fn is_shared_ambient_agent_session(&self) -> bool {
         false
     }
@@ -1444,8 +1430,6 @@ impl TerminalModel {
             .active_block_mut()
             .set_agent_interaction_mode(agent_metadata);
     }
-
-    pub fn send_write_to_pty_events_for_shared_session(&mut self, _bytes: Vec<u8>) {}
 
     // Starts active block as a background block. Used in Alacritty integration tests to
     // work with the output grid directly.

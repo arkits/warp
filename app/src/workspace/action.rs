@@ -319,16 +319,6 @@ pub enum WorkspaceAction {
     #[cfg(target_family = "wasm")]
     OpenLinkOnDesktop(url::Url),
     ReopenClosedSession,
-    OpenShareSessionModal(usize),
-    StopSharingSessionFromTabMenu {
-        terminal_view_id: EntityId,
-    },
-    StopSharingAllSessionsInTab {
-        pane_group: WeakViewHandle<PaneGroup>,
-    },
-    CopySharedSessionLinkFromTab {
-        tab_index: usize,
-    },
     AddWindow,
     AddWindowWithShell {
         shell: AvailableShell,
@@ -670,7 +660,6 @@ impl From<&WorkspaceAction> for LoginGatedFeature {
             CreateTeamFolder => "Creating a team folder",
             CreateTeamEnvVarCollection => "Creating a team environment variable collection",
             CreateTeamAIPrompt => "Creating a team prompt",
-            OpenShareSessionModal(_) => "Sharing a session",
             _ => "Unknown reason",
         }
     }
@@ -687,7 +676,6 @@ impl WorkspaceAction {
                 | CreateTeamFolder
                 | CreateTeamEnvVarCollection
                 | CreateTeamAIPrompt
-                | OpenShareSessionModal(_)
         )
     }
 
@@ -862,10 +850,6 @@ impl WorkspaceAction {
             | SignupAnonymousUser
             | LogOut
             | OpenLink(_)
-            | OpenShareSessionModal(_)
-            | StopSharingSessionFromTabMenu { .. }
-            | StopSharingAllSessionsInTab { .. }
-            | CopySharedSessionLinkFromTab { .. }
             | ReopenClosedSession
             | FocusLeftPanel
             | FocusRightPanel

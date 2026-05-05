@@ -1,7 +1,6 @@
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentExchangeId;
 use crate::auth::AuthStateProvider;
-use crate::pricing::PricingInfoModel;
 use crate::server::server_api::ai::AIClient;
 use crate::settings::AISettings;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -571,15 +570,7 @@ impl AIRequestUsageModel {
         let at_monthly_limit =
             current_workspace.is_some_and(|w| w.is_at_addon_credits_monthly_limit());
 
-        let auto_reload_would_exceed = current_workspace
-            .and_then(|workspace| {
-                let options = PricingInfoModel::as_ref(ctx).addon_credits_options()?;
-                let price = workspace.get_auto_reload_price_cents(options)?;
-                Some(workspace.would_addon_purchase_reach_limit(price))
-            })
-            .unwrap_or(false);
-
-        if at_monthly_limit || auto_reload_would_exceed {
+        if at_monthly_limit {
             BuyCreditsBannerDisplayState::MonthlyLimitReached
         } else {
             BuyCreditsBannerDisplayState::Hidden

@@ -26,7 +26,6 @@ use crate::ai::request_usage_model::{
 use crate::auth::AuthStateProvider;
 use crate::features::FeatureFlag;
 use crate::menu::MenuItemFields;
-use crate::pricing::{PricingInfoModel, PricingInfoModelEvent};
 use crate::send_telemetry_from_ctx;
 use crate::server::ids::ServerId;
 use crate::server::telemetry::{OutOfCreditsBannerAction, TelemetryEvent};
@@ -63,14 +62,6 @@ impl BuyCreditsBanner {
     }
 
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
-        ctx.subscribe_to_model(&PricingInfoModel::handle(ctx), |me, _handle, event, ctx| {
-            #[allow(irrefutable_let_patterns)]
-            if let PricingInfoModelEvent::PricingInfoUpdated = event {
-                me.update_addon_credits_options(ctx);
-                ctx.notify();
-            }
-        });
-
         ctx.subscribe_to_model(
             &AIRequestUsageModel::handle(ctx),
             |_me, _handle, event, ctx| {
@@ -304,10 +295,7 @@ impl BuyCreditsBanner {
     }
 
     fn update_addon_credits_options(&mut self, ctx: &mut ViewContext<Self>) {
-        self.addon_credits_options = PricingInfoModel::as_ref(ctx)
-            .addon_credits_options()
-            .map(|opts| opts.to_vec())
-            .unwrap_or_default();
+        self.addon_credits_options.clear();
 
         let base_rate = self
             .addon_credits_options

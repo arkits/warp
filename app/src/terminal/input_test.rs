@@ -17,7 +17,6 @@ use crate::auth::auth_manager::AuthManager;
 use crate::auth::AuthStateProvider;
 use crate::changelog_model::ChangelogModel;
 use crate::cloud_object::model::persistence::CloudModel;
-use crate::pricing::PricingInfoModel;
 use crate::search::files::model::FileSearchModel;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
 use crate::terminal::input::slash_command_model::SlashCommandEntryState;
@@ -45,7 +44,6 @@ use crate::terminal::alt_screen_reporting::AltScreenReporting;
 use crate::terminal::event::BootstrappedEvent;
 use crate::terminal::keys::TerminalKeybindings;
 use crate::terminal::local_shell::LocalShellState;
-use crate::terminal::shared_session::permissions_manager::SessionPermissionsManager;
 use crate::workspaces::team_tester::TeamTesterStatus;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
@@ -139,7 +137,6 @@ pub fn initialize_app(app: &mut App) {
     app.add_singleton_model(AppTelemetryContextProvider::new_context_provider);
     app.add_singleton_model(AuthManager::new_for_test);
     app.add_singleton_model(LLMPreferences::new);
-    app.add_singleton_model(SessionPermissionsManager::new);
     app.add_singleton_model(DirectoryWatcher::new);
     app.add_singleton_model(|_| DetectedRepositories::default());
     app.add_singleton_model(|_| crate::code_review::git_status_update::GitStatusUpdateModel::new());
@@ -187,7 +184,6 @@ pub fn initialize_app(app: &mut App) {
     app.add_singleton_model(OneTimeModalModel::new);
     app.add_singleton_model(|_| WorkspaceRegistry::new());
     app.add_singleton_model(|_| ToastStack);
-    app.add_singleton_model(|_| PricingInfoModel::new());
     app.add_singleton_model(ByoLlmAuthBannerSessionState::new);
     app.add_singleton_model(|_| {
         crate::ai::ambient_agents::github_auth_notifier::GitHubAuthNotifier::new()
@@ -2636,7 +2632,6 @@ fn test_new_conversation_keybinding_requires_double_press_in_non_empty_agent_vie
                 controller.send_user_query_in_conversation(
                     "hello".to_owned(),
                     conversation_id,
-                    None,
                     ctx,
                 );
             });
@@ -2767,7 +2762,6 @@ fn test_new_conversation_input_trigger_remains_single_step_in_non_empty_agent_vi
                 controller.send_user_query_in_conversation(
                     "hello".to_owned(),
                     conversation_id,
-                    None,
                     ctx,
                 );
             });
