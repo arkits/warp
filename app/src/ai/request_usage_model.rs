@@ -466,10 +466,6 @@ impl AIRequestUsageModel {
         }
     }
 
-    pub fn bonus_grants(&self) -> &[BonusGrant] {
-        &self.bonus_grants
-    }
-
     /// Returns the total remaining ambient-only credits for the user.
     /// Returns None if the user has never received any ambient-only grants.
     pub fn ambient_only_credits_remaining(&self) -> Option<i32> {
@@ -498,13 +494,6 @@ impl AIRequestUsageModel {
             .filter(|grant| grant.expiration.is_none_or(|exp| now < exp))
             .map(|grant| grant.request_credits_remaining)
             .sum()
-    }
-
-    pub fn total_current_workspace_bonus_credits_remaining(&self, ctx: &AppContext) -> i32 {
-        UserWorkspaces::as_ref(ctx)
-            .current_workspace()
-            .map(|workspace| self.total_workspace_bonus_credits_remaining(workspace.uid))
-            .unwrap_or(0)
     }
 
     fn total_user_interactive_bonus_credits_remaining(&self) -> i32 {
