@@ -31,6 +31,7 @@ Phase 1a progress:
   - Removed `shared_session_status`, `set_shared_session_status`, and `is_shared_session_viewer` methods from `terminal/model/terminal_model.rs`.
   - Removed `is_reader()` and `is_viewer()` checks from `terminal/universal_developer_input.rs`, `terminal/alt_screen/alt_screen_element.rs`, `terminal/profile_model_selector.rs`, `workspace/view/wasm_view.rs`, and `ai/blocklist/agent_view/agent_message_bar.rs`.
   - Removed all shared-session-related test code from `workspace/view_test.rs`, `pane_group/mod_tests.rs`, `terminal/input_test.rs`, `test_util/terminal.rs`, `drive/index_test.rs`, `pane_group/pane/view/header/mod_test.rs`, and `ai/ambient_agents/spawn_tests.rs`.
+  - Removed leftover shared-session plumbing from the agent SDK: share options, no-op terminal share request handling, shared-session stdout events, driver error classification, and related tests.
   - Code compiles with zero errors (warnings only).
   - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
 

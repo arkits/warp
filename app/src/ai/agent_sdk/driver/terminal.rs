@@ -4,13 +4,11 @@ use std::{
     future::Future,
     path::PathBuf,
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
     time::Duration,
 };
 
 use futures::channel::oneshot;
-use warp_cli::share::ShareRequest;
 use warp_completer::completer::CommandOutput;
 use warp_core::command::ExitCode;
 use warp_util::path::ShellFamily;
@@ -35,36 +33,11 @@ use crate::ai::attachment_utils::attachments_download_dir;
 
 use super::AgentDriverError;
 
-/// Describes why an agent's session-sharing request failed.
-#[derive(Debug, thiserror::Error)]
-pub(crate) enum ShareSessionError {
-    /// Connection to the session-sharing server failed.
-    #[error("Internal error")]
-    Internal(#[source] Arc<anyhow::Error>),
-    /// The server rejected the session-sharing request.
-    #[error("{0}")]
-    Failed(String),
-    /// Session sharing is disabled for this user or team.
-    #[error(
-        "Session sharing is not enabled. This is likely because an administrator has disabled session sharing for your team."
-    )]
-    Disabled,
-    /// The session-sharing request timed out.
-    #[error("Timed out waiting for session sharing to start")]
-    Timeout,
-    /// The session-sharing channel was dropped before completing.
-    #[error("Session sharing was interrupted")]
-    Interrupted,
-}
-
 const TERMINAL_SESSION_BOOTSTRAP_TIMEOUT: Duration = Duration::from_secs(60);
-const TERMINAL_SESSION_SHARE_DELAY: Duration = Duration::from_secs(10);
-
 /// Options for creating the terminal view before constructing a [`TerminalDriver`].
 pub(crate) struct TerminalDriverOptions {
     pub working_dir: PathBuf,
     pub env_vars: HashMap<OsString, OsString>,
-    pub should_share: bool,
     pub task_id: Option<AmbientAgentTaskId>,
     pub conversation_restoration: Option<ConversationRestorationInNewPaneType>,
 }
@@ -84,10 +57,6 @@ pub(crate) enum TerminalDriverEvent {
 pub(crate) struct TerminalDriver {
     terminal_view: ViewHandle<TerminalView>,
     session_bootstrapped: Condition,
-    /// Receiver for the session sharing result. Present when sharing is expected
-    /// and `wait_for_session_shared` has not yet been called.
-    session_share_rx: Option<oneshot::Receiver<Result<(), ShareSessionError>>>,
-    pending_share_requests: Vec<ShareRequest>,
     waiting_command: Option<oneshot::Sender<ExitCode>>,
 
     /// State for the pending command we're expecting to start executing.
@@ -198,8 +167,6 @@ impl TerminalDriver {
         Self {
             terminal_view,
             session_bootstrapped,
-            session_share_rx: None,
-            pending_share_requests: Vec::new(),
             waiting_command: None,
             pending_command_start: None,
         }
@@ -218,18 +185,6 @@ impl TerminalDriver {
     ) {
         self.terminal_view.update(ctx, f);
     }
-
-    /// Request that the terminal session be shared with the given participants.
-    ///
-    /// Session sharing has been removed; this is a no-op.
-    pub fn add_share_requests(
-        &mut self,
-        _share_requests: impl IntoIterator<Item = ShareRequest>,
-        _ctx: &mut ModelContext<Self>,
-    ) {
-    }
-
-    fn apply_share_requests(&mut self, _ctx: &mut ModelContext<Self>) {}
 
     /// Submit `text` to the active CLI agent on the terminal PTY using the
     /// agent-specific submission strategy.
@@ -392,15 +347,6 @@ impl TerminalDriver {
                     AgentDriverError::BootstrapFailed
                 })
         }
-    }
-
-    /// Returns a future that resolves when (optional) session sharing has started.
-    ///
-    /// Session sharing has been removed; this always returns `Ok(())`.
-    pub fn wait_for_session_shared(
-        &mut self,
-    ) -> impl Future<Output = Result<(), AgentDriverError>> {
-        async move { Ok(()) }
     }
 }
 
