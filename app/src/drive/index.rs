@@ -4763,10 +4763,6 @@ impl View for DriveIndex {
 
         let mut drive = Flex::column();
 
-        // Only show the workspace picker if they are in multiple workspaces.
-        if FeatureFlag::MultiWorkspace.is_enabled() && workspaces.workspaces().len() > 1 {
-            drive.add_child(self.render_workspace_picker());
-        }
 
         match self.index_variant {
             DriveIndexVariant::MainIndex => {

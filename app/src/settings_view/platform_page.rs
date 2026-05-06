@@ -463,11 +463,6 @@ impl PlatformPageWidget {
             .add_child(Expanded::new(1., self.render_header_cell(appearance, "Name")).finish());
         header_row
             .add_child(Expanded::new(1., self.render_header_cell(appearance, "Key")).finish());
-        if FeatureFlag::TeamApiKeys.is_enabled() {
-            header_row.add_child(
-                Expanded::new(1., self.render_header_cell(appearance, "Scope")).finish(),
-            );
-        }
         header_row
             .add_child(Expanded::new(1., self.render_header_cell(appearance, "Created")).finish());
         header_row.add_child(
@@ -564,25 +559,6 @@ impl PlatformPageWidget {
             )
             .finish(),
         );
-        if FeatureFlag::TeamApiKeys.is_enabled() {
-            let scope_display = match key.scope {
-                ApiKeyScope::Personal => "Personal",
-                ApiKeyScope::Team => "Team",
-            };
-            row.add_child(
-                Expanded::new(
-                    1.,
-                    Container::new(
-                        Text::new_inline(scope_display, appearance.ui_font_family(), 12.)
-                            .with_color(appearance.theme().nonactive_ui_text_color().into())
-                            .finish(),
-                    )
-                    .with_padding(Padding::uniform(8.))
-                    .finish(),
-                )
-                .finish(),
-            );
-        }
         row.add_child(
             Expanded::new(
                 1.,

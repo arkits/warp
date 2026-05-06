@@ -691,8 +691,6 @@ fn check_cloud_notebooks(app: &mut App, number_of_notebooks: usize) {
 /// successfully update CloudModel.
 // TODO followup with a test equivalent for when the user is not team tester but still has teams?
 fn test_load_cloud_objects_on_initial_load_with_empty_cache() {
-    let _flag = FeatureFlag::KnowledgeSidebar.override_enabled(true);
-
     let personal_workflows = mock_random_workflows(100, Owner::mock_current_user());
     let personal_workflows_len = personal_workflows.len();
     let team_workflows = mock_random_workflows(
@@ -761,8 +759,6 @@ fn test_load_cloud_objects_on_initial_load_with_empty_cache() {
 
 #[test]
 fn test_loading_all_cloud_objects_after_switching_from_offline() {
-    let _flag = FeatureFlag::KnowledgeSidebar.override_enabled(true);
-
     let personal_workflows = mock_random_workflows(100, Owner::mock_current_user());
     let personal_workflows_len = personal_workflows.len();
     let team_workflows = mock_random_workflows(
@@ -888,8 +884,6 @@ fn test_loading_all_cloud_objects_after_switching_from_offline() {
 
 #[test]
 fn test_force_refresh_only_happens_once() {
-    let _flag = FeatureFlag::KnowledgeSidebar.override_enabled(true);
-
     App::test((), |mut app| async move {
         let mut cloud_objects_sequence = Sequence::new();
         let mut cloud_object_server_api_mock = base_mock_cloud_object_server_api();
@@ -937,8 +931,6 @@ fn test_force_refresh_only_happens_once() {
 
 #[test]
 fn test_force_refresh_correctly_resets_timestamp() {
-    let _flag = FeatureFlag::KnowledgeSidebar.override_enabled(true);
-
     App::test((), |mut app| async move {
         let mut cloud_objects_sequence = Sequence::new();
         let mut cloud_object_server_api_mock = base_mock_cloud_object_server_api();

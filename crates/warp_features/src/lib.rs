@@ -19,16 +19,11 @@ pub enum FeatureFlag {
     WelcomeTips,
     ThinStrokes,
     WelcomeBlock,
-    KnowledgeSidebar,
 
     RuntimeFeatureFlags,
 
     /// Enables cloud object related features for an explicit allowlist of team testers.
     CloudObjects,
-
-    /// If `true`, fetch updated Warp channel versions from the Warp server endpoint instead of
-    /// from GCP directly.
-    FetchChannelVersionsFromWarpServer,
 
     /// Does grid storage go forwards or backwards
     SequentialStorage,
@@ -60,9 +55,6 @@ pub enum FeatureFlag {
     /// Used to gate an experiment we're doing on WarpDev ONLY
     /// to get a sense of PTY throughput over time.
     RecordPtyThroughput,
-
-    /// Whether to fetch generic string objects from the server.
-    FetchGenericStringObjects,
 
     /// Enables a setting on Intel Dual-GPU Macs to enable use of the integrated GPU over the
     /// discrete GPU.
@@ -177,9 +169,6 @@ pub enum FeatureFlag {
     /// Enables cycling through the next command suggestions with down arrow.
     CycleNextCommandSuggestion,
 
-    /// Enables multi-workspace selection.
-    MultiWorkspace,
-
     /// Maximizes data in flat storage to reduce memory usage.
     MaximizeFlatStorage,
 
@@ -275,8 +264,6 @@ pub enum FeatureFlag {
 
     /// Enables reading images with the `read_files` tool.
     ReadImageFiles,
-
-    UsageBasedPricing,
 
     /// Enables cross-repo codebase context.
     CrossRepoContext,
@@ -573,9 +560,6 @@ pub enum FeatureFlag {
     /// Enables computer use functionality in local clients.
     LocalComputerUse,
 
-    /// Enables team API key creation in the API key management UI.
-    TeamApiKeys,
-
     /// Enables cloud conversation loading via the CLI --conversation flag.
     CloudConversations,
 
@@ -844,7 +828,6 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     FeatureFlag::AgentModeAnalytics,
     FeatureFlag::LazySceneBuilding,
     FeatureFlag::SshDragAndDrop,
-    FeatureFlag::MultiWorkspace,
     FeatureFlag::ImeMarkedText,
     FeatureFlag::MSYS2Shells,
     FeatureFlag::RetryTruncatedCodeResponses,

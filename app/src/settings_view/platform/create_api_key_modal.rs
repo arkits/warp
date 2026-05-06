@@ -10,7 +10,6 @@ use crate::{
 };
 use chrono::Utc;
 use pathfinder_geometry::vector::vec2f;
-use warp_core::features::FeatureFlag;
 use warpui::elements::{
     Border, ChildView, ConstrainedBox, Container, CornerRadius, Empty, Fill, Flex,
     MouseStateHandle, ParentElement, Radius, Text,
@@ -126,8 +125,7 @@ impl CreateApiKeyModal {
     pub fn new(ctx: &mut ViewContext<Self>) -> Self {
         let font_family = Appearance::as_ref(ctx).ui_font_family();
 
-        let has_team = FeatureFlag::TeamApiKeys.is_enabled()
-            && UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
+        let has_team = false;
 
         let name_editor = ctx.add_typed_action_view(|ctx| {
             let options = SingleLineEditorOptions {
@@ -337,8 +335,7 @@ impl CreateApiKeyModal {
     }
 
     fn update_has_team(&mut self, ctx: &mut ViewContext<Self>) {
-        let new_has_team = FeatureFlag::TeamApiKeys.is_enabled()
-            && UserWorkspaces::as_ref(ctx).current_team_uid().is_some();
+        let new_has_team = false;
 
         if new_has_team != self.has_team {
             self.has_team = new_has_team;
