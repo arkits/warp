@@ -1839,10 +1839,6 @@ impl RootView {
         true
     }
 
-    fn build_plan_yearly_price_cents(_ctx: &AppContext) -> Option<i32> {
-        None
-    }
-
     fn create_agent_onboarding_view(
         ctx: &mut ViewContext<Self>,
     ) -> ViewHandle<AgentOnboardingView> {
@@ -1861,8 +1857,6 @@ impl RootView {
                 .ai_autonomy_settings()
                 .has_any_overrides();
 
-            let agent_price_cents = Self::build_plan_yearly_price_cents(ctx);
-
             let auth_state = current_onboarding_auth_state(ctx);
 
             AgentOnboardingView::new(
@@ -1872,8 +1866,6 @@ impl RootView {
                 default_model_id,
                 workspace_enforces_autonomy,
                 FeatureFlag::AgentView.is_enabled(),
-                false, // FreeUserNoAi experiment removed (billing deleted)
-                agent_price_cents,
                 auth_state,
                 ctx,
             )

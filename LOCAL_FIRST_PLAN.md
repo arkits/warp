@@ -78,6 +78,17 @@ Phase 3a/3b progress:
 - Added a comment in `oss.rs` documenting `cargo build --bin warp-oss --features local`.
 - Code compiles with zero errors under both default and `--features local` (`cargo check --package warp && cargo check --package warp --features local`).
 
+Phase 1b test cleanup progress:
+- Fixed all test files broken by Phase 1b module deletions (28 files, 543 lines removed).
+- Removed `MockTeamClient`/`TeamClient` imports from 16 test files.
+- Updated `UserWorkspaces::mock` call sites from 4-arg to 3-arg form.
+- Updated `TeamUpdateManager::new` call sites to 2-arg form.
+- Fixed `workspaces::team::Team` → `workspaces::workspace::Team` in 2 files.
+- Removed `shared_session` module references from 3 test files.
+- Removed `RequestInput::shared_session_response_initiator` field from test struct literals.
+- Deleted tests exercising deleted cloud features: Uber team detection, offline workspace polling, SharedWithMe object migration.
+- `cargo test --package warp --no-run` compiles with zero errors.
+
 Phase 1b progress:
 - Removed the Teams settings page from settings registration and navigation.
 - Deleted the orphaned Teams settings implementation files: `app/src/settings_view/teams_page.rs` and `app/src/settings_view/tab_menu.rs`.
@@ -113,7 +124,7 @@ Phase 6 progress (incremental):
   - Removed `is_free_user_no_ai_experiment_active()` function from `experiments/mod.rs`.
   - Updated `root_view.rs` to pass `false` directly where the function was called.
   - Removed `TeamsChanged` handler that updated the free-user-no-ai experiment lock (now a no-op arm).
-  - The `FreeUserNoAiSlide` in `crates/onboarding/` remains as dead code — it never shows because the experiment flag is always false; cleanup deferred to a future slice.
+  - Deleted the dead `FreeUserNoAiSlide` from `crates/onboarding/`, removed the onboarding model flag that selected it, removed the dedicated upgrade telemetry event, and dropped the now-unused agent price badge plumbing.
 - Code compiles with zero errors after all cleanups.
 
 Phase 7 progress:

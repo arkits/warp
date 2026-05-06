@@ -103,7 +103,7 @@ impl OnboardingMainView {
             },
         ];
         let onboarding_view = ctx.add_typed_action_view(move |ctx| {
-            // agent_modality_enabled and no_ai_experiment are false for demo purposes
+            // agent_modality_enabled is false for demo purposes.
             AgentOnboardingView::new(
                 themes.clone(),
                 true,
@@ -111,8 +111,6 @@ impl OnboardingMainView {
                 default_model_id.clone(),
                 false,
                 false,
-                false,
-                None,
                 onboarding::OnboardingAuthState::LoggedOut,
                 ctx,
             )
