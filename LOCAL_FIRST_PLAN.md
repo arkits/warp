@@ -12,6 +12,7 @@ Incremental dead-code cleanup:
 - Slimmed the local-first `TeamUpdateManager` compatibility model after the last workspace-switching caller was removed.
 - Deleted unused team-management settings helpers: admin actions and the transfer-ownership confirmation modal.
 - Removed unused `UserWorkspaces` invite-link, discoverability, ownership-transfer, role-change, and team-invite handlers/events.
+- Removed the unused `pricing_info` field from `WorkspacesMetadataWithPricing`; remaining callers only carry workspace metadata.
 
 Phase 1a progress:
 - Shared-session feature flags have been removed from app startup registration and from `warp_features`: `CreatingSharedSessions`, `ViewingSharedSessions`, `SessionSharingAcls`, `SharedSessionWriteToLongRunningCommands`, `AgentSharedSessions`, and `HOARemoteControl`.

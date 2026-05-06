@@ -106,7 +106,6 @@ fn test_leaving_team_removes_objects() {
                     experiments: None,
                     feature_model_choices: None,
                 },
-                pricing_info: None,
             })
         });
 
@@ -175,7 +174,6 @@ fn test_leaving_team_removes_objects() {
                         experiments: None,
                         feature_model_choices: None,
                     },
-                    pricing_info: None,
                 }),
                 ctx,
             );
