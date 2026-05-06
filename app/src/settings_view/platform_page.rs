@@ -84,19 +84,10 @@ impl PlatformPageView {
                                 // Ensure the per-key expire button exists
                                 let uid = gql_key.uid.into_inner();
                                 me.ensure_expire_button_for_key(ctx, uid.clone());
-                                let scope = match gql_key.owner_type {
-                                    warp_graphql::object_permissions::OwnerType::User => {
-                                        ApiKeyScope::Personal
-                                    }
-                                    warp_graphql::object_permissions::OwnerType::Team => {
-                                        ApiKeyScope::Team
-                                    }
-                                };
                                 APIKeyProperties::new(
                                     uid,
                                     gql_key.name,
                                     gql_key.key_suffix,
-                                    scope,
                                     gql_key.created_at.utc(),
                                     gql_key.last_used_at.map(|t| t.utc()),
                                     gql_key.expires_at.map(|t| t.utc()),
@@ -211,15 +202,10 @@ impl PlatformPageView {
                 let uid = api_key.uid.clone().into_inner();
                 self.ensure_expire_button_for_key(ctx, uid.clone());
 
-                let scope = match api_key.owner_type {
-                    warp_graphql::object_permissions::OwnerType::User => ApiKeyScope::Personal,
-                    warp_graphql::object_permissions::OwnerType::Team => ApiKeyScope::Team,
-                };
                 let ui_key = APIKeyProperties::new(
                     uid,
                     api_key.name.clone(),
                     api_key.key_suffix.clone(),
-                    scope,
                     api_key.created_at.utc(),
                     api_key.last_used_at.map(|t| t.utc()),
                     api_key.expires_at.map(|t| t.utc()),
@@ -312,16 +298,9 @@ struct APIKeyProperties {
     uid: ApiKeyUid,
     name: String,
     key_suffix: String,
-    scope: ApiKeyScope,
     created_at: DateTime<Utc>,
     last_used_at: Option<DateTime<Utc>>,
     expires_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum ApiKeyScope {
-    Personal,
-    Team,
 }
 
 impl APIKeyProperties {
@@ -329,7 +308,6 @@ impl APIKeyProperties {
         uid: ApiKeyUid,
         name: impl Into<String>,
         key_suffix: impl Into<String>,
-        scope: ApiKeyScope,
         created_at: DateTime<Utc>,
         last_used_at: Option<DateTime<Utc>>,
         expires_at: Option<DateTime<Utc>>,
@@ -338,7 +316,6 @@ impl APIKeyProperties {
             uid,
             name: name.into(),
             key_suffix: key_suffix.into(),
-            scope,
             created_at,
             last_used_at,
             expires_at,
