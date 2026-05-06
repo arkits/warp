@@ -33,6 +33,7 @@ Phase 1a progress:
   - Removed all shared-session-related test code from `workspace/view_test.rs`, `pane_group/mod_tests.rs`, `terminal/input_test.rs`, `test_util/terminal.rs`, `drive/index_test.rs`, `pane_group/pane/view/header/mod_test.rs`, and `ai/ambient_agents/spawn_tests.rs`.
   - Removed leftover shared-session plumbing from the agent SDK: share options, no-op terminal share request handling, shared-session stdout events, driver error classification, and related tests.
   - Removed dead shared-session execution/block-list remnants: `NotExecutedReason::WaitingOnSharer`, shared-session scrollback loaders, and the subsequent-block secret-obfuscation helper that only existed for shared-session followups.
+  - Removed the hidden `should_confirm_shared_session_edit_access` session setting; the setting had no remaining call sites after edit-access sharing flows were deleted.
   - Code compiles with zero errors (warnings only).
   - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
 
