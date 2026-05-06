@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use warp_core::{channel::ChannelState, ui::appearance::Appearance};
+use warp_core::ui::appearance::Appearance;
 use warpui::{
     color::ColorU,
     ui_components::components::{UiComponent, UiComponentStyles},
@@ -8,9 +8,7 @@ use warpui::{
 };
 
 use crate::{
-    ai::{agent::conversation::AIConversationId, blocklist::BlocklistAIHistoryModel},
-    cloud_object::model::persistence::CloudModel,
-    server::{ids::ServerId, server_api::object::GuestIdentifier},
+    server::server_api::object::GuestIdentifier,
     ui_components::{
         avatar::{Avatar, AvatarContent},
         icons::Icon,
@@ -24,39 +22,6 @@ mod style;
 pub use warp_server_client::drive::sharing::{
     LinkSharingSubjectType, SharingAccessLevel, Subject, TeamKind, UserKind,
 };
-
-/// Identifier for an object that's shareable via the Warp Drive ACL model. Not all sharing in Warp
-/// is _currently_ tied into this model (e.g. block sharing).
-#[derive(Debug, Clone)]
-pub enum ShareableObject {
-    /// A shareable Warp Drive object.
-    WarpDriveObject(ServerId),
-    /// An AI conversation.
-    AIConversation(AIConversationId),
-}
-
-impl ShareableObject {
-    /// The canonical link to this object.
-    pub fn link(&self, app: &AppContext) -> Option<String> {
-        match self {
-            ShareableObject::WarpDriveObject(id) => CloudModel::as_ref(app)
-                .get_by_uid(&id.uid())
-                .and_then(|object| object.object_link()),
-            ShareableObject::AIConversation(id) => {
-                // Use the unified helper that checks both loaded conversation and historical metadata
-                BlocklistAIHistoryModel::as_ref(app)
-                    .get_server_conversation_metadata(id)
-                    .map(|m| {
-                        format!(
-                            "{}/conversation/{}",
-                            ChannelState::server_root_url(),
-                            m.server_conversation_token.as_str()
-                        )
-                    })
-            }
-        }
-    }
-}
 
 /// Whether not a shared object's contents are editable by the current user.
 ///

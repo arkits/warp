@@ -6,7 +6,7 @@ use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::blocklist::agent_view::AgentViewEntryOrigin;
 use crate::ai::document::ai_document_model::{AIDocumentSaveStatus, AIDocumentUserEditStatus};
 use crate::appearance::Appearance;
-use crate::drive::{items::WarpDriveItemId, sharing::ShareableObject, CloudObjectTypeAndId};
+use crate::drive::{items::WarpDriveItemId, CloudObjectTypeAndId};
 use crate::notebooks::editor::view::RichTextEditorConfig;
 use crate::pane_group::focus_state::PaneFocusHandle;
 use crate::pane_group::pane::view::header::components::{
@@ -544,13 +544,7 @@ impl AIDocumentView {
     }
 
     fn update_header_buttons(&mut self, ctx: &mut ViewContext<Self>) {
-        let server_id = AIDocumentModel::as_ref(ctx)
-            .get_current_document(&self.document_id)
-            .and_then(|doc| doc.sync_id)
-            .and_then(|sync_id| sync_id.into_server());
-
         self.pane_configuration.update(ctx, |pc, ctx| {
-            pc.set_shareable_object(server_id.map(ShareableObject::WarpDriveObject), ctx);
             pc.refresh_pane_header_overflow_menu_items(ctx);
         });
         ctx.notify();

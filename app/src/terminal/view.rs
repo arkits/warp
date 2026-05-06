@@ -240,7 +240,6 @@ use crate::context_chips::prompt::Prompt;
 use crate::context_chips::prompt_type::PromptType;
 use crate::context_chips::ContextChipKind;
 use crate::drive::settings::WarpDriveSettings;
-use crate::drive::sharing::ShareableObject;
 use crate::drive::CloudObjectTypeAndId;
 use crate::env_vars::{
     env_var_collection_block::{EnvVarCollectionBlock, EnvVarCollectionBlockEvent},
@@ -251,7 +250,6 @@ use crate::persistence::{self, FinishedCommandMetadata};
 use crate::safe_warn;
 use crate::server::cloud_objects::update_manager::UpdateManager;
 use crate::server::ids::{ObjectUid, SyncId};
-use crate::server::telemetry::SharingDialogSource;
 #[cfg(feature = "local_fs")]
 use crate::settings::import::model::ImportedConfigModel;
 use crate::settings::import::view::{SettingsImportEvent, SettingsImportView};
@@ -22335,13 +22333,8 @@ impl TerminalView {
                     request_id.as_str().to_string(),
                 ));
             }
-            OpenConversationShareDialog { conversation_id } => {
-                // Set the shareable object and open the sharing dialog via the pane header
-                let shareable_object = ShareableObject::AIConversation(*conversation_id);
-                self.pane_configuration.update(ctx, |pane_config, ctx| {
-                    pane_config.set_shareable_object(Some(shareable_object), ctx);
-                    pane_config.toggle_sharing_dialog(SharingDialogSource::AIBlockContextMenu, ctx);
-                });
+            OpenConversationShareDialog { .. } => {
+                log::warn!("Conversation sharing is unavailable in local-first mode");
             }
             CopyAgentCommand { ai_block_view_id } => {
                 for rich_content in self.rich_content_views.iter() {

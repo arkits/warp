@@ -26,10 +26,7 @@ use crate::{
         model::persistence::{CloudModel, CloudModelEvent},
         CloudObjectEventEntrypoint, Owner,
     },
-    drive::{
-        items::WarpDriveItemId,
-        sharing::{ContentEditability, ShareableObject},
-    },
+    drive::{items::WarpDriveItemId, sharing::ContentEditability},
     editor::EditorView,
     env_vars::{
         active_env_var_collection_data::{
@@ -670,13 +667,6 @@ impl EnvVarCollectionView {
         let title = collection.title.clone().unwrap_or_default();
 
         self.set_pane_title(if title.is_empty() { "Untitled" } else { &title }, ctx);
-        if let Some(server_id) = env_var_collection.id.into_server() {
-            self.pane_configuration.update(ctx, |pane_config, ctx| {
-                pane_config
-                    .set_shareable_object(Some(ShareableObject::WarpDriveObject(server_id)), ctx);
-            });
-        }
-
         let description = collection.description.clone().unwrap_or_default();
 
         self.title_editor.update(ctx, |editor, ctx| {
@@ -965,14 +955,8 @@ impl EnvVarCollectionView {
                 self.update_breadcrumbs(ctx);
                 ctx.notify()
             }
-            ActiveEnvVarCollectionDataEvent::CreatedOnServer(server_id) => {
+            ActiveEnvVarCollectionDataEvent::CreatedOnServer(_) => {
                 self.update_breadcrumbs(ctx);
-                self.pane_configuration.update(ctx, |pane_config, ctx| {
-                    pane_config.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(*server_id)),
-                        ctx,
-                    );
-                });
             }
             ActiveEnvVarCollectionDataEvent::TrashStatusChanged => {
                 self.pane_configuration.update(ctx, |pane_config, ctx| {

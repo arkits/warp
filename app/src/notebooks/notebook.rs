@@ -50,8 +50,8 @@ use crate::{
     cmd_or_ctrl_shift,
     drive::{
         drive_helpers::has_feature_gated_anonymous_user_reached_notebook_limit,
-        export::ExportManager, items::WarpDriveItemId, sharing::ShareableObject,
-        CloudObjectTypeAndId, OpenWarpDriveObjectSettings,
+        export::ExportManager, items::WarpDriveItemId, CloudObjectTypeAndId,
+        OpenWarpDriveObjectSettings,
     },
     editor::{
         EditOrigin, EditorView, Event as EditorEvent, InteractionState,
@@ -597,17 +597,6 @@ impl NotebookView {
             }
             ActiveNotebookDataEvent::CreatedOnServer => {
                 ctx.emit(NotebookEvent::Pane(PaneEvent::AppStateChanged));
-                if let Some(id) = self
-                    .active_notebook_data
-                    .as_ref(ctx)
-                    .id()
-                    .and_then(SyncId::into_server)
-                {
-                    self.pane_configuration.update(ctx, |pane_config, ctx| {
-                        pane_config
-                            .set_shareable_object(Some(ShareableObject::WarpDriveObject(id)), ctx);
-                    })
-                }
             }
             ActiveNotebookDataEvent::TrashStatusChanged | ActiveNotebookDataEvent::MovedToSpace => {
                 self.pane_configuration.update(ctx, |pane_config, ctx| {
@@ -1561,16 +1550,6 @@ impl NotebookView {
     ) -> SpawnedFutureHandle {
         self.set_title(&notebook.model().title, ctx);
         self.set_content(&notebook, ctx);
-
-        if let Some(server_id) = notebook.id.into_server() {
-            self.pane_configuration
-                .update(ctx, |pane_configuration, ctx| {
-                    pane_configuration.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(server_id)),
-                        ctx,
-                    );
-                });
-        }
 
         self.active_notebook_data.update(ctx, |data, ctx| {
             data.open_existing(notebook.id, ctx);

@@ -28,7 +28,7 @@ use crate::{
         cloud_object_styling::warp_drive_icon_color,
         drive_helpers::has_feature_gated_anonymous_user_reached_workflow_limit,
         items::WarpDriveItemId,
-        sharing::{ContentEditability, ShareableObject, SharingAccessLevel},
+        sharing::{ContentEditability, SharingAccessLevel},
         workflows::{
             ai_assist::GeneratedCommandMetadataError,
             arguments::ArgumentsState,
@@ -761,12 +761,6 @@ impl WorkflowView {
         if let ContainerConfiguration::Pane(pane_config) = &mut self.container_configuration {
             pane_config.update(ctx, |pane_config, ctx| {
                 pane_config.set_title(workflow_name, ctx);
-                if let Some(server_id) = workflow.id.into_server() {
-                    pane_config.set_shareable_object(
-                        Some(ShareableObject::WarpDriveObject(server_id)),
-                        ctx,
-                    );
-                }
             });
         }
 

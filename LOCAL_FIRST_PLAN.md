@@ -78,7 +78,8 @@ Phase 2b progress:
 - Deleted `app/src/drive/sharing/dialog/` (2315 lines of sharing-dialog UI and ACL logic). Removed `SharingDialog` field and `share_dialog_open_for` state from `DriveIndex`, `ConversationListView`, and the conversation-list item renderer. Made `toggle_share_dialog` a no-op. Removed `drive::sharing::dialog::init(ctx)` from app startup.
 - Removed `FeatureFlag::DriveObjectsAsContext` and the AI context menu entries that exposed Workflows, Notebooks, and Plans as context through the cloud-sharing path.
 - Removed `FeatureFlag::WorkflowAliases`; workflow aliases are now treated as an always-on local Drive feature, keeping alias autocomplete, execution, editing, and telemetry without server-controlled gating.
-- The `drive/sharing/mod.rs` and `style.rs` files remain — they export `ContentEditability`, `SharingAccessLevel`, `ShareableObject`, and extension traits still referenced elsewhere. Full cleanup in Phase 5/6.
+- Removed the dead pane-header sharing object plumbing left behind after deleting the sharing dialog: `ShareableObject`, `PaneConfiguration::set_shareable_object`, the unhandled `ShareableObjectChanged` / `ToggleSharingDialog` events, and all call sites that only populated the deleted share button/dialog.
+- The `drive/sharing/mod.rs` and `style.rs` files remain — they export `ContentEditability`, `SharingAccessLevel`, and extension traits still referenced elsewhere. Full cleanup in Phase 5/6.
 - Code compiles with zero errors (`cargo check --package warp`; warnings only).
 
 Phase 2c progress:
