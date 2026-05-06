@@ -1178,6 +1178,17 @@ impl SettingsView {
             SettingsNavItem::Page(SettingsSection::About),
         ];
 
+        // In local mode, remove cloud-infrastructure settings sections that have no local
+        // equivalent: billing (no subscription required) and cloud platform (cloud environments
+        // and Oz API keys are server-only features).
+        if cfg!(feature = "local") {
+            nav_items.retain(|item| match item {
+                SettingsNavItem::Page(SettingsSection::BillingAndUsage) => false,
+                SettingsNavItem::Umbrella(u) if u.label == "Cloud platform" => false,
+                _ => true,
+            });
+        }
+
         // Resolve the initial page: map internal backing-page sections to their default subpage.
         let initial_page = match page {
             Some(SettingsSection::AI) => SettingsSection::WarpAgent,
