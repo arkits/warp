@@ -57,7 +57,12 @@ Phase 1c progress:
   - Removed `BuildPlanAutoReloadBannerToggle` and `BuildPlanAutoReloadPostPurchaseModal` from `warp_features/src/lib.rs`.
   - Removed billing telemetry events from `server/telemetry/events.rs`.
   - Removed `OpenAutoReloadModal` event from `pane_group/mod.rs` and terminal pane forwarding.
-- Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
+- **COMPLETED (more billing UI):** Removed `workspace/view/free_tier_limit_hit_modal.rs` (460 lines), `workspace/bonus_grant_notification_model.rs` (130 lines), `workspace/view/build_plan_migration_modal.rs` (851 lines), `workspace/view/cloud_agent_capacity_modal/` (449 lines).
+  - Removed all supporting state, event chains, telemetry events, singleton registrations, and command palette bindings.
+  - Removed `CloudAgentCapacityError` billing flow from ambient agent model.
+- **Phase 4a:** `AIRequestUsageModel::refresh_request_usage_async` sets `is_unlimited: true` in local builds instead of fetching quotas from server; `has_any_ai_remaining` always returns `true` in local builds.
+- **Phase 6:** Inlined `APIKeyAuthentication` as always-on (removed flag, Cargo feature, and gate). API key auth is now unconditional.
+- Code compiles with zero errors after all cleanups (`cargo check --package warp` and `--features local`).
 
 Phase 2b progress:
 - Added `LocalObjectClient` (implements `ObjectClient`): `fetch_changed_objects` returns `Ok(InitialLoadResponse::default())` so the UpdateManager completes initial load; all write operations return errors that the SyncQueue handles gracefully without retrying. Wired into `SyncQueue`, `UpdateManager`, and `Listener` in `lib.rs` — Drive objects persist locally via SQLite, cloud sync attempts fail silently.
