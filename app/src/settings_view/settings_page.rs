@@ -517,7 +517,8 @@ impl LocalOnlyIconState {
         mouse_states: &mut HashMap<String, MouseStateHandle>,
         app: &AppContext,
     ) -> Self {
-        if !*CloudPreferencesSettings::as_ref(app).settings_sync_enabled {
+        if cfg!(feature = "local") || !*CloudPreferencesSettings::as_ref(app).settings_sync_enabled
+        {
             // Only show the local-only icon if settings sync is enabled.
             return Self::Hidden;
         }

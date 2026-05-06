@@ -1114,7 +1114,8 @@ impl SettingsWidget for KeybindingsWidget {
         appearance: &Appearance,
         app: &AppContext,
     ) -> Box<dyn Element> {
-        let local_only_icon_state = if *CloudPreferencesSettings::as_ref(app).settings_sync_enabled
+        let local_only_icon_state = if !cfg!(feature = "local")
+            && *CloudPreferencesSettings::as_ref(app).settings_sync_enabled
         {
             Some(LocalOnlyIconState::Visible {
                 mouse_state: self.local_only_icon_mouse_state.clone(),

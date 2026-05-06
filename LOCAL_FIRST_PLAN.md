@@ -39,6 +39,7 @@ Phase 2a progress:
 - Deleted `app/src/settings/cloud_preferences_syncer_tests.rs`.
 - Fixed `root_view.rs`: `AuthComplete + LoginSlide` now applies `pending_post_auth_onboarding_settings` directly instead of waiting for `CloudPreferencesSyncerEvent::InitialLoadCompleted`. The subscription to the syncer remains so `OneTimeModalModel` still receives the event.
 - Removed the TOML parse-error extraction in `lib.rs` (it was only used to gate the broken-file guard in the syncer's startup hash logic, which no longer runs).
+- In local builds, removed the remaining Settings Sync UI surface from the Account settings page and command bindings. Local-only warning icons tied to cloud settings-sync state are also hidden in settings pages, and logout no longer clears cloud-synced settings state.
 - Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
 
 Phase 1c progress:

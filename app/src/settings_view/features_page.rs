@@ -6341,7 +6341,9 @@ impl SettingsWidget for TabKeyBehaviorWidget {
                     .build()
                     .finish(),
             );
-        if *CloudPreferencesSettings::as_ref(app).settings_sync_enabled {
+        if !cfg!(feature = "local")
+            && *CloudPreferencesSettings::as_ref(app).settings_sync_enabled
+        {
             tab_key_span.add_child(render_local_only_icon(
                 appearance,
                 view.button_mouse_states

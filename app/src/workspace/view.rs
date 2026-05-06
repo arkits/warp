@@ -18605,7 +18605,7 @@ impl Workspace {
         }
 
         let cloud_preferences_settings = CloudPreferencesSettings::as_ref(app);
-        if *cloud_preferences_settings.settings_sync_enabled.value() {
+        if !cfg!(feature = "local") && *cloud_preferences_settings.settings_sync_enabled.value() {
             context.set.insert(flags::SETTINGS_SYNC_FLAG);
         }
 

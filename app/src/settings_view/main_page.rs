@@ -81,6 +81,10 @@ fn maybe_add_settings_sync_toggle_binding<T: Action + Clone>(
     builder: fn(SettingsAction) -> T,
     toggle_binding_pairs: &mut Vec<ToggleSettingActionPair<T>>,
 ) {
+    if cfg!(feature = "local") {
+        return;
+    }
+
     let mut lock = SETTINGS_SYNC_BINDINGS_ADDED
         .lock()
         .expect("settings sync bindings lock poisoned");
@@ -275,7 +279,9 @@ impl MainSettingsPageView {
             Box::new(DividerWidget {}),
         ];
 
-        widgets.push(Box::new(SettingsSyncWidget::default()));
+        if !cfg!(feature = "local") {
+            widgets.push(Box::new(SettingsSyncWidget::default()));
+        }
 
         if ChannelState::app_version().is_some() {
             widgets.push(Box::new(VersionInfoWidget::default()));

@@ -265,6 +265,10 @@ pub fn log_out(app: &mut AppContext) {
 // This is so they do not experience the old settings when they log in with a different account.
 // Partial deletion of user defaults is a stopgap for Logout v0. The correct solution is:
 fn remove_cloud_persisted_settings(app: &mut AppContext) {
+    if cfg!(feature = "local") {
+        return;
+    }
+
     let is_settings_sync_enabled = *CloudPreferencesSettings::as_ref(app).settings_sync_enabled;
     if is_settings_sync_enabled {
         SettingsManager::handle(app).update(app, |settings_manager, ctx| {
