@@ -33,9 +33,6 @@ const MAX_TOOLTIP_LENGTH: usize = 80;
 /// Spacing between icon and title
 const ICON_SPACING: f32 = 4.;
 
-/// Offset for the sharing dialog from the item row
-const DIALOG_OFFSET_PIXELS: f32 = -16.;
-
 /// Total size of the agent icon-with-status component rendered in each conversation list
 /// row.
 const LIST_ITEM_AGENT_SIZE: f32 = 22.;
