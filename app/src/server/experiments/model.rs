@@ -23,7 +23,14 @@ impl ServerExperiments {
         let mut model = Self {
             latest: HashSet::new(),
         };
-        model.apply_latest_state(cached, ctx);
+        // In local mode, ignore any cached experiments from a previous cloud login so
+        // that server-controlled flag overrides don't affect the local-first build.
+        if cfg!(feature = "local") {
+            model.cache_latest_state(HashSet::new(), ctx);
+            ctx.emit(Event::ExperimentsUpdated);
+        } else {
+            model.apply_latest_state(cached, ctx);
+        }
         model
     }
 
@@ -36,6 +43,9 @@ impl ServerExperiments {
         incoming: Vec<ServerExperiment>,
         ctx: &mut ModelContext<Self>,
     ) {
+        if cfg!(feature = "local") {
+            return;
+        }
         // Dedup the set of experiments.
         let incoming = HashSet::from_iter(incoming);
 
