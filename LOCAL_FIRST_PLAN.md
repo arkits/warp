@@ -18,6 +18,7 @@ Incremental dead-code cleanup:
 - Removed dead shared-block upload/title-generation client methods and the unused generate-block-title API shapes.
 - Trimmed server block upload/embed construction helpers that were only used by deleted shared-block creation.
 - Trimmed unused AI attachment download/map helpers, keeping only the active local attachment directory and size utilities.
+- Removed the unused server-experiment lookup method after local mode stopped consuming server experiment state.
 
 Phase 1a progress:
 - Shared-session feature flags have been removed from app startup registration and from `warp_features`: `CreatingSharedSessions`, `ViewingSharedSessions`, `SessionSharingAcls`, `SharedSessionWriteToLongRunningCommands`, `AgentSharedSessions`, and `HOARemoteControl`.
