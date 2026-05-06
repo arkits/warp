@@ -1742,9 +1742,6 @@ pub enum Event {
     OpenAgentProfileEditor {
         profile_id: ClientProfileId,
     },
-    OpenAutoReloadModal {
-        purchased_credits: i32,
-    },
     #[cfg(not(target_family = "wasm"))]
     OpenPluginInstructionsPane(CLIAgent, PluginModalKind),
     ShowToast {
@@ -19719,11 +19716,6 @@ impl TerminalView {
                     document_id: *document_id,
                     document_version: *document_version,
                     is_auto_open: false,
-                });
-            }
-            InputEvent::OpenAutoReloadModal { purchased_credits } => {
-                ctx.emit(Event::OpenAutoReloadModal {
-                    purchased_credits: *purchased_credits,
                 });
             }
             InputEvent::ShowToast { message, flavor } => {

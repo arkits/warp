@@ -16,11 +16,6 @@ impl Display for ServerExperiment {
             Self::TmuxSshWarpificationExperiment => "TMUX_SSH_WARPIFICATION_EXPERIMENT",
             Self::CodebaseContextControl => "CODEBASE_CONTEXT_CONTROL",
             Self::CodebaseContextExperiment => "CODEBASE_CONTEXT_EXPERIMENT",
-            Self::BuildPlanAutoReloadControl => "BUILD_PLAN_AUTO_RELOAD_CONTROL",
-            Self::BuildPlanAutoReloadBannerToggle => "BUILD_PLAN_AUTO_RELOAD_BANNER_TOGGLE",
-            Self::BuildPlanAutoReloadPostPurchaseModal => {
-                "BUILD_PLAN_AUTO_RELOAD_POST_PURCHASE_MODAL"
-            }
             Self::PromptSuggestionsViaMaaControl => "PROMPT_SUGGESTIONS_VIA_MAA_CONTROL",
             Self::PromptSuggestionsViaMaaExperiment => "PROMPT_SUGGESTIONS_VIA_MAA_EXPERIMENT",
             Self::PromptSuggestionsViaMaaOutOfBandExperiment => {
@@ -46,11 +41,6 @@ impl ServerExperiment {
             "TMUX_SSH_WARPIFICATION_EXPERIMENT" => Ok(Self::TmuxSshWarpificationExperiment),
             "CODEBASE_CONTEXT_EXPERIMENT" => Ok(Self::CodebaseContextExperiment),
             "CODEBASE_CONTEXT_CONTROL" => Ok(Self::CodebaseContextControl),
-            "BUILD_PLAN_AUTO_RELOAD_CONTROL" => Ok(Self::BuildPlanAutoReloadControl),
-            "BUILD_PLAN_AUTO_RELOAD_BANNER_TOGGLE" => Ok(Self::BuildPlanAutoReloadBannerToggle),
-            "BUILD_PLAN_AUTO_RELOAD_POST_PURCHASE_MODAL" => {
-                Ok(Self::BuildPlanAutoReloadPostPurchaseModal)
-            }
             "PROMPT_SUGGESTIONS_VIA_MAA_CONTROL" => Ok(Self::PromptSuggestionsViaMaaControl),
             "PROMPT_SUGGESTIONS_VIA_MAA_EXPERIMENT" => Ok(Self::PromptSuggestionsViaMaaExperiment),
             "OZ_MULTI_HARNESS_CONTROL" => Ok(Self::OzMultiHarnessControl),
@@ -74,13 +64,11 @@ impl TryFrom<Experiment> for ServerExperiment {
                     "Session sharing experiments are not supported in local-first Warp"
                 ))
             }
-            Experiment::BuildPlanAutoReloadControl => Ok(Self::BuildPlanAutoReloadControl),
-            Experiment::BuildPlanAutoReloadBannerToggle => {
-                Ok(Self::BuildPlanAutoReloadBannerToggle)
-            }
-            Experiment::BuildPlanAutoReloadPostPurchaseModal => {
-                Ok(Self::BuildPlanAutoReloadPostPurchaseModal)
-            }
+            Experiment::BuildPlanAutoReloadControl
+            | Experiment::BuildPlanAutoReloadBannerToggle
+            | Experiment::BuildPlanAutoReloadPostPurchaseModal => Err(anyhow::anyhow!(
+                "BuildPlanAutoReload experiments are no longer supported by the client."
+            )),
             Experiment::DisableAgentModeExperiment => Ok(Self::DisableAgentModeExperiment),
             Experiment::AgentModeAnalyticsExperiment => Ok(Self::AgentModeAnalyticsExperiment),
             Experiment::TmuxSshWarpificationControl => Ok(Self::TmuxSshWarpificationControl),

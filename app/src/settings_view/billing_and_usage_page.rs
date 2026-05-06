@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use thousands::Separable;
 use warp_core::ui::theme::Fill;
-use warp_core::{features::FeatureFlag, ui::appearance::Appearance};
+use warp_core::ui::appearance::Appearance;
 use warp_graphql::billing::AddonCreditsOption;
 use warpui::prelude::ChildView;
 use warpui::{
@@ -953,10 +953,6 @@ impl TypedActionView for BillingAndUsagePageView {
                 send_telemetry_from_ctx!(
                     TelemetryEvent::AutoReloadToggledFromBillingSettings {
                         enabled: *enabled,
-                        banner_toggle_flag_enabled: FeatureFlag::BuildPlanAutoReloadBannerToggle
-                            .is_enabled(),
-                        post_purchase_modal_flag_enabled:
-                            FeatureFlag::BuildPlanAutoReloadPostPurchaseModal.is_enabled(),
                     },
                     ctx
                 );

@@ -1195,22 +1195,6 @@ pub enum SlashCommandAcceptedDetails {
     SavedPrompt,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum AutoReloadModalAction {
-    #[serde(rename = "dismissed")]
-    Dismissed,
-    #[serde(rename = "enabled_auto_reload")]
-    EnabledAutoReload,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum OutOfCreditsBannerAction {
-    #[serde(rename = "dismissed")]
-    Dismissed,
-    #[serde(rename = "credits_purchased")]
-    CreditsPurchased,
-}
-
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CLISubagentControlState {
@@ -2509,28 +2493,9 @@ pub enum TelemetryEvent {
         is_ftux: bool,
     },
 
-    /// User closed the "Out of credits" banner (dismissed or purchased credits)
-    OutOfCreditsBannerClosed {
-        action: OutOfCreditsBannerAction,
-        selected_credits: Option<i32>,
-        auto_reload_checkbox_enabled: bool,
-        banner_toggle_flag_enabled: bool,
-        post_purchase_modal_flag_enabled: bool,
-    },
-
-    /// User closed the auto-reload modal (either dismissed or enabled auto-reload)
-    AutoReloadModalClosed {
-        action: AutoReloadModalAction,
-        selected_credits: Option<i32>,
-        banner_toggle_flag_enabled: bool,
-        post_purchase_modal_flag_enabled: bool,
-    },
-
     /// User toggled auto-reload in Billing & Usage settings
     AutoReloadToggledFromBillingSettings {
         enabled: bool,
-        banner_toggle_flag_enabled: bool,
-        post_purchase_modal_flag_enabled: bool,
     },
 
     /// Emitted when the control state of the CLI subagent changes.
@@ -4234,38 +4199,8 @@ impl TelemetryEvent {
             TelemetryEvent::OpenRepoFolderSubmitted { is_ftux } => Some(json!({
                 "is_ftux": is_ftux,
             })),
-            TelemetryEvent::OutOfCreditsBannerClosed {
-                action,
-                selected_credits,
-                auto_reload_checkbox_enabled,
-                banner_toggle_flag_enabled,
-                post_purchase_modal_flag_enabled,
-            } => Some(json!({
-                "action": action,
-                "selected_credits": selected_credits,
-                "auto_reload_checkbox_enabled": auto_reload_checkbox_enabled,
-                "banner_toggle_flag_enabled": banner_toggle_flag_enabled,
-                "post_purchase_modal_flag_enabled": post_purchase_modal_flag_enabled,
-            })),
-            TelemetryEvent::AutoReloadModalClosed {
-                action,
-                selected_credits,
-                banner_toggle_flag_enabled,
-                post_purchase_modal_flag_enabled,
-            } => Some(json!({
-                "action": action,
-                "selected_credits": selected_credits,
-                "banner_toggle_flag_enabled": banner_toggle_flag_enabled,
-                "post_purchase_modal_flag_enabled": post_purchase_modal_flag_enabled,
-            })),
-            TelemetryEvent::AutoReloadToggledFromBillingSettings {
-                enabled,
-                banner_toggle_flag_enabled,
-                post_purchase_modal_flag_enabled,
-            } => Some(json!({
+            TelemetryEvent::AutoReloadToggledFromBillingSettings { enabled } => Some(json!({
                 "enabled": enabled,
-                "banner_toggle_flag_enabled": banner_toggle_flag_enabled,
-                "post_purchase_modal_flag_enabled": post_purchase_modal_flag_enabled,
             })),
             TelemetryEvent::WarpDriveOpened {
                 source,
@@ -4861,8 +4796,6 @@ impl TelemetryEvent {
             | TelemetryEvent::InputBufferSubmitted { .. }
             | TelemetryEvent::RecentMenuItemSelected { .. }
             | TelemetryEvent::OpenRepoFolderSubmitted { .. }
-            | TelemetryEvent::OutOfCreditsBannerClosed { .. }
-            | TelemetryEvent::AutoReloadModalClosed { .. }
             | TelemetryEvent::AutoReloadToggledFromBillingSettings { .. }
             | TelemetryEvent::CLISubagentControlStateChanged { .. }
             | TelemetryEvent::CLISubagentResponsesToggled { .. }
@@ -5397,8 +5330,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             }
             Self::RecentMenuItemSelected => EnablementState::Always,
             Self::OpenRepoFolderSubmitted => EnablementState::Always,
-            Self::OutOfCreditsBannerClosed => EnablementState::Always,
-            Self::AutoReloadModalClosed => EnablementState::Always,
             Self::AutoReloadToggledFromBillingSettings => EnablementState::Always,
             Self::CLISubagentControlStateChanged { .. }
             | Self::CLISubagentResponsesToggled { .. }
@@ -5932,8 +5863,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             Self::InputBufferSubmitted => "AgentMode.NaturalLanguageDetection.InputBufferSubmitted",
             Self::RecentMenuItemSelected { .. } => "Recent Menu Item Selected",
             Self::OpenRepoFolderSubmitted { .. } => "Open Repo Folder Submitted",
-            Self::OutOfCreditsBannerClosed => "revenue.OutOfCreditsBannerClosed",
-            Self::AutoReloadModalClosed => "revenue.AutoReloadModalClosed",
             Self::AutoReloadToggledFromBillingSettings => {
                 "revenue.AutoReloadToggledFromBillingSettings"
             }
@@ -6726,12 +6655,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             }
             Self::OpenRepoFolderSubmitted { .. } => {
                 "User selected a folder to open as a repo from the \"Open repository\" button"
-            }
-            Self::OutOfCreditsBannerClosed => {
-                "User closed the 'Out of credits' banner (dismissed or purchased credits)"
-            }
-            Self::AutoReloadModalClosed => {
-                "User closed the auto-reload modal (either dismissed or enabled auto-reload)"
             }
             Self::AutoReloadToggledFromBillingSettings => {
                 "User toggled auto-reload in Billing & Usage settings"
