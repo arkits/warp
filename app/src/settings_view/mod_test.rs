@@ -649,7 +649,6 @@ fn realistic_nav_items() -> Vec<SettingsNavItem> {
             "Cloud platform",
             SettingsSection::cloud_platform_subpages().to_vec(),
         )),
-        SettingsNavItem::Page(SettingsSection::Teams),
     ]
 }
 
@@ -669,8 +668,8 @@ fn collapsed_umbrella_is_a_single_nav_stop() {
     let stops = build_nav_stops(&nav_items, |_| true);
 
     // Expect: Account, <Agents umbrella>, BillingAndUsage, <Code umbrella>,
-    // <Cloud platform umbrella>, Teams.
-    assert_eq!(stops.len(), 6);
+    // <Cloud platform umbrella>.
+    assert_eq!(stops.len(), 5);
     assert!(matches!(
         stops[0],
         NavStop::Section(SettingsSection::Account)
@@ -703,7 +702,6 @@ fn collapsed_umbrella_is_a_single_nav_stop() {
             last_subpage: SettingsSection::OzCloudAPIKeys,
         }
     ));
-    assert!(matches!(stops[5], NavStop::Section(SettingsSection::Teams)));
 }
 
 #[test]
@@ -716,7 +714,7 @@ fn expanded_umbrella_produces_section_stop_per_subpage() {
 
     // Expect: Account, WarpAgent, AgentProfiles, AgentMCPServers, Knowledge,
     // ThirdPartyCLIAgents, BillingAndUsage, <Code umbrella>,
-    // <Cloud platform umbrella>, Teams.
+    // <Cloud platform umbrella>.
     let sections: Vec<_> = stops
         .iter()
         .map(|s| match s {
@@ -736,7 +734,6 @@ fn expanded_umbrella_produces_section_stop_per_subpage() {
             "BillingAndUsage",
             "Umbrella@3",
             "Umbrella@4",
-            "Teams",
         ]
     );
 }
@@ -805,13 +802,13 @@ fn umbrella_with_no_visible_subpages_is_skipped_entirely() {
 fn filtered_out_top_level_page_is_skipped() {
     let nav_items = realistic_nav_items();
 
-    let stops = build_nav_stops(&nav_items, |section| section != SettingsSection::Teams);
+    let stops = build_nav_stops(&nav_items, |section| section != SettingsSection::BillingAndUsage);
 
     assert!(
         !stops
             .iter()
-            .any(|s| matches!(s, NavStop::Section(SettingsSection::Teams))),
-        "Teams should be filtered out entirely"
+            .any(|s| matches!(s, NavStop::Section(SettingsSection::BillingAndUsage))),
+        "BillingAndUsage should be filtered out entirely"
     );
     // But other pages remain.
     assert!(stops

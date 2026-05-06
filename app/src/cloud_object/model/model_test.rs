@@ -39,8 +39,8 @@ use crate::server::telemetry::context_provider::AppTelemetryContextProvider;
 use crate::settings::init_and_register_user_preferences;
 use crate::settings::Preference;
 use crate::system::SystemStats;
-use crate::workspaces::team::Team;
 use crate::workspaces::team_tester::TeamTesterStatus;
+use crate::workspaces::workspace::Team;
 use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::Workspace;
@@ -58,8 +58,6 @@ use super::*;
 
 #[cfg(test)]
 use crate::server::server_api::object::MockObjectClient;
-#[cfg(test)]
-use crate::server::server_api::team::MockTeamClient;
 #[cfg(test)]
 use crate::server::server_api::workspace::MockWorkspaceClient;
 
@@ -95,7 +93,6 @@ fn initialize_app(
     cached_objects: Vec<Box<dyn CloudObject>>,
     cloud_object_server_api_mock: Arc<impl ObjectClient>,
 ) {
-    let team_client_mock = Arc::new(MockTeamClient::new());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
 
     // Add the necessary singleton models to the App
@@ -107,7 +104,6 @@ fn initialize_app(
     app.add_singleton_model(AuthManager::new_for_test);
     app.add_singleton_model(|ctx| {
         UserWorkspaces::mock(
-            team_client_mock.clone(),
             workspace_client_mock.clone(),
             vec![TEST_WORKSPACE.clone()],
             ctx,

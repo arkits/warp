@@ -8,7 +8,6 @@ use crate::auth::AuthStateProvider;
 use crate::{
     cloud_object::model::persistence::CloudModel,
     editor::PlainTextEditorViewAction as EditorAction,
-    server::server_api::team::MockTeamClient,
     server::server_api::workspace::MockWorkspaceClient,
     server::server_api::ServerApiProvider,
     settings_view::keybindings::KeybindingChangedNotifier,
@@ -29,11 +28,9 @@ fn initialize_app(app: &mut App) {
     #[cfg(feature = "voice_input")]
     app.add_singleton_model(voice_input::VoiceInput::new);
 
-    let team_client_mock = Arc::new(MockTeamClient::new());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
     app.add_singleton_model(|ctx| {
         UserWorkspaces::mock(
-            team_client_mock.clone(),
             workspace_client_mock.clone(),
             vec![],
             ctx,

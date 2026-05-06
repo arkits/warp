@@ -11,7 +11,7 @@ use crate::{
     cloud_object::model::persistence::CloudModel,
     editor::InteractionState,
     notebooks::editor::keys::NotebookKeybindings,
-    server::server_api::{team::MockTeamClient, workspace::MockWorkspaceClient},
+    server::server_api::workspace::MockWorkspaceClient,
     settings_view::keybindings::KeybindingChangedNotifier,
     test_util::settings::initialize_settings_for_tests,
     vim_registers::VimRegisters,
@@ -39,11 +39,9 @@ fn initialize_editor(app: &mut App) -> (WindowId, ViewHandle<CodeEditorView>) {
     app.add_singleton_model(NotebookKeybindings::new);
 
     // Add UserWorkspaces mock (required by EditorView)
-    let team_client_mock = Arc::new(MockTeamClient::new());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
     app.add_singleton_model(|ctx| {
         UserWorkspaces::mock(
-            team_client_mock.clone(),
             workspace_client_mock.clone(),
             vec![],
             ctx,

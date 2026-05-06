@@ -120,13 +120,7 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(NotebookKeybindings::new);
     app.add_singleton_model(TerminalKeybindings::new);
     app.add_singleton_model(NotebookManager::mock);
-    app.add_singleton_model(|ctx| {
-        CloudPreferencesSyncer::new(
-            false,                     // force_local_wins_on_startup
-            std::path::PathBuf::new(), // unused in tests that don't exercise the hash path
-            ctx,
-        )
-    });
+    app.add_singleton_model(CloudPreferencesSyncer::new);
     app.add_singleton_model(|_| BlocklistAIHistoryModel::new_for_test());
     app.add_singleton_model(|_| CLIAgentSessionsModel::new());
     app.add_singleton_model(|_| ActiveAgentViewsModel::new());

@@ -393,7 +393,7 @@ fn session_join_info_falls_back_to_session_id() {
     assert_eq!(join_info.session_id, Some(session_id));
     assert_eq!(
         join_info.session_link,
-        Some(format!("local-session-disabled:{}", session_id))
+        format!("local-session-disabled:{}", session_id)
     );
 }
 

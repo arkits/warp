@@ -22,7 +22,6 @@ use crate::notebooks::editor::link_editor::LinkEditorAction;
 use crate::notebooks::editor::model::NotebooksEditorModel;
 use crate::notebooks::editor::rich_text_styles;
 use crate::notebooks::link::{NotebookLinks, SessionSource};
-use crate::server::server_api::team::MockTeamClient;
 use crate::server::server_api::workspace::MockWorkspaceClient;
 
 use crate::settings::FontSettings;
@@ -84,11 +83,9 @@ fn initialize_editor(
     app.add_singleton_model(|_| AuthStateProvider::new_for_test());
     #[cfg(feature = "voice_input")]
     app.add_singleton_model(voice_input::VoiceInput::new);
-    let team_client_mock = Arc::new(MockTeamClient::new());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
     app.add_singleton_model(|ctx| {
         UserWorkspaces::mock(
-            team_client_mock.clone(),
             workspace_client_mock.clone(),
             vec![],
             ctx,

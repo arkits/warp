@@ -53,9 +53,6 @@ use crate::{
         alt_screen_reporting::AltScreenReporting,
         keys::TerminalKeybindings,
         local_tty::{spawner::PtySpawner, TerminalManager},
-        shared_session::{
-            SharedSessionActionSource, SharedSessionScrollbackType, SharedSessionStatus,
-        },
     },
     test_util::settings::initialize_settings_for_tests,
     undo_close::UndoCloseStack,
@@ -128,7 +125,6 @@ fn initialize_app(app: &mut App) {
     app.add_singleton_model(|_| Prompt::mock());
     app.add_singleton_model(|_| ResizableData::default());
     app.add_singleton_model(NotebookManager::mock);
-    app.add_singleton_model(shared_session::manager::Manager::new);
     app.add_singleton_model(|_| ActiveSession::default());
     let global_resources = GlobalResourceHandles::mock(app);
     app.add_singleton_model(|_| GlobalResourceHandlesProvider::new(global_resources.clone()));

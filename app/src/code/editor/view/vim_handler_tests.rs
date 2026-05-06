@@ -5,7 +5,7 @@ use crate::notebooks::editor::keys::NotebookKeybindings;
 use crate::workspace::ActiveSession;
 use crate::{
     code::editor::view::{CodeEditorView, CodeEditorViewAction},
-    server::server_api::{team::MockTeamClient, workspace::MockWorkspaceClient},
+    server::server_api::workspace::MockWorkspaceClient,
     settings::AppEditorSettings,
     settings_view::keybindings::KeybindingChangedNotifier,
     test_util::settings::initialize_settings_for_tests,
@@ -57,11 +57,9 @@ fn initialize_code_editor_app(app: &mut App) {
     app.add_singleton_model(NotebookKeybindings::new);
 
     // Add UserWorkspaces mock (required by CodeEditorView)
-    let team_client_mock = Arc::new(MockTeamClient::new());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
     app.add_singleton_model(|ctx| {
         UserWorkspaces::mock(
-            team_client_mock.clone(),
             workspace_client_mock.clone(),
             vec![],
             ctx,
