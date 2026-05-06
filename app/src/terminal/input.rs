@@ -233,7 +233,7 @@ use lazy_static::lazy_static;
 use ordered_float::Float;
 use regex::Regex;
 use serde_json::json;
-use session_sharing_protocol::common::{AgentAttachment, ParticipantId, ServerConversationToken};
+use session_sharing_protocol::common::{AgentAttachment, ServerConversationToken};
 use settings::{Setting as _, ToggleableSetting};
 use std::{
     any::Any,
@@ -835,29 +835,10 @@ impl InputSuggestionsMode {
 /// Where a command execution request originates from.
 #[derive(Clone)]
 pub enum CommandExecutionSource {
-    /// A non-shared command execution request from Warp AI++.
-    /// Shared commands use the SharedSession variant instead.
+    /// A command execution request from Warp AI++.
     AI {
         /// Metadata associated with the execution.
         metadata: AgentInteractionMetadata,
-    },
-
-    /// A command execution request in a shared session (by a viewer or sharer).
-    ///
-    /// For a sharer, this will be processed similar to [`CommandExecutionSource::User`]
-    /// except the resulting block will be annotated with the participant ID.
-    ///
-    /// For a viewer, this will be handled by sending the request to the sharer.
-    SharedSession {
-        /// The participant ID of the
-        participant_id: ParticipantId,
-        /// The block ID associated to the active block when
-        /// the request was fired.
-        block_id: BlockId,
-        /// Optional AI metadata if this command was requested by the AI agent
-        /// in a shared session. This is used to associate the resulting command block
-        /// with the original agent command.
-        ai_metadata: Option<AgentInteractionMetadata>,
     },
 
     /// A normal command execution request.
@@ -871,16 +852,7 @@ pub enum CommandExecutionSource {
 impl CommandExecutionSource {
     /// Whether this command execution originates from an AI command.
     pub fn is_ai_command(&self) -> bool {
-        // TODO: at some point we will want to couple both of these cases
-        // into one source variant, as they are both AI sources.
-        matches!(
-            self,
-            CommandExecutionSource::AI { .. }
-                | CommandExecutionSource::SharedSession {
-                    ai_metadata: Some(_),
-                    ..
-                }
-        )
+        matches!(self, CommandExecutionSource::AI { .. })
     }
 }
 
@@ -956,10 +928,6 @@ pub enum Event {
         server_conversation_token: Option<ServerConversationToken>,
         prompt: String,
         attachments: Vec<AgentAttachment>,
-    },
-    /// Dead: no longer emitted. Kept for compatibility with view.rs no-op handling.
-    CancelSharedSessionConversation {
-        server_conversation_token: ServerConversationToken,
     },
     InputFocusedFromMiddleClick,
     EditorFocused,
@@ -5946,28 +5914,6 @@ impl Input {
             })
     }
 
-    /// Try to execute a command in the local session that was
-    /// requested by a shared session participant (sharer or viewer).
-    ///
-    /// Returns `true` if the command was executed, `false` otherwise.
-    pub fn try_execute_command_on_behalf_of_shared_session_participant(
-        &mut self,
-        command: &str,
-        participant_id: ParticipantId,
-        ctx: &mut ViewContext<Self>,
-    ) -> bool {
-        let block_id = self.model.lock().block_list().active_block_id().clone();
-        self.try_execute_command_from_source(
-            command,
-            CommandExecutionSource::SharedSession {
-                participant_id,
-                block_id,
-                ai_metadata: None,
-            },
-            ctx,
-        )
-    }
-
     /// Freeze the editor and put it in a loading state.
     pub fn freeze_input_in_loading_state(&mut self, ctx: &mut ViewContext<Self>) -> String {
         self.editor.update(ctx, |editor, ctx| {
@@ -6184,21 +6130,6 @@ impl Input {
         // Close the input suggestions menu if it was open.
         self.close_input_suggestions(/*should_focus_input=*/ false, ctx);
         did_execute
-    }
-
-    /// We locked the viewer's input when they attempted to execute a command.
-    /// On failure, we must restore the editor to its original state before the attempt.
-    pub fn on_execute_command_for_shared_session_participant_failure(
-        &mut self,
-        _ctx: &mut ViewContext<Self>,
-    ) {
-        // No-op: shared sessions are not active; viewer role no longer exists.
-    }
-
-    /// This clears the loading state and input buffer for both the sharer and viewer
-    /// once an agent request is in flight or cancelled.
-    pub fn unfreeze_and_clear_agent_input(&mut self, _ctx: &mut ViewContext<Self>) {
-        // No-op: shared session viewer/sharer roles are no longer active.
     }
 
     fn clear_selected_env_var_collection(&mut self) {

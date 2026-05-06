@@ -19721,9 +19721,7 @@ impl TerminalView {
             InputEvent::OpenPluginInstructionsPane(agent, kind) => {
                 ctx.emit(Event::OpenPluginInstructionsPane(*agent, *kind));
             }
-            InputEvent::EditorUpdated { .. }
-            | InputEvent::SendAgentPrompt { .. }
-            | InputEvent::CancelSharedSessionConversation { .. } => {}
+            InputEvent::EditorUpdated { .. } | InputEvent::SendAgentPrompt { .. } => {}
         }
     }
 
