@@ -42,12 +42,9 @@ use crate::{
         menu_button::{icon_button_with_context_menu, MenuDirection},
     },
     util::{color::coloru_with_opacity, sync::Condition},
-    view_components::{Dropdown, DropdownItem},
     workflows::{CloudWorkflow, WorkflowViewMode},
     workspace::active_terminal_in_window,
-    workspaces::{
-        update_manager::TeamUpdateManager, user_workspaces::UserWorkspaces, workspace::WorkspaceUid,
-    },
+    workspaces::user_workspaces::UserWorkspaces,
     ObjectActions,
 };
 
@@ -355,7 +352,6 @@ pub enum DriveIndexAction {
     },
     SignupAnonymousUser,
     DismissPersonalObjectLimits,
-    SetCurrentWorkspace(WorkspaceUid),
     AttachPlanAsContext(AIDocumentId),
 }
 
@@ -539,8 +535,6 @@ pub struct DriveIndex {
     /// objects button in the case of syncing failures.
     num_errored_objects: usize,
 
-    workspace_dropdown: ViewHandle<Dropdown<DriveIndexAction>>,
-
     /// Drive item to represent collection of AI facts.
     /// Special-cased to always render at the top of the Personal space section.
     ai_fact_collection: WarpDriveAIFactCollection,
@@ -584,35 +578,6 @@ impl DriveIndex {
     // Called whenever cloud model or user workspaces change.
     pub fn initialize_section_states(&mut self, ctx: &mut ViewContext<Self>) {
         let user_workspaces = UserWorkspaces::handle(ctx);
-
-        self.workspace_dropdown.update(ctx, |dropdown, ctx| {
-            let workspaces = user_workspaces.as_ref(ctx).workspaces();
-            let selected_index =
-                if let Some(current_workspace) = user_workspaces.as_ref(ctx).current_workspace() {
-                    workspaces
-                        .iter()
-                        .position(|workspace| workspace.uid == current_workspace.uid)
-                        .unwrap_or_else(|| {
-                            log::error!("Could not find current workspace in dropdown option list");
-                            0
-                        })
-                } else {
-                    0
-                };
-            dropdown.set_items(
-                workspaces
-                    .iter()
-                    .map(|workspace| {
-                        DropdownItem::new(
-                            workspace.name.clone(),
-                            DriveIndexAction::SetCurrentWorkspace(workspace.uid),
-                        )
-                    })
-                    .collect(),
-                ctx,
-            );
-            dropdown.set_selected_by_index(selected_index, ctx);
-        });
 
         let cloud_model = CloudModel::handle(ctx);
 
@@ -921,43 +886,6 @@ impl DriveIndex {
             ctx.notify();
         });
 
-        let workspace_dropdown = ctx.add_typed_action_view(|ctx| {
-            let mut dropdown = Dropdown::new(ctx);
-            dropdown.set_top_bar_max_width(400.);
-            dropdown.set_menu_width(225., ctx);
-
-            let workspaces = user_workspaces.as_ref(ctx).workspaces();
-
-            let selected_index =
-                if let Some(current_workspace) = user_workspaces.as_ref(ctx).current_workspace() {
-                    workspaces
-                        .iter()
-                        .position(|workspace| workspace.uid == current_workspace.uid)
-                        .unwrap_or_else(|| {
-                            log::error!("Could not find current workspace in dropdown option list");
-                            0
-                        })
-                } else {
-                    0
-                };
-
-            dropdown.add_items(
-                workspaces
-                    .iter()
-                    .map(|workspace| {
-                        DropdownItem::new(
-                            workspace.name.clone(),
-                            DriveIndexAction::SetCurrentWorkspace(workspace.uid),
-                        )
-                    })
-                    .collect(),
-                ctx,
-            );
-            dropdown.set_selected_by_index(selected_index, ctx);
-
-            dropdown
-        });
-
         let ai_fact_collection = WarpDriveAIFactCollection::new(ClientId::default());
         let mcp_server_collection = WarpDriveMCPServerCollection::new(ClientId::default());
 
@@ -987,7 +915,6 @@ impl DriveIndex {
             has_initialized_sections: Default::default(),
             num_errored_objects: Default::default(),
             should_show_personal_object_limit_status: true,
-            workspace_dropdown,
             ai_fact_collection,
             ai_fact_collection_item_mouse_states: Default::default(),
             mcp_server_collection,
@@ -2167,15 +2094,6 @@ impl DriveIndex {
         }
 
         sections.into_iter()
-    }
-
-    fn render_workspace_picker(&self) -> Box<dyn Element> {
-        Container::new(ChildView::new(&self.workspace_dropdown).finish())
-            .with_padding_bottom(6.)
-            .with_padding_top(6.)
-            .with_padding_left(12.)
-            .with_padding_right(12.)
-            .finish()
     }
 
     fn render_title(&self, appearance: &Appearance, app: &AppContext) -> Box<dyn Element> {
@@ -5204,11 +5122,6 @@ impl TypedActionView for DriveIndex {
             }
             DriveIndexAction::DismissPersonalObjectLimits => {
                 self.dismiss_personal_object_limit_status(ctx);
-            }
-            DriveIndexAction::SetCurrentWorkspace(workspace_uid) => {
-                TeamUpdateManager::handle(ctx).update(ctx, |manager, ctx| {
-                    manager.set_current_workspace_uid(*workspace_uid, ctx)
-                });
             }
             DriveIndexAction::AttachPlanAsContext(id) => {
                 ctx.emit(DriveIndexEvent::AttachPlanAsContext(*id))
