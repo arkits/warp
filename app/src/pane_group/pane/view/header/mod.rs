@@ -363,7 +363,6 @@ struct MouseStateHandles {
 #[derive(Default, Debug, PartialEq, Eq)]
 enum OpenOverlay {
     OverflowMenu,
-    SharingDialog,
     #[default]
     None,
 }
@@ -516,7 +515,6 @@ impl<P: BackingView> PaneHeader<P> {
                     );
                 }
             }
-            OpenOverlay::SharingDialog => {}
             OpenOverlay::None => {}
         }
     }

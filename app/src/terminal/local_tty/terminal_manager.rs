@@ -75,8 +75,6 @@ type PtyController = writeable_pty::PtyController<mio_channel::Sender<Message>>;
 type RemoteServerController =
     writeable_pty::remote_server_controller::RemoteServerController<mio_channel::Sender<Message>>;
 
-const ACL_UPDATE_FAILURE_RESPONSE: &str = "Something went wrong. Please try again.";
-
 /// The TerminalManager is responsible for
 /// - creating the terminal model
 /// - starting the local PTY

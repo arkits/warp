@@ -34,6 +34,7 @@ Phase 1a progress:
   - Removed leftover shared-session plumbing from the agent SDK: share options, no-op terminal share request handling, shared-session stdout events, driver error classification, and related tests.
   - Removed dead shared-session execution/block-list remnants: `NotExecutedReason::WaitingOnSharer`, shared-session scrollback loaders, and the subsequent-block secret-obfuscation helper that only existed for shared-session followups.
   - Removed the hidden `should_confirm_shared_session_edit_access` session setting; the setting had no remaining call sites after edit-access sharing flows were deleted.
+  - Removed leftover pane-header/local-tty shared-session remnants: the unreachable `OpenOverlay::SharingDialog` branch and unused ACL update failure response string.
   - Code compiles with zero errors (warnings only).
   - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
 
