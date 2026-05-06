@@ -37,6 +37,7 @@ Phase 1a progress:
   - Removed leftover pane-header/local-tty shared-session remnants: the unreachable `OpenOverlay::SharingDialog` branch and unused ACL update failure response string.
   - Deleted unused shared-session inline banner renderers, `InlineBannerType` variants, and the dead `SharedSessionViewerAltScroll` terminal action.
   - Removed the shared-session command execution source, dead shared-session input event, and no-op participant command helpers from terminal input/PTY handling.
+  - Removed the empty shared-session participant selection renderer and now-dead selection cursor render-location enum from the block list element.
   - Code compiles with zero errors (warnings only).
   - **Result:** `grep -r 'crate::terminal::shared_session'` and `grep -r 'terminal::shared_session'` return zero matches in `app/src/`.
 

@@ -163,12 +163,6 @@ impl ScrollingAcceleration {
     }
 }
 
-enum SelectionCursorRenderLocation {
-    None,
-    Start,
-    End,
-}
-
 const OVERFLOW_BUTTON_ICON_PATH: &str = "bundled/svg/overflow.svg";
 /// The number of lines from the top of the blocklist where we should show the snackbar toggle
 /// button on mouse hover when the snackbar is collapsed.
@@ -2001,7 +1995,6 @@ impl BlockListElement {
         origin: Vector2F,
         block_list: &BlockList,
         color: ColorU,
-        selection_cursor_render_location: SelectionCursorRenderLocation,
         ctx: &mut PaintContext,
     ) {
         let total_block_heights = block_list.block_heights().summary().height;
@@ -2049,48 +2042,10 @@ impl BlockListElement {
             color,
             ctx,
         );
-        match selection_cursor_render_location {
-            SelectionCursorRenderLocation::Start => {
-                let mut cursor_color = color;
-                cursor_color.a = crate::util::color::OPAQUE;
-                grid_renderer::render_selection_cursor(
-                    &start,
-                    &self.size_info,
-                    viewport.scroll_top_in_lines(),
-                    selection_origin,
-                    cursor_color,
-                    false,
-                    ctx,
-                );
-            }
-            SelectionCursorRenderLocation::End => {
-                let mut cursor_color = color;
-                cursor_color.a = crate::util::color::OPAQUE;
-                grid_renderer::render_selection_cursor(
-                    &end,
-                    &self.size_info,
-                    viewport.scroll_top_in_lines(),
-                    selection_origin,
-                    cursor_color,
-                    true,
-                    ctx,
-                );
-            }
-            _ => (),
-        }
         if rendered_snackbar_selection {
             // Rendering the snackbar creates a layer that we need to close.
             ctx.scene.stop_layer();
         }
-    }
-
-    fn render_shared_session_participants_selections(
-        &self,
-        _origin: Vector2F,
-        _block_list: &BlockList,
-        _app: &AppContext,
-        _ctx: &mut PaintContext<'_>,
-    ) {
     }
 
     /// Render a participant's selection when it spans multiple blocks and their blocklist is inverted relative to ours.
@@ -4040,12 +3995,10 @@ impl Element for BlockListElement {
                     origin,
                     block_list,
                     text_selection_color,
-                    SelectionCursorRenderLocation::None,
                     ctx,
                 );
             }
         };
-        self.render_shared_session_participants_selections(origin, block_list, app, ctx);
 
         if !cli_subagent_views_to_paint.is_empty() {
             for CLISubagentRenderParams {
