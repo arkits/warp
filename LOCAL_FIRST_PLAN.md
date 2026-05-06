@@ -4,6 +4,9 @@ Goal: strip all Warp account and cloud dependencies so the terminal works fully 
 
 Recent work already done: Sentry crash reporting removed, referral system removed, Slack/Sign Up/Upgrade removed from settings dropdown.
 
+Incremental dead-code cleanup:
+- Removed an unused `DropdownEvent` barrel re-export left behind by previous UI cleanup.
+
 Phase 1a progress:
 - Shared-session feature flags have been removed from app startup registration and from `warp_features`: `CreatingSharedSessions`, `ViewingSharedSessions`, `SessionSharingAcls`, `SharedSessionWriteToLongRunningCommands`, `AgentSharedSessions`, and `HOARemoteControl`.
 - Session-sharing server experiment handling has been removed from the app's `ServerExperiment` enum and conversion now rejects those legacy GraphQL experiment values.
