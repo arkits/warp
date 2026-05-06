@@ -36,11 +36,7 @@ use crate::{
     server::server_api::ai::{SpawnAgentRequest, UserQueryMode},
     session_management::SessionNavigationData,
     terminal::cli_agent_sessions::CLIAgentSessionsModel,
-    terminal::{
-        general_settings::GeneralSettings,
-        view::Event,
-        TerminalManager, TerminalView,
-    },
+    terminal::{general_settings::GeneralSettings, view::Event, TerminalManager, TerminalView},
     view_components::ToastFlavor,
     workspace::{sync_inputs::SyncedInputState, PaneViewLocator},
     AIExecutionProfilesModel,

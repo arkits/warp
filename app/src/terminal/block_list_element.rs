@@ -20,11 +20,10 @@ use crate::terminal::model::selection::{SelectAction, SelectionPoint};
 use crate::terminal::safe_mode_settings::get_secret_obfuscation_mode;
 use crate::terminal::view::TerminalAction;
 use crate::terminal::{grid_renderer, SizeInfo};
-use crate::themes::theme::{Fill, WarpTheme};
+use crate::themes::theme::WarpTheme;
 use crate::ui_components::{self, icons as UIIcon};
 use crate::util::color::Opacity;
 use enum_iterator::Sequence;
-use itertools::Itertools;
 use parking_lot::FairMutex;
 use vec1::Vec1;
 use warp_core::semantic_selection::SemanticSelection;
@@ -35,7 +34,6 @@ use warpui::platform::Cursor;
 use warpui::text::SelectionType;
 
 use pathfinder_color::ColorU;
-use session_sharing_protocol::common::Selection;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::mem;
@@ -79,8 +77,8 @@ use super::model::terminal_model::{SelectedBlocks, WithinBlock, WithinModel};
 use super::model::SecretHandle;
 
 use super::view::{
-    BlocklistAIRenderContext, InlineBannerId, RichContentMetadata, SeparatorId,
-    TerminalEditor, TerminalViewRenderContext, BLOCK_BANNER_HEIGHT,
+    BlocklistAIRenderContext, InlineBannerId, RichContentMetadata, SeparatorId, TerminalEditor,
+    TerminalViewRenderContext, BLOCK_BANNER_HEIGHT,
 };
 use super::warpify::render::{draw_flag_pole, render_subshell_flag};
 use super::TerminalModel;
@@ -3653,7 +3651,7 @@ impl Element for BlockListElement {
                     }
 
                     // Current block is selected by this local user.
-                    let mut is_current_block_selected_by_anyone = is_current_block_selected;
+                    let is_current_block_selected_by_anyone = is_current_block_selected;
 
                     // Check if this block is in a subshell. If it is, draw a gray stripe on the
                     // left-hand side.

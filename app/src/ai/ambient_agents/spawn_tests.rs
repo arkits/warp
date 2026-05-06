@@ -6,10 +6,10 @@ use std::sync::{
 use chrono::Utc;
 use session_sharing_protocol::common::SessionId;
 
+use super::{spawn_task, submit_run_followup, AmbientAgentEvent, SessionJoinInfo};
 use crate::ai::agent::UserQueryMode;
 use crate::ai::ambient_agents::{AmbientAgentTask, AmbientAgentTaskState};
 use crate::server::server_api::ai::{MockAIClient, SpawnAgentResponse, TaskStatusMessage};
-use super::{spawn_task, submit_run_followup, AmbientAgentEvent, SessionJoinInfo};
 
 fn task_with(
     state: AmbientAgentTaskState,

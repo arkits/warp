@@ -228,7 +228,6 @@ fn task_env_vars_include_parent_run_id_when_present() {
     } else {
         assert!(!env_vars.contains_key(&OsString::from(WS_SERVER_URL_OVERRIDE_ENV)));
     }
-
 }
 
 #[test]

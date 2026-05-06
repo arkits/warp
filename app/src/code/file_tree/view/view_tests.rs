@@ -41,9 +41,7 @@ fn initialize_app(
     app.add_singleton_model(|_| AuthStateProvider::new_for_test());
 
     let workspace_client = Arc::new(MockWorkspaceClient::new());
-    app.add_singleton_model(|ctx| {
-        UserWorkspaces::mock(workspace_client.clone(), vec![], ctx)
-    });
+    app.add_singleton_model(|ctx| UserWorkspaces::mock(workspace_client.clone(), vec![], ctx));
 
     let detected_repositories = app.add_singleton_model(|_| DetectedRepositories::default());
     let repository_metadata_model = app.add_singleton_model(RepoMetadataModel::new);

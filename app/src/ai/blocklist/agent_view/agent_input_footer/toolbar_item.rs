@@ -71,9 +71,7 @@ pub enum AgentToolbarItemKind {
 impl AgentToolbarItemKind {
     pub fn available_in(&self) -> ToolbarAvailability {
         match self {
-            Self::ContextChip(_) | Self::VoiceInput | Self::FileAttach => {
-                ToolbarAvailability::Both
-            }
+            Self::ContextChip(_) | Self::VoiceInput | Self::FileAttach => ToolbarAvailability::Both,
             Self::ModelSelector
             | Self::NLDToggle
             | Self::ContextWindowUsage

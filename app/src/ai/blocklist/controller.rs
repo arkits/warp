@@ -72,7 +72,6 @@ use chrono::{DateTime, Local};
 use itertools::Itertools;
 use parking_lot::FairMutex;
 use pending_response_streams::PendingResponseStreams;
-use session_sharing_protocol::common::ParticipantId;
 use std::collections::{HashMap, HashSet};
 #[cfg(not(target_family = "wasm"))]
 use std::path::PathBuf;
@@ -199,12 +198,8 @@ impl RequestInput {
         terminal_view_id: EntityId,
         app: &AppContext,
     ) -> Self {
-        let mut me = Self::new_with_common_fields(
-            conversation_id,
-            active_session,
-            terminal_view_id,
-            app,
-        );
+        let mut me =
+            Self::new_with_common_fields(conversation_id, active_session, terminal_view_id, app);
         me.input_messages.insert(task_id, inputs);
         me
     }
@@ -217,12 +212,8 @@ impl RequestInput {
         terminal_view_id: EntityId,
         app: &AppContext,
     ) -> Self {
-        let mut me = Self::new_with_common_fields(
-            conversation_id,
-            active_session,
-            terminal_view_id,
-            app,
-        );
+        let mut me =
+            Self::new_with_common_fields(conversation_id, active_session, terminal_view_id, app);
         for result in action_results.into_iter() {
             me.input_messages
                 .entry(result.task_id.clone())

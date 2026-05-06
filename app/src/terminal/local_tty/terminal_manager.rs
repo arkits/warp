@@ -21,7 +21,7 @@ use parking_lot::{FairMutex, Mutex};
 use pathfinder_geometry::vector::Vector2F;
 
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
-use crate::ai::blocklist::agent_view::{AgentViewController, AgentViewControllerEvent};
+use crate::ai::blocklist::agent_view::AgentViewControllerEvent;
 use crate::ai::blocklist::{InputConfig, SerializedBlockListItem};
 use crate::terminal::view::ConversationRestorationInNewPaneType;
 
@@ -829,7 +829,6 @@ impl TerminalManager {
             },
         );
     }
-
 }
 
 /// Determine whether to show password notifications based on the user's settings.

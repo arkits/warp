@@ -40,11 +40,7 @@ fn initialize_test_app(app: &mut App) {
     app.add_singleton_model(|_| VimRegisters::new());
     app.add_singleton_model(|_| KeybindingChangedNotifier::mock());
     app.add_singleton_model(|ctx| {
-        UserWorkspaces::mock(
-            Arc::new(MockWorkspaceClient::new()),
-            vec![],
-            ctx,
-        )
+        UserWorkspaces::mock(Arc::new(MockWorkspaceClient::new()), vec![], ctx)
     });
 }
 

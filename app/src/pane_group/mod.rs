@@ -79,8 +79,7 @@ use warp_util::path::convert_wsl_to_windows_host_path;
 #[cfg(feature = "local_fs")]
 use warp_util::path::LineAndColumnArg;
 use warpui::elements::{
-    CrossAxisAlignment, DispatchEventResult, EventHandler, Flex, MainAxisSize, Shrinkable,
-    Stack,
+    CrossAxisAlignment, DispatchEventResult, EventHandler, Flex, MainAxisSize, Shrinkable, Stack,
 };
 use warpui::keymap::{Context, EditableBinding, FixedBinding};
 use warpui::notification::NotificationSendError;
@@ -2807,12 +2806,12 @@ impl PaneGroup {
             .copied()
             .collect();
 
-        let resources = TerminalViewResources {
+        let _resources = TerminalViewResources {
             tips_completed: self.tips_completed.clone(),
             server_api: self.server_api.clone(),
             model_event_sender: self.model_event_sender.clone(),
         };
-        let view_size = Self::estimated_view_bounds(ctx).size();
+        let _view_size = Self::estimated_view_bounds(ctx).size();
 
         for task_id in ready_tasks {
             let Some(pane_id) = self
@@ -4954,7 +4953,6 @@ impl PaneGroup {
         let terminal_view = terminal_manager.as_ref(ctx).view();
         (terminal_view, terminal_manager)
     }
-
 
     fn create_conversation_viewer(
         conversation: AIConversation,

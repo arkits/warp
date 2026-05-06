@@ -23,7 +23,7 @@ use crate::{
         },
         BulkCreateCloudObjectResult, BulkCreateGenericStringObjectsRequest,
         CreateCloudObjectResult, CreateObjectRequest, GenericStringObjectFormat,
-        GenericStringObjectUniqueKey, JsonObjectType, ObjectDeleteResult, ObjectMetadataUpdateResult,
+        GenericStringObjectUniqueKey, ObjectDeleteResult, ObjectMetadataUpdateResult,
         ObjectPermissionUpdateResult, ObjectPermissionsUpdateData, ObjectType, ObjectsToUpdate,
         Owner, Revision, ServerFolder, ServerMetadata, ServerNotebook, ServerObject,
         ServerPermissions, ServerWorkflow, UpdateCloudObjectResult,
@@ -52,7 +52,10 @@ impl LocalObjectClient {
 
 #[async_trait]
 impl ObjectClient for LocalObjectClient {
-    async fn create_workflow(&self, _request: CreateObjectRequest) -> Result<CreateCloudObjectResult> {
+    async fn create_workflow(
+        &self,
+        _request: CreateObjectRequest,
+    ) -> Result<CreateCloudObjectResult> {
         Err(anyhow!("local-only: no cloud connection"))
     }
 
@@ -82,7 +85,10 @@ impl ObjectClient for LocalObjectClient {
         Err(anyhow!("local-only: no cloud connection"))
     }
 
-    async fn create_notebook(&self, _request: CreateObjectRequest) -> Result<CreateCloudObjectResult> {
+    async fn create_notebook(
+        &self,
+        _request: CreateObjectRequest,
+    ) -> Result<CreateCloudObjectResult> {
         Err(anyhow!("local-only: no cloud connection"))
     }
 
@@ -96,7 +102,10 @@ impl ObjectClient for LocalObjectClient {
         Err(anyhow!("local-only: no cloud connection"))
     }
 
-    async fn create_folder(&self, _request: CreateObjectRequest) -> Result<CreateCloudObjectResult> {
+    async fn create_folder(
+        &self,
+        _request: CreateObjectRequest,
+    ) -> Result<CreateCloudObjectResult> {
         Err(anyhow!("local-only: no cloud connection"))
     }
 

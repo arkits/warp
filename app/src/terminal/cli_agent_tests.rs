@@ -1,10 +1,10 @@
+use chrono::Local;
+use smol_str::SmolStr;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use chrono::Local;
-use warpui::App;
-use smol_str::SmolStr;
 use warp_editor::render::model::LineCount;
 use warp_util::path::EscapeChar;
+use warpui::App;
 
 use super::{
     build_diff_hunk_prompt, build_review_prompt, build_selection_line_range_prompt,
@@ -393,7 +393,6 @@ fn test_detect_with_alias_and_env_var() {
     });
 }
 
-
 #[test]
 fn test_serialized_name_round_trips_known_agents() {
     for agent in enum_iterator::all::<CLIAgent>() {
@@ -419,4 +418,3 @@ fn test_from_serialized_name_falls_back_to_unknown() {
         CLIAgent::Unknown
     );
 }
-

@@ -1,17 +1,12 @@
 use crate::{
-    changelog_model::ChangelogModel,
-    channel::ChannelState,
-    features::FeatureFlag,
-    resource_center::skip_tips_and_write_to_user_defaults,
-    send_telemetry_from_ctx,
-    server::telemetry::TelemetryEvent,
-    settings::Settings,
+    changelog_model::ChangelogModel, channel::ChannelState, features::FeatureFlag,
+    resource_center::skip_tips_and_write_to_user_defaults, send_telemetry_from_ctx,
+    server::telemetry::TelemetryEvent, settings::Settings,
 };
 use warpui::{
     elements::{
-        Align, ClippedScrollStateHandle, ClippedScrollable, Container, Element,
-        Empty, Fill, Flex, Hoverable, MainAxisSize, MouseStateHandle,
-        ParentElement, Shrinkable,
+        Align, ClippedScrollStateHandle, ClippedScrollable, Container, Element, Empty, Fill, Flex,
+        Hoverable, MainAxisSize, MouseStateHandle, ParentElement, Shrinkable,
     },
     platform::Cursor,
     presenter::ChildView,

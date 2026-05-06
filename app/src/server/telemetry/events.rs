@@ -55,7 +55,6 @@ use crate::pane_group::PaneDragDropLocation;
 use crate::prompt::editor_modal::OpenSource as PromptEditorOpenSource;
 use crate::search::command_search::searcher::CommandSearchItemAction;
 use crate::search::QueryFilter;
-use crate::server::block::DisplaySetting;
 use crate::server::ids::ObjectUid;
 use crate::server::ids::ServerId;
 use crate::settings::import::config::ParsedTerminalSetting;
@@ -377,7 +376,6 @@ pub struct OpenedSharingDialogEvent {
     /// Metadata for the object being shared, if it's a Warp Drive object.
     #[serde(flatten)]
     pub object_metadata: Option<CloudObjectTelemetryMetadata>,
-
 }
 
 /// How the user opened the Warp Drive sharing dialog.
@@ -3105,9 +3103,7 @@ impl TelemetryEvent {
             TelemetryEvent::QuitModalShown {
                 running_processes,
                 modal_for,
-            } => Some(
-                json!({ "running_processes": running_processes, "modal_for": modal_for }),
-            ),
+            } => Some(json!({ "running_processes": running_processes, "modal_for": modal_for })),
             TelemetryEvent::QuitModalCancel {
                 nav_palette,
                 modal_for,

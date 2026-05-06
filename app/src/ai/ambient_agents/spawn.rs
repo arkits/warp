@@ -9,7 +9,9 @@ use session_sharing_protocol::common::SessionId;
 
 use super::AmbientAgentTaskId;
 use super::{AmbientAgentTask, AmbientAgentTaskState};
-use crate::server::server_api::ai::{AIClient, RunFollowupRequest, SpawnAgentRequest, TaskStatusMessage};
+use crate::server::server_api::ai::{
+    AIClient, RunFollowupRequest, SpawnAgentRequest, TaskStatusMessage,
+};
 
 /// How long to poll for the agent to be ready.
 /// This should be long enough that the shared session will be joinable.

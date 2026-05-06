@@ -58,13 +58,7 @@ fn initialize_code_editor_app(app: &mut App) {
 
     // Add UserWorkspaces mock (required by CodeEditorView)
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
-    app.add_singleton_model(|ctx| {
-        UserWorkspaces::mock(
-            workspace_client_mock.clone(),
-            vec![],
-            ctx,
-        )
-    });
+    app.add_singleton_model(|ctx| UserWorkspaces::mock(workspace_client_mock.clone(), vec![], ctx));
 
     // Enable vim mode in editor settings
     app.update_model(

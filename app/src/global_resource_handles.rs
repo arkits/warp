@@ -1,6 +1,6 @@
 use crate::{
-    banner::BannerState, persistence::ModelEvent,
-    resource_center::TipsCompleted, settings::SettingsFileError,
+    banner::BannerState, persistence::ModelEvent, resource_center::TipsCompleted,
+    settings::SettingsFileError,
 };
 use std::sync::mpsc::SyncSender;
 use warpui::{Entity, ModelHandle, SingletonEntity};

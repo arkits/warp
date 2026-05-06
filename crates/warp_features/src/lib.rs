@@ -8,22 +8,13 @@ pub use overrides::{get_overrides, set_overrides};
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Debug, Sequence)]
 pub enum FeatureFlag {
     Changelog,
-    CocoaSentry,
     CrashReporting,
     DebugMode,
     Autoupdate,
-    LogExpensiveFramesInSentry,
     WithSandboxTelemetry,
     RecordAppActiveEvents,
 
-    WelcomeTips,
-    ThinStrokes,
-    WelcomeBlock,
-
     RuntimeFeatureFlags,
-
-    /// Enables cloud object related features for an explicit allowlist of team testers.
-    CloudObjects,
 
     /// Does grid storage go forwards or backwards
     SequentialStorage,
@@ -41,9 +32,6 @@ pub enum FeatureFlag {
     /// menu bar.
     ToggleBootstrapBlock,
 
-    /// Enabling context chips functionality for prompt
-    ContextChips,
-
     /// Ligature Support in the Editor and Grid
     Ligatures,
 
@@ -55,10 +43,6 @@ pub enum FeatureFlag {
     /// Used to gate an experiment we're doing on WarpDev ONLY
     /// to get a sense of PTY throughput over time.
     RecordPtyThroughput,
-
-    /// Enables a setting on Intel Dual-GPU Macs to enable use of the integrated GPU over the
-    /// discrete GPU.
-    IntegratedGPU,
 
     /// Warp Agent Mode.
     AgentMode,
@@ -85,9 +69,6 @@ pub enum FeatureFlag {
     /// Enable multiselect in Notebooks and Warp Text.
     RichTextMultiselect,
 
-    /// If enabled, the default input mode is set to waterfall for new users.
-    DefaultWaterfallMode,
-
     /// Makes the input editor's prompt selectable.
     SelectablePrompt,
 
@@ -106,9 +87,6 @@ pub enum FeatureFlag {
 
     /// Enable dynamic enum parameter types for workflow arguments
     DynamicWorkflowEnums,
-
-    /// Enables next action prediction within Warp, powered by AI.
-    AgentPredict,
 
     /// Enables receiving shared Warp Drive objects.
     SharedWithMe,
@@ -133,10 +111,6 @@ pub enum FeatureFlag {
     /// Replaces the bookmark button with a "save as workflow" button.
     BlockToolbeltSaveAsWorkflow,
 
-    /// Lazily builds scenes at render time instead of eagerly when a view
-    /// changes.
-    LazySceneBuilding,
-
     /// Removes the extraneous padding from the alt-screen that we previously had
     /// to keep consistent size between blocklist and alt-screen.
     ///
@@ -160,9 +134,6 @@ pub enum FeatureFlag {
     SshDragAndDrop,
     DragTabsToWindows,
 
-    /// Enables the overflow menu on AI blocks.
-    AIBlockOverflowMenu,
-
     /// Enables cycling through the next command suggestions with down arrow.
     CycleNextCommandSuggestion,
 
@@ -173,8 +144,6 @@ pub enum FeatureFlag {
 
     /// Enables partial next command suggestions with a prefix.
     PartialNextCommandSuggestions,
-
-    AIGeneratedOnboardingSuggestions,
 
     /// Enables iTerm image rendering
     ITermImages,
@@ -208,12 +177,6 @@ pub enum FeatureFlag {
     /// Enables actual collection of AI analytics data per the revised AI analytics policy.
     GlobalAIAnalyticsCollection,
 
-    /// Enables the XML output system prompt for the primary (terminal) agent in Agent Mode.
-    AgentModePrimaryXML,
-
-    /// Enables the XML output system prompt for the pre-plan agent in Agent Mode.
-    AgentModePrePlanXML,
-
     /// Enables Agent Mode onboarding.
     AgentOnboarding,
 
@@ -235,9 +198,6 @@ pub enum FeatureFlag {
     /// If enabled, command palette searches will use Tantivy search instead of the default fuzzy search.
     UseTantivySearch,
 
-    /// Allows AI to call the grep tool.
-    GrepTool,
-
     /// MCP server v0 functionality.
     McpServer,
 
@@ -247,17 +207,8 @@ pub enum FeatureFlag {
     /// UNIX shells running "natively" on Windows via MSYS2.
     MSYS2Shells,
 
-    /// Allows AI to call the file retrieval tools.
-    FileRetrievalTools,
-
-    /// Reload files in an AI conversation to prevent stale files.
-    ReloadStaleConversationFiles,
-
     /// Auto generate the title when creating a shared block.
     SharedBlockTitleGeneration,
-
-    /// Retry truncated file edit responses from the coding agent.
-    RetryTruncatedCodeResponses,
 
     /// Enables reading images with the `read_files` tool.
     ReadImageFiles,
@@ -365,9 +316,6 @@ pub enum FeatureFlag {
     /// Enables selection-as-context functionality in the code editor.
     SelectionAsContext,
 
-    /// A context chip that shows when the PWD is inside of a git repository.
-    CodeModeChip,
-
     /// Enables the prompt chip that displays the GitHub PR for the current branch.
     GithubPrPromptChip,
 
@@ -474,8 +422,6 @@ pub enum FeatureFlag {
     /// Displays debugging IDs for MCP servers, installations, and gallery items.
     McpDebuggingIds,
 
-    /// Enables rendering of images in markdown files and AI responses.
-    MarkdownImages,
     /// Enables rendering Mermaid diagrams in markdown notebooks.
     MarkdownMermaid,
     /// Enables editable Mermaid diagrams to behave atomically in notebook and plan editors.
@@ -532,9 +478,6 @@ pub enum FeatureFlag {
 
     /// Enables starting cloud mode from a local session.
     CloudModeFromLocalSession,
-
-    /// Enables host selection in cloud mode.
-    CloudModeHostSelector,
 
     /// Enables Warp Managed Secrets functionality.
     WarpManagedSecrets,
@@ -812,7 +755,6 @@ pub const DEBUG_FLAGS: &[FeatureFlag] = &[FeatureFlag::DebugMode, FeatureFlag::R
 /// Features enabled for the development team.  The expectation is that, over
 /// time, these will move on to PREVIEW_FLAGS before being launched.
 pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
-    FeatureFlag::LogExpensiveFramesInSentry,
     FeatureFlag::ToggleBootstrapBlock,
     FeatureFlag::RemoveAutosuggestionDuringTabCompletions,
     FeatureFlag::ResizeFix,
@@ -820,18 +762,15 @@ pub const DOGFOOD_FLAGS: &[FeatureFlag] = &[
     #[cfg(not(windows))]
     FeatureFlag::SSHTmuxWrapper,
     FeatureFlag::AgentModeAnalytics,
-    FeatureFlag::LazySceneBuilding,
     FeatureFlag::SshDragAndDrop,
     FeatureFlag::ImeMarkedText,
     FeatureFlag::MSYS2Shells,
-    FeatureFlag::RetryTruncatedCodeResponses,
     FeatureFlag::ContextLineReviewComments,
     FeatureFlag::RunGeneratorsWithCmdExe,
     FeatureFlag::NLDClassifierModelEnabled,
     FeatureFlag::Projects,
     FeatureFlag::ProviderCommand,
     FeatureFlag::ArtifactCommand,
-    FeatureFlag::MarkdownImages,
     FeatureFlag::FileAndDiffSetComments,
     FeatureFlag::FileGlobV2Warnings,
     FeatureFlag::SummarizationViaMessageReplacement,

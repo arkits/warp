@@ -2221,7 +2221,7 @@ impl AgentDriver {
     fn handle_terminal_driver_event(
         &mut self,
         event: &TerminalDriverEvent,
-        ctx: &mut ModelContext<Self>,
+        _ctx: &mut ModelContext<Self>,
     ) {
         match event {
             TerminalDriverEvent::SlowBootstrap => {

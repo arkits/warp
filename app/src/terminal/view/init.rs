@@ -830,9 +830,7 @@ pub fn init(app: &mut AppContext) {
             "Setup Guide",
             TerminalAction::OnboardingFlow(OnboardingVersion::Legacy),
         )
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         // UniversalInput callout debug bindings
         EditableBinding::new(
             "terminal:agent_onboarding_flow_legacy_terminal",
@@ -842,9 +840,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         EditableBinding::new(
             "terminal:agent_onboarding_flow_universal_input_project",
             "[Debug] Onboarding Callout: WarpInput - Project",
@@ -855,9 +851,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         EditableBinding::new(
             "terminal:agent_onboarding_flow_universal_input_no_project",
             "[Debug] Onboarding Callout: WarpInput - No Project",
@@ -868,9 +862,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         // AgentModality callout debug bindings
         EditableBinding::new(
             "terminal:agent_onboarding_flow_modality_project",
@@ -885,9 +877,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         EditableBinding::new(
             "terminal:agent_onboarding_flow_modality_no_project",
             "[Debug] Onboarding Callout: Modality - No Project",
@@ -901,9 +891,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
         EditableBinding::new(
             "terminal:agent_onboarding_flow_modality_terminal",
             "[Debug] Onboarding Callout: Modality - Terminal",
@@ -917,9 +905,7 @@ pub fn init(app: &mut AppContext) {
         .with_enabled(|| {
             FeatureFlag::AgentOnboarding.is_enabled() && ChannelState::enable_debug_features()
         })
-        .with_context_predicate(
-            id!("Terminal"),
-        ),
+        .with_context_predicate(id!("Terminal")),
     ]);
 
     app.register_editable_bindings([EditableBinding::new(

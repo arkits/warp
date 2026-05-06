@@ -142,11 +142,7 @@ impl UserWorkspaces {
 
     #[cfg(test)]
     pub fn default_mock(ctx: &mut ModelContext<Self>) -> Self {
-        Self::mock(
-            Arc::new(MockWorkspaceClient::new()),
-            vec![],
-            ctx,
-        )
+        Self::mock(Arc::new(MockWorkspaceClient::new()), vec![], ctx)
     }
 
     pub fn new(

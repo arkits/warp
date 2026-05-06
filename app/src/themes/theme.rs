@@ -315,7 +315,10 @@ impl WarpThemeConfig {
             (ThemeKind::SolarFlare, solar_flare()),
             (ThemeKind::Adeberry, adeberry()),
             (ThemeKind::SentReferralReward, sent_referral_reward()),
-            (ThemeKind::ReceivedReferralReward, received_referral_reward()),
+            (
+                ThemeKind::ReceivedReferralReward,
+                received_referral_reward(),
+            ),
         ]);
         WarpThemeConfig { theme_map }
     }

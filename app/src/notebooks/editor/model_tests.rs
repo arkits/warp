@@ -128,13 +128,7 @@ fn model_from_markdown(
 fn initialize_deps(app: &mut App) {
     app.add_singleton_model(|_| Appearance::mock());
     let workspace_client_mock = Arc::new(MockWorkspaceClient::new());
-    app.add_singleton_model(|ctx| {
-        UserWorkspaces::mock(
-            workspace_client_mock.clone(),
-            vec![],
-            ctx,
-        )
-    });
+    app.add_singleton_model(|ctx| UserWorkspaces::mock(workspace_client_mock.clone(), vec![], ctx));
     app.add_singleton_model(|_| AuthStateProvider::new_for_test());
     #[cfg(feature = "voice_input")]
     app.add_singleton_model(voice_input::VoiceInput::new);

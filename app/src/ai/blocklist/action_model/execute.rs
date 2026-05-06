@@ -887,7 +887,6 @@ impl BlocklistAIActionExecutor {
                 .update(ctx, |executor, ctx| executor.should_autoexecute(input, ctx)),
         }
     }
-
 }
 impl Entity for BlocklistAIActionExecutor {
     type Event = BlocklistAIActionExecutorEvent;

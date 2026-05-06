@@ -53,12 +53,10 @@ impl ManagedSecretsClient for ServerApi {
         let response = self.send_graphql_request(operation, None).await?;
 
         match response.user {
-            UserResult::UserOutput(output) => {
-                Ok(ManagedSecretConfigs {
-                    user_secrets: output.user.managed_secrets,
-                    team_secrets: HashMap::new(),
-                })
-            }
+            UserResult::UserOutput(output) => Ok(ManagedSecretConfigs {
+                user_secrets: output.user.managed_secrets,
+                team_secrets: HashMap::new(),
+            }),
             UserResult::UserFacingError(error) => {
                 Err(anyhow!(get_user_facing_error_message(error)))
             }

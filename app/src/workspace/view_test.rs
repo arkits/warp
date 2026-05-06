@@ -53,7 +53,6 @@ use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 
-use crate::terminal::local_tty::spawner::PtySpawner;
 use crate::ai::active_agent_views_model::ActiveAgentViewsModel;
 use crate::ai::agent_conversations_model::AgentConversationsModel;
 use crate::ai::ambient_agents::github_auth_notifier::GitHubAuthNotifier;
@@ -63,6 +62,7 @@ use crate::ai::mcp::{
 };
 use crate::resource_center::Tip;
 use crate::terminal::cli_agent_sessions::CLIAgentSessionsModel;
+use crate::terminal::local_tty::spawner::PtySpawner;
 use crate::test_util::settings::initialize_settings_for_tests;
 use crate::undo_close::UndoCloseSettings;
 use crate::warp_managed_paths_watcher::WarpManagedPathsWatcher;
@@ -596,8 +596,6 @@ fn reopen_closed_session_menu_item(
     }
 }
 
-
-
 #[test]
 fn test_tab_renaming_editor_selections() {
     App::test((), |mut app| async move {
@@ -881,15 +879,7 @@ fn test_workspace_sessions_retrieves_panes() {
     });
 }
 
-
 /// Sets up the workspace with three tabs. The middle tab has two panes, where one is shared.
-
-
-
-
-
-
-
 
 #[test]
 fn test_notebook_pane_tracking() {
@@ -1122,10 +1112,6 @@ fn test_open_or_toggle_warp_drive() {
         });
     });
 }
-
-
-
-
 
 #[test]
 // This tests the end-to-end behavior to correctly switch focus among panels.

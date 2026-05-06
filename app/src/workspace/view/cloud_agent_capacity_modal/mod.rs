@@ -166,9 +166,7 @@ impl CloudAgentCapacityModal {
 
         if can_upgrade {
             let (agent_multiplier, extra_benefits) = match customer_type {
-                CustomerType::Build | CustomerType::BuildMax => {
-                    ("2x", vec!["SSO"])
-                }
+                CustomerType::Build | CustomerType::BuildMax => ("2x", vec!["SSO"]),
                 // Free tier or a legacy plan.
                 _ => ("5x", vec![]),
             };

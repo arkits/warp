@@ -67,11 +67,7 @@ mod tests {
         app.add_singleton_model(|_| SystemStats::new());
         let mock_workspace_client = Arc::new(MockWorkspaceClient::new());
         app.add_singleton_model(|ctx| {
-            UserWorkspaces::mock(
-                mock_workspace_client.clone(),
-                vec![],
-                ctx,
-            )
+            UserWorkspaces::mock(mock_workspace_client.clone(), vec![], ctx)
         });
         app.add_singleton_model(TeamTesterStatus::new);
         app.add_singleton_model(SyncQueue::mock);

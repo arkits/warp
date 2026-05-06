@@ -13,9 +13,9 @@ use crate::server::{cloud_objects::update_manager::UpdateManager, sync_queue::Sy
 use crate::settings::PrivacySettings;
 use crate::settings_view::keybindings::KeybindingChangedNotifier;
 use crate::test_util::settings::initialize_settings_for_tests;
-use crate::workspaces::workspace::Team;
 use crate::workspaces::team_tester::TeamTesterStatus;
 use crate::workspaces::user_workspaces::UserWorkspaces;
+use crate::workspaces::workspace::Team;
 use crate::workspaces::workspace::Workspace;
 use url::Url;
 use warp_core::ui::appearance::Appearance;

@@ -69,9 +69,11 @@ impl TryFrom<Experiment> for ServerExperiment {
 
     fn try_from(value: Experiment) -> Result<Self, Self::Error> {
         match value {
-            Experiment::SessionSharingExperiment | Experiment::SessionSharingControl => Err(
-                anyhow::anyhow!("Session sharing experiments are not supported in local-first Warp"),
-            ),
+            Experiment::SessionSharingExperiment | Experiment::SessionSharingControl => {
+                Err(anyhow::anyhow!(
+                    "Session sharing experiments are not supported in local-first Warp"
+                ))
+            }
             Experiment::BuildPlanAutoReloadControl => Ok(Self::BuildPlanAutoReloadControl),
             Experiment::BuildPlanAutoReloadBannerToggle => {
                 Ok(Self::BuildPlanAutoReloadBannerToggle)

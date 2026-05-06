@@ -19,10 +19,7 @@ use crate::server::server_api::ai::{
 };
 use crate::server::server_api::ServerApi;
 use crate::workspaces::user_workspaces::UserWorkspaces;
-use crate::{
-    util::time_format::format_approx_duration_from_now_utc,
-    ServerApiProvider,
-};
+use crate::{util::time_format::format_approx_duration_from_now_utc, ServerApiProvider};
 use anyhow::{anyhow, Context as _};
 use comfy_table::Cell;
 use futures::{future, StreamExt};

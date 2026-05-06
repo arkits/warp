@@ -990,7 +990,6 @@ fn test_history_up_buffer_restoration() {
     });
 }
 
-
 #[test]
 fn test_history_up_multiline() {
     App::test((), |mut app| async move {

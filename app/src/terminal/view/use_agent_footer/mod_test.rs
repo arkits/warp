@@ -287,4 +287,3 @@ fn use_agent_footer_renders_for_manual_handoff_when_unfinished_ai_block_remains(
         });
     })
 }
-

@@ -154,11 +154,7 @@ fn initialize_test_app(app: &mut App) {
     app.add_singleton_model(|_| DetectedRepositories::default());
     app.add_singleton_model(|_| GlobalCodeReviewModel);
     app.add_singleton_model(|ctx| {
-        UserWorkspaces::mock(
-            Arc::new(MockWorkspaceClient::new()),
-            vec![],
-            ctx,
-        )
+        UserWorkspaces::mock(Arc::new(MockWorkspaceClient::new()), vec![], ctx)
     });
 
     // Add mocks required by rich text editor (used in the CommentEditor)

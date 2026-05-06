@@ -239,7 +239,6 @@ impl SizeUpdate {
     pub fn gap_height_changed(&self) -> bool {
         self.new_gap_height.is_some()
     }
-
 }
 
 /// Terminal size info.

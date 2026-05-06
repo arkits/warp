@@ -424,8 +424,6 @@ bundled_skills = []
 agent_mode = []
 agent_mode_computer_use = []
 agent_mode_debug = []
-agent_mode_primary_xml = []
-agent_mode_pre_plan_xml = []
 agent_onboarding = []
 agent_shared_sessions = []
 ask_user_question = []
@@ -433,7 +431,7 @@ changelog = []
 clear_autosuggestion_on_escape = []
 cloud_object_initial_load = ["enforce_revisions_to_cloud_objects"]
 codebase_index_speedbump = []
-cocoa_sentry = ["crash_reporting"]
+
 command_predictor = []
 context_line_review_comments = []
 completions_v2 = [
@@ -466,24 +464,18 @@ default = [
     "ligatures",
     "dynamic_workflow_enums",
     "rect_selection",
-    "reload_stale_conversation_files",
     "loginless_conversion",
     "warp_packs",
     "ai_rules",
     "suggested_rules",
-    "default_waterfall_mode",
     "am_workflows",
     "autoupdate_ui_revamp",
     "render_agent_mode_output_markdown",
-    "agent_mode_primary_xml",
-    "agent_mode_pre_plan_xml",
     "command_correction_key",
     "kitty_images",
     "global_ai_analytics_collection",
-    "grep_tool",
     "validate_autosuggestions",
     "clear_autosuggestion_on_escape",
-    "file_retrieval_tools",
     "mcp_server",
     "fast_forward_autoexecute_button",
     "image_as_context",
@@ -625,7 +617,6 @@ embedded_code_review_comments = []
 agent_management_view = []
 agent_management_details_view = []
 interactive_conversation_management_view = []
-default_waterfall_mode = []
 enforce_revisions_to_cloud_objects = []
 suggested_agent_mode_workflows = []
 ssh_tmux_wrapper = []
@@ -636,7 +627,6 @@ full_screen_zen_mode = []
 global_ai_analytics_banner = []
 global_ai_analytics_collection = []
 grab_the_baton_editing = []
-grep_tool = []
 # This feature is enabled in graphical builds of Warp, and groups together other features
 # that are not needed in headless builds. Because Cargo features are additive, the default
 # feature set is for a minimal build of Warp, and we add on GUI-specific features here.
@@ -644,10 +634,8 @@ grep_tool = []
 # for things that pull in external dependencies.
 gui = ["voice_input"]
 msys2_shells = []
-file_retrieval_tools = []
 welcome_tab = []
 get_started_tab = []
-code_mode_chip = []
 github_pr_prompt_chip = []
 create_project_flow = []
 agent_mode_evals = [
@@ -699,7 +687,7 @@ local_fs = [
     "repo_metadata/local_fs",
     "warp_core/local_fs",
 ]
-log_expensive_frames_in_sentry = []
+
 markdown_tables = []
 markdown_mermaid = []
 mcp_server = []
@@ -795,11 +783,9 @@ full_source_code_embedding = []
 use_tantivy_search = []
 agent_management_popup = []
 simulate_github_unauthed = []
-reload_stale_conversation_files = []
 nld_fasttext_model = ["input_classifier/fasttext"]
 nld_onnx_model = ["input_classifier/onnx_candle"]
 shared_block_title_generation = []
-retry_truncated_code_responses = []
 usage_based_pricing = []
 ai_context_menu = []
 at_menu_outside_of_ai_mode = []

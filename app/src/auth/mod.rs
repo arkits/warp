@@ -87,9 +87,7 @@ pub fn maybe_log_out(app: &mut AppContext) {
         .show_warning_before_quitting
         .value();
     if show_warning_before_log_out
-        && (num_long_running_commands > 0
-            || num_unsaved_objects > 0
-            || num_unsaved_files > 0)
+        && (num_long_running_commands > 0 || num_unsaved_objects > 0 || num_unsaved_files > 0)
     {
         send_telemetry_sync_from_app_ctx!(TelemetryEvent::LogOutModalShown, app);
         let mut button_data = vec![ModalButton::for_app("Yes, log out", |ctx| {

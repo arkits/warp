@@ -802,7 +802,9 @@ fn umbrella_with_no_visible_subpages_is_skipped_entirely() {
 fn filtered_out_top_level_page_is_skipped() {
     let nav_items = realistic_nav_items();
 
-    let stops = build_nav_stops(&nav_items, |section| section != SettingsSection::BillingAndUsage);
+    let stops = build_nav_stops(&nav_items, |section| {
+        section != SettingsSection::BillingAndUsage
+    });
 
     assert!(
         !stops

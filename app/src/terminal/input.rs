@@ -151,8 +151,7 @@ use crate::{
         EditorDecoratorElements, EditorOptions, EditorSnapshot, EditorView, Event as EditorEvent,
         ImageContextOptions, InteractionState, PathTransformerFn, PlainTextEditorViewAction,
         Point as BufferPoint, PropagateAndNoOpEscapeKey, PropagateAndNoOpNavigationKeys,
-        PropagateHorizontalNavigationKeys, TextColors, TextRun,
-        MAX_IMAGES_PER_CONVERSATION,
+        PropagateHorizontalNavigationKeys, TextColors, TextRun, MAX_IMAGES_PER_CONVERSATION,
     },
     features::FeatureFlag,
     input_suggestions::{
@@ -833,7 +832,6 @@ impl InputSuggestionsMode {
         }
     }
 }
-
 
 /// Where a command execution request originates from.
 #[derive(Clone)]
@@ -1849,11 +1847,7 @@ pub fn init(app: &mut AppContext) {
             "Open AI Command Suggestions",
             InputAction::ShowAiCommandSearch,
         )
-        .with_context_predicate(
-            id!("Input")
-                & id!(flags::IS_ANY_AI_ENABLED)
-                & !id!("AIInput"),
-        )
+        .with_context_predicate(id!("Input") & id!(flags::IS_ANY_AI_ENABLED) & !id!("AIInput"))
         .with_group(bindings::BindingGroup::WarpAi.as_str())
         .with_custom_action(CustomAction::AISearch),
         EditableBinding::new(
@@ -5939,8 +5933,8 @@ impl Input {
         {
             CanExecuteCommand::No(DenyExecutionReason::ExistingActiveCommand)
         } else if active_block
-                .session_id()
-                .is_none_or(|session_id| !History::as_ref(ctx).is_appendable(&session_id))
+            .session_id()
+            .is_none_or(|session_id| !History::as_ref(ctx).is_appendable(&session_id))
         {
             CanExecuteCommand::No(DenyExecutionReason::HistoryNotAppendable)
         } else {
@@ -6234,7 +6228,6 @@ impl Input {
     pub fn unfreeze_and_clear_agent_input(&mut self, _ctx: &mut ViewContext<Self>) {
         // No-op: shared session viewer/sharer roles are no longer active.
     }
-
 
     fn clear_selected_env_var_collection(&mut self) {
         self.env_var_collection_state.selected_env_vars = None;
@@ -12138,11 +12131,7 @@ impl Input {
             .selected_conversation_id(ctx)
         {
             self.ai_controller.update(ctx, move |controller, ctx| {
-                controller.send_queued_user_query_in_conversation(
-                    prompt,
-                    conversation_id,
-                    ctx,
-                );
+                controller.send_queued_user_query_in_conversation(prompt, conversation_id, ctx);
             });
         } else {
             self.ai_controller.update(ctx, move |controller, ctx| {

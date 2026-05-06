@@ -1023,9 +1023,6 @@ fn test_initial_widths_are_computed_correctly() {
     });
 }
 
-
-
-
 /// TODO: look into moving this test somewhere more suitable.
 /// Currently, the pane group is responsible for creating and owning
 /// the terminal manager, which in turn owns the Network model for the share.

@@ -23,9 +23,7 @@ use crate::{
     },
     settings::PrivacySettings,
     settings_view::keybindings::KeybindingChangedNotifier,
-    terminal::{
-        keys::TerminalKeybindings,
-    },
+    terminal::keys::TerminalKeybindings,
     test_util::settings::initialize_settings_for_tests,
     workspace::ActiveSession,
     workspaces::{

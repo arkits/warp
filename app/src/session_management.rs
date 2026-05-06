@@ -207,4 +207,3 @@ pub enum SessionSource {
 impl Entity for SessionSource {
     type Event = ();
 }
-

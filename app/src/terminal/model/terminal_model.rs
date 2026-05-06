@@ -17,7 +17,7 @@ use crate::terminal::model::index::VisibleRow;
 use crate::terminal::model::iterm_image::{ITermImage, ITermImageMetadata};
 use crate::terminal::ssh::util::{InteractiveSshCommand, SshLoginState};
 use crate::terminal::{block_filter::BlockFilterQuery, model::ansi::Handler};
-use crate::terminal::{color, ssh, BlockPadding, ShellHost, SizeUpdate, SizeUpdateReason};
+use crate::terminal::{color, ssh, BlockPadding, ShellHost, SizeUpdate};
 use crate::terminal::{ShellLaunchData, ShellLaunchState};
 use crate::util::AsciiDebug;
 
@@ -29,7 +29,6 @@ use super::ansi::{
 };
 use super::block::{
     AgentInteractionMetadata, Block, BlockId, BlockMetadata, BlockSize, BlocklistEnvVarMetadata,
-    SerializedBlock,
 };
 use super::blockgrid::BlockGrid;
 use super::grid::grid_handler::{
@@ -57,10 +56,9 @@ use crate::terminal::model::ansi::{
 };
 use crate::terminal::model::grid::IndexRegion;
 use crate::terminal::model::session::SessionInfo;
-use crate::terminal::shell::{ShellName, ShellType};
+use crate::terminal::shell::ShellType;
 
 use crate::terminal::model::secrets::ObfuscateSecrets;
-use warp_core::report_error;
 #[cfg(not(target_family = "wasm"))]
 use warpui::util::save_as_file;
 
@@ -2402,7 +2400,7 @@ impl ansi::Handler for TerminalModel {
         // the blocklist (for the local shell).
         self.exit_alt_screen(true);
 
-        let block_id = data.next_block_id.to_string();
+        let _block_id = data.next_block_id.to_string();
         let is_for_in_band_command = self.block_list().active_block().is_in_band_command_block();
         let finished_block_bootstrap_stage = self.block_list().active_block().bootstrap_stage();
         delegate!(self.command_finished(data));

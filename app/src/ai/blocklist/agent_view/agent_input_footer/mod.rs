@@ -15,7 +15,6 @@ use crate::{
         AIRequestUsageModel,
     },
     appearance::Appearance,
-    auth::{AuthManager, AuthStateProvider},
     completer::SessionContext,
     context_chips::{
         self,
@@ -83,11 +82,10 @@ use tokio::fs;
 use voice_input::{StartListeningError, VoiceSessionResult};
 
 use warp_core::{
-    context_flag::ContextFlag,
     report_if_error,
     ui::{
         color::{blend::Blend, contrast::MinimumAllowedContrast, ContrastingColor},
-        theme::{color::internal_colors, AnsiColorIdentifier, Fill},
+        theme::{color::internal_colors, Fill},
     },
 };
 #[cfg(feature = "voice_input")]
@@ -125,7 +123,6 @@ const DISABLE_NLD_TOOLTIP: &str = "Disable terminal command autodetection";
 
 const FAST_FORWARD_ON_TOOLTIP: &str = "Turn off auto-approve all agent actions";
 const FAST_FORWARD_OFF_TOOLTIP: &str = "Auto-approve all agent actions for this task";
-
 
 const CLOUD_MODE_V2_FOOTER_GAP: f32 = 4.;
 
@@ -1279,9 +1276,7 @@ impl AgentInputFooter {
         item: &AgentToolbarItemKind,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {
-        if !item.available_in().is_available_for_cli()
-            || !item.available_to_session_viewer(false)
-        {
+        if !item.available_in().is_available_for_cli() || !item.available_to_session_viewer(false) {
             return None;
         }
 
@@ -1783,7 +1778,6 @@ impl AgentInputFooter {
             button.set_active(is_active, ctx);
         });
     }
-
 
     fn update_context_window_button(&mut self, ctx: &mut ViewContext<Self>) {
         if let Some(conversation) =

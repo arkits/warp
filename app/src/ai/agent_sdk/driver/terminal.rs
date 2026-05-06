@@ -14,9 +14,7 @@ use warp_cli::share::ShareRequest;
 use warp_completer::completer::CommandOutput;
 use warp_core::command::ExitCode;
 use warp_util::path::ShellFamily;
-use warpui::{
-    r#async::FutureExt, AppContext, Entity, ModelContext, ModelHandle, ViewHandle,
-};
+use warpui::{r#async::FutureExt, AppContext, Entity, ModelContext, ModelHandle, ViewHandle};
 
 use crate::terminal::model::session::ExecuteCommandOptions;
 
@@ -231,8 +229,7 @@ impl TerminalDriver {
     ) {
     }
 
-    fn apply_share_requests(&mut self, _ctx: &mut ModelContext<Self>) {
-    }
+    fn apply_share_requests(&mut self, _ctx: &mut ModelContext<Self>) {}
 
     /// Submit `text` to the active CLI agent on the terminal PTY using the
     /// agent-specific submission strategy.

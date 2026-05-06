@@ -12,8 +12,8 @@ use crate::workspaces::team_tester::TeamTesterStatus;
 use crate::workspaces::update_manager::TeamUpdateManager;
 use crate::workspaces::user_workspaces::UserWorkspaces;
 use crate::workspaces::workspace::{
-    AdminEnablementSetting, CodebaseContextSettings, HostEnablementSetting, LlmHostSettings,
-    Team, Workspace,
+    AdminEnablementSetting, CodebaseContextSettings, HostEnablementSetting, LlmHostSettings, Team,
+    Workspace,
 };
 
 use settings::{PrivatePreferences, PublicPreferences};

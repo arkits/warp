@@ -44,7 +44,6 @@ use warpui::{
 
 use super::PaneDropTargetData;
 
-
 pub(crate) mod components;
 
 pub(crate) const PANE_HEADER_HEIGHT: f32 = 34.;
@@ -473,11 +472,10 @@ impl<P: BackingView> PaneHeader<P> {
             required_controls.add_child(close_button);
         }
 
-        let mut optional_controls = Flex::row()
+        let optional_controls = Flex::row()
             .with_main_axis_alignment(MainAxisAlignment::End)
             .with_cross_axis_alignment(CrossAxisAlignment::Center)
             .with_main_axis_size(MainAxisSize::Min);
-
 
         let optional_controls =
             Shrinkable::new(1., Clipped::new(optional_controls.finish()).finish()).finish();
@@ -501,7 +499,7 @@ impl<P: BackingView> PaneHeader<P> {
         &self,
         stack: &mut Stack,
         should_display_overflow_menu_button: bool,
-        app: &AppContext,
+        _app: &AppContext,
     ) {
         match self.open_overlay {
             OpenOverlay::OverflowMenu => {

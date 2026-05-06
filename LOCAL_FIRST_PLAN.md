@@ -127,7 +127,15 @@ Phase 6 progress (incremental):
   - Updated `root_view.rs` to pass `false` directly where the function was called.
   - Removed `TeamsChanged` handler that updated the free-user-no-ai experiment lock (now a no-op arm).
   - Deleted the dead `FreeUserNoAiSlide` from `crates/onboarding/`, removed the onboarding model flag that selected it, removed the dedicated upgrade telemetry event, and dropped the now-unused agent price badge plumbing.
+- Removed `FeatureFlag::TeamApiKeys`, `FeatureFlag::UsageBasedPricing`, `FeatureFlag::MultiWorkspace`, `FeatureFlag::KnowledgeSidebar`, `FeatureFlag::FetchChannelVersionsFromWarpServer`, `FeatureFlag::FetchGenericStringObjects`:
+  - Inlined `!UsageBasedPricing` as always-true (simplified settings AI page and platform page).
+  - Removed `TeamApiKeys` and `MultiWorkspace` guarded code blocks (always-false branches deleted).
+  - Removed their Cargo feature registrations from `app/src/lib.rs` and enum variants from `crates/warp_features/src/lib.rs`.
 - Code compiles with zero errors after all cleanups.
+- Removed `FeatureFlag::CocoaSentry`, `FeatureFlag::LogExpensiveFramesInSentry` (Sentry crash reporting was removed; these flags had zero call sites), and `FeatureFlag::CloudModeHostSelector` (no Cargo feature ever defined, never registered). Removed their Cargo feature entries from `app/Cargo.toml` and startup registrations from `app/src/lib.rs`.
+- Removed 19 additional orphaned flags with zero `FeatureFlag::X.is_enabled()` call sites across the entire project: `WelcomeTips`, `ThinStrokes`, `WelcomeBlock`, `CloudObjects`, `ContextChips`, `IntegratedGPU`, `AgentPredict`, `LazySceneBuilding`, `AIBlockOverflowMenu`, `AIGeneratedOnboardingSuggestions`, `AgentModePrimaryXML`, `AgentModePrePlanXML`, `GrepTool`, `FileRetrievalTools`, `ReloadStaleConversationFiles`, `RetryTruncatedCodeResponses`, `CodeModeChip`, `DefaultWaterfallMode`, `MarkdownImages`. Removed their Cargo feature definitions, `app/src/lib.rs` startup registrations, and `DOGFOOD_FLAGS` entries as applicable.
+- Code compiles with zero errors for both default and `--features local` builds.
+- **Current Phase 6 status**: Remaining cloud flags (`CloudMode`, `OzHandoff`, `CloudModeSetupV2`, `CloudModeInputV2`, `CloudEnvironments`, etc.) are already behind Cargo features not included in the OSS build and will be removed when their gated code is deleted in Phases 4c/5a/5b.
 
 Phase 7 progress:
 - Added `WarpServerConfig::local()` and `OzConfig::local()` constructors to `crates/warp_core/src/channel/config.rs` — both return empty strings with no production credentials.

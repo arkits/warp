@@ -43,7 +43,7 @@ use crate::{
     cloud_object::{
         model::{
             persistence::{CloudModel, CloudModelEvent, UpdateSource},
-            view::{Editor, EditorState},
+            view::EditorState,
         },
         CloudObject, CloudObjectEventEntrypoint, ObjectType, Owner, Space,
     },
@@ -2178,8 +2178,6 @@ impl View for NotebookView {
                     .finish(),
             ),
         };
-
-
 
         if self
             .active_notebook_data

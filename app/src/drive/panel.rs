@@ -17,7 +17,7 @@ use crate::{
     notebooks::{manager::NotebookSource, CloudNotebook},
     server::{
         cloud_objects::update_manager::{InitiatedBy, UpdateManager},
-        ids::{ClientId, ServerId, SyncId},
+        ids::{ClientId, SyncId},
         telemetry::SharingDialogSource,
     },
     workflows::{manager::WorkflowOpenSource, CloudWorkflow, WorkflowViewMode},
@@ -353,21 +353,15 @@ impl DrivePanel {
             CloudViewModel::as_ref(ctx).object_space(&cloud_object_type_and_id.uid(), ctx)
         {
             match space {
-                Space::Team { team_uid } => {
-                    match cloud_object_type_and_id {
-                        CloudObjectTypeAndId::Notebook(_) => {
-                            if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1)
-                            {
-                            }
-                        }
-                        CloudObjectTypeAndId::Workflow(_) => {
-                            if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1)
-                            {
-                            }
-                        }
-                        _ => (),
+                Space::Team { team_uid } => match cloud_object_type_and_id {
+                    CloudObjectTypeAndId::Notebook(_) => {
+                        if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1) {}
                     }
-                }
+                    CloudObjectTypeAndId::Workflow(_) => {
+                        if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1) {}
+                    }
+                    _ => (),
+                },
                 Space::Personal => match cloud_object_type_and_id {
                     CloudObjectTypeAndId::Notebook(_) => {
                         if has_feature_gated_anonymous_user_reached_notebook_limit(ctx) {

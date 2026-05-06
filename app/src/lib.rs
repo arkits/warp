@@ -220,9 +220,7 @@ use crate::palette::PaletteMode;
 use crate::persistence::PersistenceWriter;
 use crate::projects::ProjectManagementModel;
 use crate::server::cloud_objects::{
-    listener::Listener,
-    local_object_client::LocalObjectClient,
-    update_manager::UpdateManager,
+    listener::Listener, local_object_client::LocalObjectClient, update_manager::UpdateManager,
 };
 use crate::server::experiments::ServerExperiments;
 use crate::server::sync_queue::{QueueItem, SyncQueue};
@@ -746,7 +744,6 @@ fn init_common(launch_mode: &LaunchMode, timer: Option<&mut IntervalTimer>) -> R
     // for other entrypoints.
     init_feature_flags();
 
-
     if launch_mode.needs_profiling() {
         tracing::init()?;
     }
@@ -1007,12 +1004,7 @@ fn run_internal(mut launch_mode: LaunchMode) -> Result<()> {
         ctx.add_singleton_model(move |ctx| {
             plugin::PluginHost::new(ctx).expect("Could not instantiate PluginHost")
         });
-        let app_state = initialize_app(
-            &launch_mode,
-            timer,
-            startup_toml_parse_error,
-            ctx,
-        );
+        let app_state = initialize_app(&launch_mode, timer, startup_toml_parse_error, ctx);
 
         if ImprovedPaletteSearch::improved_search_enabled(ctx) {
             FeatureFlag::UseTantivySearch.set_enabled(true);
@@ -1585,13 +1577,7 @@ fn initialize_app(
         unsynced_actions.into_iter(),
     ));
 
-    ctx.add_singleton_model(|ctx| {
-        SyncQueue::new(
-            all_queue_items,
-            LocalObjectClient::new(),
-            ctx,
-        )
-    });
+    ctx.add_singleton_model(|ctx| SyncQueue::new(all_queue_items, LocalObjectClient::new(), ctx));
 
     {
         let conversations = &multi_agent_conversations;
@@ -1629,16 +1615,10 @@ fn initialize_app(
     // and before the UpdateManager models because they rely on the TeamTester model.
     ctx.add_singleton_model(TeamTesterStatus::new);
 
-    ctx.add_singleton_model(|ctx| {
-        TeamUpdateManager::new(persistence_writer.sender(), ctx)
-    });
+    ctx.add_singleton_model(|ctx| TeamUpdateManager::new(persistence_writer.sender(), ctx));
 
     ctx.add_singleton_model(|ctx| {
-        UpdateManager::new(
-            persistence_writer.sender(),
-            LocalObjectClient::new(),
-            ctx,
-        )
+        UpdateManager::new(persistence_writer.sender(), LocalObjectClient::new(), ctx)
     });
 
     let toml_file_path = settings::user_preferences_toml_file_path();
@@ -1700,12 +1680,7 @@ fn initialize_app(
     ctx.add_singleton_model(NotebookKeybindings::new);
     ctx.add_singleton_model(TerminalKeybindings::new);
     ctx.add_singleton_model(|_| ActiveSession::default());
-    ctx.add_singleton_model(|ctx| {
-        Listener::new(
-            LocalObjectClient::new(),
-            ctx,
-        )
-    });
+    ctx.add_singleton_model(|ctx| Listener::new(LocalObjectClient::new(), ctx));
 
     #[cfg(all(not(target_family = "wasm"), feature = "local_tty"))]
     {
@@ -2366,12 +2341,8 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::Autoupdate,
         #[cfg(feature = "changelog")]
         FeatureFlag::Changelog,
-        #[cfg(feature = "cocoa_sentry")]
-        FeatureFlag::CocoaSentry,
         #[cfg(feature = "crash_reporting")]
         FeatureFlag::CrashReporting,
-        #[cfg(feature = "log_expensive_frames_in_sentry")]
-        FeatureFlag::LogExpensiveFramesInSentry,
         #[cfg(feature = "record_app_active_events")]
         FeatureFlag::RecordAppActiveEvents,
         #[cfg(feature = "runtime_feature_flags")]
@@ -2392,8 +2363,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::ResizeFix,
         #[cfg(feature = "richtext_multiselect")]
         FeatureFlag::RichTextMultiselect,
-        #[cfg(feature = "default_waterfall_mode")]
-        FeatureFlag::DefaultWaterfallMode,
         #[cfg(feature = "settings_file")]
         FeatureFlag::SettingsFile,
         #[cfg(feature = "settings_import")]
@@ -2464,10 +2433,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::GlobalAIAnalyticsCollection,
         #[cfg(feature = "default_adeberry_theme")]
         FeatureFlag::DefaultAdeberryTheme,
-        #[cfg(feature = "agent_mode_primary_xml")]
-        FeatureFlag::AgentModePrimaryXML,
-        #[cfg(feature = "agent_mode_pre_plan_xml")]
-        FeatureFlag::AgentModePrePlanXML,
         #[cfg(feature = "agent_onboarding")]
         FeatureFlag::AgentOnboarding,
         #[cfg(feature = "suggested_rules")]
@@ -2482,8 +2447,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::FullSourceCodeEmbedding,
         #[cfg(feature = "use_tantivy_search")]
         FeatureFlag::UseTantivySearch,
-        #[cfg(feature = "grep_tool")]
-        FeatureFlag::GrepTool,
         #[cfg(feature = "mcp_server")]
         FeatureFlag::McpServer,
         #[cfg(feature = "mcp_debugging_ids")]
@@ -2502,14 +2465,8 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::ImageAsContext,
         #[cfg(feature = "msys2_shells")]
         FeatureFlag::MSYS2Shells,
-        #[cfg(feature = "file_retrieval_tools")]
-        FeatureFlag::FileRetrievalTools,
-        #[cfg(feature = "reload_stale_conversation_files")]
-        FeatureFlag::ReloadStaleConversationFiles,
         #[cfg(feature = "shared_block_title_generation")]
         FeatureFlag::SharedBlockTitleGeneration,
-        #[cfg(feature = "retry_truncated_code_responses")]
-        FeatureFlag::RetryTruncatedCodeResponses,
         #[cfg(feature = "read_image_files")]
         FeatureFlag::ReadImageFiles,
         #[cfg(feature = "cross_repo_context")]
@@ -2582,8 +2539,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::PRCommentsSkill,
         #[cfg(feature = "selection_as_context")]
         FeatureFlag::SelectionAsContext,
-        #[cfg(feature = "code_mode_chip")]
-        FeatureFlag::CodeModeChip,
         #[cfg(feature = "github_pr_prompt_chip")]
         FeatureFlag::GithubPrPromptChip,
         #[cfg(feature = "create_project_flow")]

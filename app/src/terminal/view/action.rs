@@ -12,6 +12,15 @@ use warpui::event::ModifiersState;
 use warpui::units::Lines;
 use warpui::EntityId;
 
+use super::inline_banner::{
+    AnonymousUserLoginBannerAction, AwsBedrockLoginBannerAction, AwsCliNotInstalledBannerAction,
+    OpenInWarpBannerAction, VimModeBannerAction,
+};
+use super::{
+    AliasExpansionBannerAction, ContextMenuAction, GridHighlightedLink, InputContextMenuAction,
+    NotificationsDiscoveryBannerAction, NotificationsErrorBannerAction, RichContentLink,
+    SSHBannerAction, TerminalEditor,
+};
 use crate::ai::agent::conversation::AIConversationId;
 use crate::ai::agent::AIAgentExchangeId;
 use crate::ai::blocklist::codebase_index_speedbump_banner::CodebaseIndexSpeedbumpBannerAction;
@@ -39,15 +48,6 @@ use crate::{
             SecretHandle,
         },
     },
-};
-use super::inline_banner::{
-    AnonymousUserLoginBannerAction, AwsBedrockLoginBannerAction, AwsCliNotInstalledBannerAction,
-    OpenInWarpBannerAction, VimModeBannerAction,
-};
-use super::{
-    AliasExpansionBannerAction, ContextMenuAction, GridHighlightedLink, InputContextMenuAction,
-    NotificationsDiscoveryBannerAction, NotificationsErrorBannerAction, RichContentLink,
-    SSHBannerAction, TerminalEditor,
 };
 
 pub use onboarding::OnboardingIntention;

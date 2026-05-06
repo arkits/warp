@@ -312,7 +312,7 @@ impl ChannelState {
         option_env!("GIT_RELEASE_TAG")
     }
 
-pub fn show_autoupdate_menu_items() -> bool {
+    pub fn show_autoupdate_menu_items() -> bool {
         CHANNEL_STATE
             .lock()
             .config

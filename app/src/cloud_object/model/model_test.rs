@@ -40,9 +40,9 @@ use crate::settings::init_and_register_user_preferences;
 use crate::settings::Preference;
 use crate::system::SystemStats;
 use crate::workspaces::team_tester::TeamTesterStatus;
-use crate::workspaces::workspace::Team;
 use crate::workspaces::user_profiles::UserProfiles;
 use crate::workspaces::user_workspaces::UserWorkspaces;
+use crate::workspaces::workspace::Team;
 use crate::workspaces::workspace::Workspace;
 
 use crate::workflows::CloudWorkflowModel;

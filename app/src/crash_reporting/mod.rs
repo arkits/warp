@@ -36,11 +36,7 @@ pub(crate) fn init(ctx: &mut AppContext) -> bool {
 pub fn uninit_sentry() {}
 
 /// No-op stub for setting a crash reporting tag.
-pub(crate) fn set_tag<'a, 'b>(
-    _key: impl Into<Cow<'a, str>>,
-    _value: impl Into<Cow<'b, str>>,
-) {
-}
+pub(crate) fn set_tag<'a, 'b>(_key: impl Into<Cow<'a, str>>, _value: impl Into<Cow<'b, str>>) {}
 
 /// No-op stub for setting GPU device info.
 pub(crate) fn set_gpu_device_info(_gpu_device_info: GPUDeviceInfo) {}
