@@ -36,7 +36,6 @@ pub enum ServerExperiment {
     CodebaseContextExperiment,
     CodebaseContextControl,
     PromptSuggestionsViaMaaControl,
-    PromptSuggestionsViaMaaExperiment,
     PromptSuggestionsViaMaaOutOfBandExperiment,
     OzMultiHarnessControl,
     OzMultiHarnessExperiment,
@@ -97,8 +96,6 @@ impl ServerExperiment {
             Self::PromptSuggestionsViaMaaOutOfBandExperiment => {
                 FeatureFlag::PromptSuggestionsViaMAA.set_enabled(true);
             }
-            // The normal experiment arm is no longer used.
-            Self::PromptSuggestionsViaMaaExperiment => {}
             Self::OzMultiHarnessControl => {
                 FeatureFlag::AgentHarness.set_enabled(false);
             }

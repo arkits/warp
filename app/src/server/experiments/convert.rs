@@ -17,7 +17,6 @@ impl Display for ServerExperiment {
             Self::CodebaseContextControl => "CODEBASE_CONTEXT_CONTROL",
             Self::CodebaseContextExperiment => "CODEBASE_CONTEXT_EXPERIMENT",
             Self::PromptSuggestionsViaMaaControl => "PROMPT_SUGGESTIONS_VIA_MAA_CONTROL",
-            Self::PromptSuggestionsViaMaaExperiment => "PROMPT_SUGGESTIONS_VIA_MAA_EXPERIMENT",
             Self::PromptSuggestionsViaMaaOutOfBandExperiment => {
                 "PROMPT_SUGGESTIONS_VIA_MAA_OOB_EXPERIMENT"
             }
@@ -42,7 +41,6 @@ impl ServerExperiment {
             "CODEBASE_CONTEXT_EXPERIMENT" => Ok(Self::CodebaseContextExperiment),
             "CODEBASE_CONTEXT_CONTROL" => Ok(Self::CodebaseContextControl),
             "PROMPT_SUGGESTIONS_VIA_MAA_CONTROL" => Ok(Self::PromptSuggestionsViaMaaControl),
-            "PROMPT_SUGGESTIONS_VIA_MAA_EXPERIMENT" => Ok(Self::PromptSuggestionsViaMaaExperiment),
             "OZ_MULTI_HARNESS_CONTROL" => Ok(Self::OzMultiHarnessControl),
             "OZ_MULTI_HARNESS_EXPERIMENT" => Ok(Self::OzMultiHarnessExperiment),
             "SSH_REMOTE_SERVER_CONTROL" => Ok(Self::SshRemoteServerControl),
