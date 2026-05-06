@@ -61,7 +61,7 @@ Phase 2b progress:
 Phase 2c progress:
 - Added `cfg!(feature = "local")` early-return guard to `fetch_ambient_agent_tasks_and_cloud_convo_metadata` in `agent_conversations_model.rs`. When running with `--features local`, no cloud AI task/conversation-metadata fetches are attempted; conversations already stored in local SQLite continue to load normally.
 - `persisted_workspace.rs` is workspace-LSP tracking (not cloud AI sync), so no change needed there.
-- AI memory (`FeatureFlag::AIMemories`) is cloud-backed; left for a later phase as it requires its own stub.
+- AI memory (`FeatureFlag::AIMemories`) was removed from warp_features (see Phase 6 notes) — it had no call sites outside the enum declaration.
 - Code compiles with zero errors (`cargo check --package warp --features local`).
 
 Phase 4a progress:
@@ -93,6 +93,34 @@ Phase 1b progress:
 - Stopped writing team rows, workspace-team rows, team settings, and team members from workspace metadata into SQLite. Existing team tables are left as legacy read/migration compatibility for now.
 - Removed team-derived managed secret configs and the hardcoded Uber team CLI-agent special case.
 - Code compiles with zero errors after this slice (`cargo check --package warp`; warnings only).
+
+Phase 4b progress:
+- In local mode, the settings sidebar now omits the "Billing and usage" page and the "Cloud platform" umbrella (CloudEnvironments + OzCloudAPIKeys). These sections have no useful content without a cloud account. Implemented via a `retain` filter on the nav_items Vec, gated on `cfg!(feature = "local")`.
+- Note: The cloud_environments data types and QueueItem::UpdateCloudEnvironment are still present in the codebase because they are part of the cloud_object sync system (which is already a no-op via LocalObjectClient). Full deletion is deferred to Phase 5b/5d when the sync infrastructure is removed.
+- CloudMode, CloudEnvironments, OzHandoff feature flags are already behind Cargo features that are not included in `--features local`, so cloud mode UI never activates in local builds.
+- Code compiles with zero errors (`cargo check --package warp --features local`).
+
+Phase 5c progress (partial):
+- Added `cfg!(feature = "local")` guards in `server/experiments/model.rs`:  
+  - On startup, loads an empty experiment set (ignores any cached server experiments from a previous cloud login).
+  - Rejects all incoming experiment updates without applying them.
+- Removed no-op server experiment variants: `EnvVarsEarlyAccessExperiment`, `WindowsLaunchExperiment`, `SuggestedCodeDiffsControl`, `SuggestedCodeDiffsExperiment`. These had empty handlers and were cleaned from both `mod.rs` and `convert.rs`.
+- Code compiles with zero errors.
+
+Phase 6 progress (incremental):
+- Removed `FeatureFlag::AIMemories` — had zero call sites outside the enum declaration.
+- Removed `FeatureFlag::FreeUserNoAi` and the `FreeUserNoAiControl`/`FreeUserNoAiExperiment` server experiment variants.  
+  - Removed `is_free_user_no_ai_experiment_active()` function from `experiments/mod.rs`.
+  - Updated `root_view.rs` to pass `false` directly where the function was called.
+  - Removed `TeamsChanged` handler that updated the free-user-no-ai experiment lock (now a no-op arm).
+  - The `FreeUserNoAiSlide` in `crates/onboarding/` remains as dead code — it never shows because the experiment flag is always false; cleanup deferred to a future slice.
+- Code compiles with zero errors after all cleanups.
+
+Phase 7 progress:
+- Added `WarpServerConfig::local()` and `OzConfig::local()` constructors to `crates/warp_core/src/channel/config.rs` — both return empty strings with no production credentials.
+- Updated `app/src/bin/oss.rs` to use these local constructors when compiled with `--features local`. A local-first OSS build now embeds no Warp server URLs, no Firebase API key, and no Oz root URL.
+- `telemetry_config: None` was already set in oss.rs (no change needed there).
+- Code compiles with zero errors for both `cargo check --package warp` and `cargo check --package warp --features local`.
 
 ---
 
