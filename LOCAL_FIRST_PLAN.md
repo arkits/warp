@@ -48,6 +48,15 @@ Phase 1c progress:
 - Replaced addon credit option lists with empty local data so deleted pricing metadata is no longer required.
 - Stopped ingesting `pricing_info` from workspace metadata into a deleted pricing singleton.
 - Removed the shared-object creation denied event path that opened the deleted billing modal.
+- **COMPLETED (billing UI cleanup):** Deleted `app/src/terminal/buy_credits_banner.rs` (886 lines) and `app/src/terminal/enable_auto_reload_modal.rs` (491 lines) — billing banner overlay and auto-reload credits modal that survived the initial Phase 1c deletion.
+  - Removed `BuyCreditsBannerDisplayState` enum and all banner state/methods from `ai/request_usage_model.rs`.
+  - Removed `maybe_add_buy_credits_banner` / `add_buy_credits_banner_overlay` from `terminal/input/common.rs`, `universal.rs`, `agent.rs`.
+  - Removed `buy_credits_banner` field and `OpenAutoReloadModal` event from `terminal/input.rs`.
+  - Removed `EnableAutoReloadModal` field, `handle_enable_auto_reload_modal_event` method, and `is_enable_auto_reload_modal_open` state from `workspace/view.rs` and `workspace/util.rs`.
+  - Removed `BuildPlanAutoReloadControl/BannerToggle/PostPurchaseModal` server experiment variants from `server/experiments/mod.rs` and `convert.rs`.
+  - Removed `BuildPlanAutoReloadBannerToggle` and `BuildPlanAutoReloadPostPurchaseModal` from `warp_features/src/lib.rs`.
+  - Removed billing telemetry events from `server/telemetry/events.rs`.
+  - Removed `OpenAutoReloadModal` event from `pane_group/mod.rs` and terminal pane forwarding.
 - Code compiles with zero errors after this phase (`cargo check --package warp`; warnings only).
 
 Phase 2b progress:

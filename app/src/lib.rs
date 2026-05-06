@@ -1064,11 +1064,6 @@ fn initialize_app(
         LaunchMode::App { api_key, .. } if ChannelState::channel().is_dogfood() => api_key.clone(),
         _ => None,
     };
-    let api_key = if FeatureFlag::APIKeyAuthentication.is_enabled() {
-        api_key
-    } else {
-        None
-    };
 
     let auth_state = Arc::new(AuthState::initialize(ctx, api_key));
     timer.mark_interval_end("AUTH_MANAGER_SET_USER");
@@ -2562,8 +2557,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::ScheduledAmbientAgents,
         #[cfg(feature = "code_launch_modal")]
         FeatureFlag::CodeLaunchModal,
-        #[cfg(feature = "api_key_authentication")]
-        FeatureFlag::APIKeyAuthentication,
         #[cfg(feature = "api_key_management")]
         FeatureFlag::APIKeyManagement,
         #[cfg(feature = "mcp_oauth")]
