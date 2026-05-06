@@ -34,7 +34,7 @@ use crate::{
     },
     drive::{
         folders::{CloudFolder, CloudFolderModel, FolderId},
-        sharing::{SharingAccessLevel, Subject, UserKind},
+        sharing::SharingAccessLevel,
         CloudObjectTypeAndId,
     },
     notebooks::{CloudNotebook, CloudNotebookModel, NotebookId},
@@ -62,6 +62,7 @@ use crate::{
     workspaces::user_profiles::{UserProfileWithUID, UserProfiles},
     Assets,
 };
+use warp_server_client::drive::sharing::{Subject, UserKind};
 
 use super::{GetCloudObjectResponse, InitialLoadResponse, UpdateManager};
 

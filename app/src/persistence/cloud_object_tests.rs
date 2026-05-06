@@ -4,9 +4,10 @@ use session_sharing_protocol::common::{InputReplicaId, ProfileData};
 use crate::{
     auth::UserUid,
     cloud_object::{CloudObjectGuest, ServerObjectContainer},
-    drive::sharing::{LinkSharingSubjectType, SharingAccessLevel, Subject, TeamKind, UserKind},
+    drive::sharing::SharingAccessLevel,
     server::ids::ServerId,
 };
+use warp_server_client::drive::sharing::{LinkSharingSubjectType, Subject, TeamKind, UserKind};
 
 #[test]
 fn test_roundtrip_guests() {

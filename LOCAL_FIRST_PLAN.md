@@ -79,7 +79,7 @@ Phase 2b progress:
 - Removed `FeatureFlag::DriveObjectsAsContext` and the AI context menu entries that exposed Workflows, Notebooks, and Plans as context through the cloud-sharing path.
 - Removed `FeatureFlag::WorkflowAliases`; workflow aliases are now treated as an always-on local Drive feature, keeping alias autocomplete, execution, editing, and telemetry without server-controlled gating.
 - Removed the dead pane-header sharing object plumbing left behind after deleting the sharing dialog: `ShareableObject`, `PaneConfiguration::set_shareable_object`, the unhandled `ShareableObjectChanged` / `ToggleSharingDialog` events, and all call sites that only populated the deleted share button/dialog.
-- The `drive/sharing/mod.rs` and `style.rs` files remain — they export `ContentEditability`, `SharingAccessLevel`, and extension traits still referenced elsewhere. Full cleanup in Phase 5/6.
+- Deleted the now-unused `drive/sharing/style.rs` and the sharing-dialog-only `SubjectExt`, `UserKindExt`, and `TeamKindExt` helper traits. `drive/sharing/mod.rs` now only retains `ContentEditability` and server sharing type re-exports still referenced elsewhere.
 - Code compiles with zero errors (`cargo check --package warp`; warnings only).
 
 Phase 2c progress:
