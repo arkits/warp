@@ -199,7 +199,6 @@ where
 pub enum NotExecutedReason {
     NotReady,
     NeedsConfirmation,
-    WaitingOnSharer,
 }
 
 impl NotExecutedReason {
