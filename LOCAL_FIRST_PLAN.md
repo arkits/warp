@@ -16,6 +16,7 @@ Incremental dead-code cleanup:
 - Removed the unused pane-link update helper left behind after shareable-pane plumbing cleanup.
 - Removed unused API-key scope storage from the local settings platform page list.
 - Removed dead shared-block upload/title-generation client methods and the unused generate-block-title API shapes.
+- Trimmed server block upload/embed construction helpers that were only used by deleted shared-block creation.
 
 Phase 1a progress:
 - Shared-session feature flags have been removed from app startup registration and from `warp_features`: `CreatingSharedSessions`, `ViewingSharedSessions`, `SessionSharingAcls`, `SharedSessionWriteToLongRunningCommands`, `AgentSharedSessions`, and `HOARemoteControl`.
