@@ -30,15 +30,11 @@ pub use model::{Event as ServerExperimentsEvent, ServerExperiments};
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum ServerExperiment {
     DisableAgentModeExperiment,
-    EnvVarsEarlyAccessExperiment,
     AgentModeAnalyticsExperiment,
-    WindowsLaunchExperiment,
     TmuxSshWarpificationControl,
     TmuxSshWarpificationExperiment,
     CodebaseContextExperiment,
     CodebaseContextControl,
-    SuggestedCodeDiffsControl,
-    SuggestedCodeDiffsExperiment,
     BuildPlanAutoReloadControl,
     BuildPlanAutoReloadBannerToggle,
     BuildPlanAutoReloadPostPurchaseModal,
@@ -73,17 +69,10 @@ impl ServerExperiment {
             Self::DisableAgentModeExperiment => {
                 FeatureFlag::AgentMode.set_enabled(false);
             }
-            Self::EnvVarsEarlyAccessExperiment => {
-                // EnvVars is now always enabled; no-op.
-            }
             Self::AgentModeAnalyticsExperiment => {
                 FeatureFlag::AgentModeAnalytics.set_enabled(true);
                 FeatureFlag::AIRules.set_enabled(true);
                 FeatureFlag::SuggestedRules.set_enabled(true);
-            }
-            Self::WindowsLaunchExperiment => {
-                // TODO(alokedesai): Clean this up now that we no longer gate access to the Windows
-                // build on an allowlist.
             }
             Self::TmuxSshWarpificationControl => FeatureFlag::SSHTmuxWrapper.set_enabled(false),
             Self::TmuxSshWarpificationExperiment => {
@@ -105,8 +94,6 @@ impl ServerExperiment {
                 FeatureFlag::CodebaseIndexSpeedbump.set_enabled(false);
                 FeatureFlag::CrossRepoContext.set_enabled(false);
             }
-            Self::SuggestedCodeDiffsExperiment => {}
-            Self::SuggestedCodeDiffsControl => {}
             Self::BuildPlanAutoReloadControl => {
                 // Control group - disable both experiment flags
                 FeatureFlag::BuildPlanAutoReloadBannerToggle.set_enabled(false);
