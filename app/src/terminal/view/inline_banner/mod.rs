@@ -31,7 +31,6 @@ pub use shell_process_terminated::*;
 pub use ssh::*;
 pub use vim_mode::*;
 
-use chrono::{DateTime, Local};
 use pathfinder_color::ColorU;
 use warpui::elements::Clipped;
 use warpui::{
@@ -47,39 +46,6 @@ use warpui::{
     },
     Element,
 };
-
-pub fn render_inline_shared_session_started_banner(
-    _is_active: bool,
-    _is_shared_ambient_agent_session: bool,
-    _is_remote_control: bool,
-    _started_at: DateTime<Local>,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    render_inline_block_list_banner(
-        InlineBannerStyle::VeryLowPriority,
-        appearance,
-        InlineBannerContent {
-            title: "Session sharing is unavailable in local-first mode".to_string(),
-            ..Default::default()
-        },
-    )
-}
-
-pub fn render_inline_shared_session_ended_banner(
-    _is_shared_ambient_agent_session: bool,
-    _is_remote_control: bool,
-    _ended_at: DateTime<Local>,
-    appearance: &Appearance,
-) -> Box<dyn Element> {
-    render_inline_block_list_banner(
-        InlineBannerStyle::VeryLowPriority,
-        appearance,
-        InlineBannerContent {
-            title: "Session sharing ended".to_string(),
-            ..Default::default()
-        },
-    )
-}
 
 use crate::ui_components::buttons::icon_button;
 use crate::ui_components::icons::Icon as UiIcon;

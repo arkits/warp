@@ -109,9 +109,6 @@ pub enum TerminalAction {
     AltScroll {
         delta: i32,
     },
-    SharedSessionViewerAltScroll {
-        new_scroll_top: Lines,
-    },
     ScrollToTopOfBlock {
         topmost_block: BlockIndex,
     },
@@ -425,7 +422,6 @@ impl fmt::Debug for TerminalAction {
         match self {
             Scroll { delta } => write!(f, "Scroll {{ delta: {delta} }}"),
             AltScroll { delta } => write!(f, "AltScroll {{ delta: {delta} }}"),
-            SharedSessionViewerAltScroll { .. } => f.write_str("SharedSessionViewerAltScroll"),
             ScrollToTopOfBlock { topmost_block } => write!(
                 f,
                 "JumpToPreviousCommand {{ topmost_block: {topmost_block} }}"
