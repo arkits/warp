@@ -27,7 +27,7 @@ use crate::server::ids::{ServerId, SyncId};
 use crate::server::server_api::ai::{
     AgentConfigSnapshot, AmbientAgentTaskState, AttachmentInput, SpawnAgentRequest,
 };
-use crate::server::server_api::{AIApiError, CloudAgentCapacityError, ServerApiProvider};
+use crate::server::server_api::{AIApiError, ServerApiProvider};
 use crate::terminal::view::ambient_agent::SetupCommandState;
 use crate::terminal::CLIAgent;
 
@@ -788,15 +788,7 @@ impl AmbientAgentViewModel {
                     ctx.emit(event);
                 }
             }
-            AmbientAgentEvent::AtCapacity => {
-                if ignore_events {
-                    return;
-                }
-
-                if matches!(self.status, Status::WaitingForSession { .. }) {
-                    ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
-                }
-            }
+            AmbientAgentEvent::AtCapacity => {}
             AmbientAgentEvent::TimedOut => {}
         }
     }
@@ -820,11 +812,6 @@ impl AmbientAgentViewModel {
                 self.handle_needs_github_auth(auth_url.clone(), client_error.error.clone(), ctx);
                 return;
             }
-        }
-        if let Some(capacity_error) = err.downcast_ref::<CloudAgentCapacityError>() {
-            self.handle_spawn_error(capacity_error.error.clone(), ctx);
-            ctx.emit(AmbientAgentViewModelEvent::ShowCloudAgentCapacityModal);
-            return;
         }
         if let Some(ai_api_error) = err.downcast_ref::<AIApiError>() {
             match ai_api_error {
@@ -1028,8 +1015,6 @@ pub enum AmbientAgentViewModelEvent {
     Failed {
         error_message: String,
     },
-    /// Request to show the cloud agent concurrency/capacity modal.
-    ShowCloudAgentCapacityModal,
     /// Request to show the cloud agent AI credits modal.
     ShowAICreditModal,
     /// The ambient agent needs GitHub authentication.
