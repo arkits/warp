@@ -210,6 +210,16 @@ impl AIRequestUsageModel {
 
     /// Spawns a task to refresh the latest AI request usage and bonus grants, fetching from the server.
     pub fn refresh_request_usage_async(&mut self, ctx: &mut ModelContext<Self>) {
+        if cfg!(feature = "local") {
+            self.update_request_limit_info(
+                RequestLimitInfo {
+                    is_unlimited: true,
+                    ..RequestLimitInfo::default()
+                },
+                ctx,
+            );
+            return;
+        }
         if !AuthStateProvider::as_ref(ctx).get().is_logged_in() {
             return;
         }
@@ -365,6 +375,9 @@ impl AIRequestUsageModel {
     /// 6. user has BYOK enabled and has provided at least one API key
     /// Use this method as the starting point for AI availability checking.
     pub fn has_any_ai_remaining(&self, ctx: &AppContext) -> bool {
+        if cfg!(feature = "local") {
+            return true;
+        }
         let current_workspace = UserWorkspaces::as_ref(ctx).current_workspace();
 
         let has_base_plan_ai_requests = self.has_requests_remaining();
