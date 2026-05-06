@@ -69,7 +69,6 @@ use pathfinder_geometry::vector::{vec2f, Vector2F};
 use serde::{Deserialize, Serialize};
 use tree::DEFAULT_FLEX_VALUE;
 use typed_path::TypedPath;
-use url::Url;
 use uuid::Uuid;
 use warp_cli::agent::Harness;
 use warp_core::command::ExitCode;
@@ -5629,16 +5628,6 @@ impl PaneGroup {
                 self.update_browser_url(ctx);
             }
         }
-    }
-
-    fn handle_pane_link_updated(&self, pane_id: PaneId, url: Option<Url>, ctx: &AppContext) {
-        log::debug!("Url for pane should be updated pane_id: {pane_id:?}, url: {url:?}");
-        #[cfg(target_family = "wasm")]
-        if pane_id == self.focused_pane_id(ctx) {
-            update_browser_url(url, false);
-        }
-
-        let _ = ctx;
     }
 
     #[cfg(target_family = "wasm")]
