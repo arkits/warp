@@ -56,6 +56,7 @@ Phase 2b progress:
 - Deleted `app/src/cloud_object/grab_edit_access_modal.rs` and removed all references from `notebook.rs`, `active_notebook_data.rs`, `notebook_tests.rs`. In local mode the user is always the sole editor.
 - Deleted `app/src/drive/sharing/dialog/` (2315 lines of sharing-dialog UI and ACL logic). Removed `SharingDialog` field and `share_dialog_open_for` state from `DriveIndex`, `ConversationListView`, and the conversation-list item renderer. Made `toggle_share_dialog` a no-op. Removed `drive::sharing::dialog::init(ctx)` from app startup.
 - Removed `FeatureFlag::DriveObjectsAsContext` and the AI context menu entries that exposed Workflows, Notebooks, and Plans as context through the cloud-sharing path.
+- Removed `FeatureFlag::WorkflowAliases`; workflow aliases are now treated as an always-on local Drive feature, keeping alias autocomplete, execution, editing, and telemetry without server-controlled gating.
 - The `drive/sharing/mod.rs` and `style.rs` files remain — they export `ContentEditability`, `SharingAccessLevel`, `ShareableObject`, and extension traits still referenced elsewhere. Full cleanup in Phase 5/6.
 - Code compiles with zero errors (`cargo check --package warp`; warnings only).
 

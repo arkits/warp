@@ -11806,38 +11806,35 @@ impl Input {
                 );
             }
 
-            if FeatureFlag::WorkflowAliases.is_enabled() {
-                let mut command_string = self.editor.as_ref(ctx).buffer_text(ctx);
-                // If the alias was inserted from the completions menu, it will have trailing
-                // whitespace - trim it in-place.
-                command_string.truncate(command_string.trim_end().len());
+            let mut command_string = self.editor.as_ref(ctx).buffer_text(ctx);
+            // If the alias was inserted from the completions menu, it will have trailing
+            // whitespace - trim it in-place.
+            command_string.truncate(command_string.trim_end().len());
 
-                if let Some(alias) = WorkflowAliases::as_ref(ctx).match_alias(&command_string) {
-                    if let Some(workflow) = CloudModel::as_ref(ctx).get_workflow(&alias.workflow_id)
-                    {
-                        let owner = workflow.clone().permissions.owner.into();
+            if let Some(alias) = WorkflowAliases::as_ref(ctx).match_alias(&command_string) {
+                if let Some(workflow) = CloudModel::as_ref(ctx).get_workflow(&alias.workflow_id) {
+                    let owner = workflow.clone().permissions.owner.into();
 
-                        let workflow_type = WorkflowType::Cloud(Box::new(workflow.clone()));
-                        let env_vars = alias.env_vars.or(workflow.model().data.default_env_vars());
+                    let workflow_type = WorkflowType::Cloud(Box::new(workflow.clone()));
+                    let env_vars = alias.env_vars.or(workflow.model().data.default_env_vars());
 
-                        self.insert_workflow_into_input(
-                            workflow_type,
-                            owner,
-                            WorkflowSelectionSource::Alias,
-                            alias.arguments,
-                            None,
-                            env_vars,
-                            true,
-                            ctx,
-                        );
-                        return;
-                    } else {
-                        log::warn!(
-                            "Tried to execute workflow for id {:?} but it does not exist",
-                            alias.workflow_id
-                        );
-                    };
-                }
+                    self.insert_workflow_into_input(
+                        workflow_type,
+                        owner,
+                        WorkflowSelectionSource::Alias,
+                        alias.arguments,
+                        None,
+                        env_vars,
+                        true,
+                        ctx,
+                    );
+                    return;
+                } else {
+                    log::warn!(
+                        "Tried to execute workflow for id {:?} but it does not exist",
+                        alias.workflow_id
+                    );
+                };
             }
 
             let command = self.get_command(ctx);

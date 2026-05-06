@@ -157,9 +157,6 @@ pub enum FeatureFlag {
     /// Adds avatar to the tab bar.
     AvatarInTabBar,
 
-    /// Adds aliases for executing Warp Drive workflows.
-    WorkflowAliases,
-
     SshDragAndDrop,
     DragTabsToWindows,
 
