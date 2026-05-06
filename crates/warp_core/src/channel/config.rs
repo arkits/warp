@@ -45,6 +45,16 @@ impl WarpServerConfig {
             firebase_auth_api_key: "AIzaSyBdy3O3S9hrdayLJxJ7mriBR4qgUaUygAs".into(),
         }
     }
+
+    /// A no-op server config for local-first builds. No real server URLs or API keys are
+    /// included; network calls that attempt to use these will fail gracefully.
+    pub fn local() -> Self {
+        Self {
+            server_root_url: "".into(),
+            rtc_server_url: "".into(),
+            firebase_auth_api_key: "".into(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -62,6 +72,14 @@ impl OzConfig {
     pub fn production() -> Self {
         Self {
             oz_root_url: "https://oz.warp.dev".into(),
+            workload_audience_url: None,
+        }
+    }
+
+    /// A no-op Oz config for local-first builds.
+    pub fn local() -> Self {
+        Self {
+            oz_root_url: "".into(),
             workload_audience_url: None,
         }
     }

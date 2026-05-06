@@ -12,13 +12,26 @@ use warp_core::{
 // For a fully local-first build (no login required), compile with `--features local`:
 //   cargo build --bin warp-oss --features local
 fn main() -> Result<()> {
+    // In local-first mode (`--features local`) no cloud credentials are needed: skip login
+    // is active, no Firebase token is obtained, and cloud sync is a no-op. Use empty server
+    // and Oz configs so no production keys are compiled into the local binary.
+    let server_config = if cfg!(feature = "local") {
+        WarpServerConfig::local()
+    } else {
+        WarpServerConfig::production()
+    };
+    let oz_config = if cfg!(feature = "local") {
+        OzConfig::local()
+    } else {
+        OzConfig::production()
+    };
     let mut state = ChannelState::new(
         Channel::Oss,
         ChannelConfig {
             app_id: AppId::new("dev", "warp", "WarpOss"),
             logfile_name: "warp-oss.log".into(),
-            server_config: WarpServerConfig::production(),
-            oz_config: OzConfig::production(),
+            server_config,
+            oz_config,
             telemetry_config: None,
             crash_reporting_config: None,
             autoupdate_config: None,
