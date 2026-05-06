@@ -71,7 +71,6 @@ use warpui::{
 };
 
 mod about_page;
-mod admin_actions;
 mod agent_assisted_environment_modal;
 mod ai_page;
 mod appearance_page;
@@ -96,7 +95,6 @@ mod settings_file_footer;
 pub(crate) mod settings_page;
 mod show_blocks_view;
 mod telemetry;
-mod transfer_ownership_confirmation_modal;
 pub mod update_environment_form;
 mod warp_drive_page;
 mod warpify_page;

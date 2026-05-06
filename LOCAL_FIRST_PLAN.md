@@ -10,6 +10,7 @@ Incremental dead-code cleanup:
 - Removed the unused conversation-list sharing-dialog offset constant left behind after deleting conversation sharing UI.
 - Removed the unreachable Drive workspace dropdown renderer, action, and refresh path left behind after local-first single-workspace cleanup.
 - Slimmed the local-first `TeamUpdateManager` compatibility model after the last workspace-switching caller was removed.
+- Deleted unused team-management settings helpers: admin actions and the transfer-ownership confirmation modal.
 
 Phase 1a progress:
 - Shared-session feature flags have been removed from app startup registration and from `warp_features`: `CreatingSharedSessions`, `ViewingSharedSessions`, `SessionSharingAcls`, `SharedSessionWriteToLongRunningCommands`, `AgentSharedSessions`, and `HOARemoteControl`.
