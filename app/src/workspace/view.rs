@@ -6648,9 +6648,7 @@ impl Workspace {
     ) {
         // If running workflows is supported, do so. Otherwise, or if the workflow isn't in memory,
         // fall back to the workflow pane.
-        // We don't want to run the workflow if the invitee email is set, as we want to open the share dialog instead with the
-        // workflow open in a pane.
-        if ContextFlag::RunWorkflow.is_enabled() && settings.invitee_email.is_none() {
+        if ContextFlag::RunWorkflow.is_enabled() {
             match CloudModel::as_ref(ctx).get_workflow(&workflow_id).cloned() {
                 Some(workflow) => {
                     self.open_or_toggle_warp_drive(false, false, ctx);
