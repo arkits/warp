@@ -88,9 +88,6 @@ pub enum FeatureFlag {
     /// Enable dynamic enum parameter types for workflow arguments
     DynamicWorkflowEnums,
 
-    /// Enables receiving shared Warp Drive objects.
-    SharedWithMe,
-
     /// Enables workflows for use with Agent Mode.
     AgentModeWorkflows,
 

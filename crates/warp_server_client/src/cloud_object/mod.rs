@@ -5,10 +5,7 @@ use chrono::{DateTime, Utc};
 use derivative::Derivative;
 use pathfinder_geometry::vector::vec2f;
 use serde::{Deserialize, Serialize};
-use warp_core::{
-    features::FeatureFlag,
-    ui::{Icon, appearance::Appearance, theme::Fill},
-};
+use warp_core::ui::{Icon, appearance::Appearance, theme::Fill};
 use warp_graphql::{object_permissions::AccessLevel, scalars::time::ServerTimestamp};
 use warpui_core::{
     Element,
@@ -432,23 +429,8 @@ pub struct CloudObjectPermissions {
 
 impl CloudObjectPermissions {
     pub fn new_from_server(server_permissions: ServerPermissions) -> Self {
-        let guests = if FeatureFlag::SharedWithMe.is_enabled() {
-            server_permissions
-                .guests
-                .into_iter()
-                .map(CloudObjectGuest::from_server)
-                .collect()
-        } else {
-            Vec::new()
-        };
-
-        let anyone_with_link = if FeatureFlag::SharedWithMe.is_enabled() {
-            server_permissions
-                .anyone_link_sharing
-                .map(CloudLinkSharing::from_server)
-        } else {
-            None
-        };
+        let guests = Vec::new();
+        let anyone_with_link = None;
 
         Self {
             owner: server_permissions.space,
@@ -480,16 +462,6 @@ impl CloudObjectPermissions {
     pub fn update_from_new_permissions_ts(&mut self, server_permissions: ServerPermissions) {
         self.owner = server_permissions.space;
         self.permissions_last_updated_ts = Some(server_permissions.permissions_last_updated_ts);
-        if FeatureFlag::SharedWithMe.is_enabled() {
-            self.guests = server_permissions
-                .guests
-                .into_iter()
-                .map(CloudObjectGuest::from_server)
-                .collect();
-            self.anyone_with_link = server_permissions
-                .anyone_link_sharing
-                .map(CloudLinkSharing::from_server);
-        }
     }
 }
 

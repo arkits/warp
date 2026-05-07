@@ -451,7 +451,6 @@ default = [
     "viewing_shared_sessions",
     "render_continuous_block_selections_with_single_border",
     "settings_import",
-    "shared_with_me",
     "block_toolbelt_save_as_workflow",
     "remove_alt_screen_padding",
     "less_horizontal_terminal_padding",
@@ -752,7 +751,6 @@ traces = []
 viewing_shared_sessions = []
 rect_selection = []
 alacritty_settings_import = []
-shared_with_me = []
 ai_rules = []
 am_workflows = []
 less_horizontal_terminal_padding = []

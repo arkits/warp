@@ -1,6 +1,5 @@
 use pathfinder_color::ColorU;
 use pathfinder_geometry::vector::Vector2F;
-use warp_core::features::FeatureFlag;
 use warpui::{
     elements::{
         Align, ConstrainedBox, Container, CrossAxisAlignment, Empty, Flex, MainAxisAlignment,
@@ -106,7 +105,7 @@ impl EnvVarCollectionView {
                 .with_main_axis_size(MainAxisSize::Max)
                 .with_cross_axis_alignment(CrossAxisAlignment::Center);
 
-            if !FeatureFlag::SharedWithMe.is_enabled() || access_level.can_trash() {
+            {
                 let ui_builder = appearance.ui_builder().clone();
                 action_row.add_child(
                     Align::new(
@@ -178,7 +177,7 @@ impl EnvVarCollectionView {
             .finish(),
         );
 
-        if !FeatureFlag::SharedWithMe.is_enabled() || editability.can_edit() {
+        {
             variables_section_row.add_child(
                 Shrinkable::new(
                     1.,

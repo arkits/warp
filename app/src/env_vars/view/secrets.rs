@@ -1,5 +1,5 @@
 use pathfinder_geometry::vector::vec2f;
-use warp_core::{features::FeatureFlag, ui::appearance::Appearance};
+use warp_core::ui::appearance::Appearance;
 #[cfg(not(target_family = "wasm"))]
 use warpui::SingletonEntity;
 use warpui::{
@@ -208,9 +208,6 @@ impl EnvVarCollectionView {
             .with_hovered_styles(hovered_styles)
             .with_text_and_icon_label(text_and_icon);
 
-        if FeatureFlag::SharedWithMe.is_enabled() && !editability.can_edit() {
-            button = button.disabled();
-        }
 
         let button = button
             .build()

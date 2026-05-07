@@ -79,7 +79,7 @@ use crate::{
         CloudWorkflow,
     },
     workspace::{ToastStack, WorkspaceAction},
-    FeatureFlag, UserWorkspaces,
+    UserWorkspaces,
 };
 
 use warp_core::{context_flag::ContextFlag, settings::Setting, ui::theme::AnsiColorIdentifier};
@@ -2965,11 +2965,7 @@ impl View for WorkflowView {
             .finish(),
         );
 
-        let editability = if FeatureFlag::SharedWithMe.is_enabled() {
-            self.editability(app)
-        } else {
-            ContentEditability::Editable
-        };
+        let editability = ContentEditability::Editable;
         let mode_toggleable = match (ContextFlag::RunWorkflow.is_enabled(), editability) {
             // If logging in would allow editing, show the toggle for discoverability.
             (_, ContentEditability::RequiresLogin) => true,
@@ -3223,7 +3219,6 @@ impl BackingView for WorkflowView {
         // Add "Trash" to menu
         let access_level = self.access_level(ctx);
         if self.is_online(ctx)
-            && (!FeatureFlag::SharedWithMe.is_enabled() || access_level.can_trash())
         {
             menu_items.push(
                 MenuItemFields::new("Trash")

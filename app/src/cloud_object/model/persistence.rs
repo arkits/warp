@@ -31,7 +31,6 @@ use warpui::{AppContext, Entity, ModelContext, SingletonEntity};
 use crate::cloud_object::CloudObject;
 use chrono::{DateTime, Duration, Utc};
 use rand::Rng;
-use warp_core::features::FeatureFlag;
 
 use super::generic_string_model::GenericStringObjectId;
 
@@ -1116,21 +1115,6 @@ impl CloudModel {
             .any(|(_, object)| !object.metadata().is_welcome_object)
     }
 
-    /// Whether or not there are any objects directly shared with the user.
-    ///
-    /// This takes a reference to [`UserWorkspaces`] to prevent circular model references.
-    pub fn has_directly_shared_objects(
-        &self,
-        user_workspaces: &UserWorkspaces,
-        app: &AppContext,
-    ) -> bool {
-        let user_uid = AuthStateProvider::as_ref(app).get().user_id();
-        self.objects_by_id.values().any(|object| {
-            // We can't use CloudObject::is_in_space, because that reborrows UserWorkspaces.
-            user_workspaces.owner_to_space(object.permissions().owner, app) == Space::Shared
-                && user_uid.is_some_and(|uid| object.permissions().has_direct_user_access(uid))
-        })
-    }
 
     pub fn get_folder_by_uid(&self, uid: &str) -> Option<&CloudFolder> {
         self.objects_by_id.get(uid).and_then(|object| object.into())
@@ -1486,7 +1470,7 @@ impl CloudModel {
                     }
                 }
             }
-            None => !FeatureFlag::SharedWithMe.is_enabled(),
+            None => true,
         };
 
         cache.insert(uid.to_owned(), result);

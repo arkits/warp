@@ -15,7 +15,7 @@ use crate::{
     server::cloud_objects::update_manager::UpdateManager,
     ui_components::icons::Icon,
     util::bindings::{keybinding_name_to_display_string, trigger_to_keystroke, CustomAction},
-    AppContext, CloudModel, FeatureFlag,
+    AppContext, CloudModel,
 };
 
 use super::env_var_collection::{EnvVarCollectionAction, EnvVarCollectionView, VariableRowIndex};
@@ -392,7 +392,6 @@ impl EnvVarCollectionView {
 
         // Add "Trash" to menu
         if self.is_online(ctx)
-            && (!FeatureFlag::SharedWithMe.is_enabled() || access_level.can_trash())
         {
             menu_items.push(
                 MenuItemFields::new("Trash")
