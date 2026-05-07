@@ -46,7 +46,7 @@ use crate::{
     channel::ChannelState,
     report_if_error, send_telemetry_from_ctx,
     server::telemetry::TelemetryEvent,
-    settings::{AISettings, PrivacySettings},
+    settings::PrivacySettings,
     terminal::safe_mode_settings::{SafeModeEnabled, SafeModeSettings},
     ui_components::icons::Icon,
     util::links::PRIVACY_POLICY_URL,

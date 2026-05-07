@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use warp_core::context_flag::ContextFlag;
-use warpui::{AppContext, SingletonEntity};
+use warpui::AppContext;
 
 pub mod categories;
 use anyhow::Result;
@@ -19,7 +19,6 @@ pub mod workflow_enum;
 pub mod workflow_view;
 
 use crate::appearance::Appearance;
-use crate::cloud_object::model::view::CloudViewModel;
 use crate::cloud_object::{
     CloudModelType, CloudObjectEventEntrypoint, CreateCloudObjectResult, CreateObjectRequest,
     GenericCloudObject, GenericServerObject, ObjectType, Revision, ServerCloudObject,

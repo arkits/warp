@@ -211,7 +211,7 @@ use crate::ai::{
         get_attached_blocks_chip_element_position_id,
         inline_action::code_diff_view::{CodeDiffView, FileDiff},
         summarization_cancel_dialog::SummarizationCancelDialog,
-        telemetry_banner::{should_collect_ai_ugc_telemetry, TelemetryBanner},
+        telemetry_banner::should_collect_ai_ugc_telemetry,
         AIBlock, AIBlockEvent, BlocklistAIActionEvent, BlocklistAIActionModel,
         BlocklistAIContextEvent, BlocklistAIContextModel, BlocklistAIController,
         BlocklistAIControllerEvent, BlocklistAIHistoryEvent, BlocklistAIHistoryModel,

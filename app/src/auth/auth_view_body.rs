@@ -23,7 +23,7 @@ use warpui::{
     clipboard::ClipboardContent,
     color::ColorU,
     elements::{
-        Align, Border, Container, CornerRadius, CrossAxisAlignment, Dismiss, Fill, Flex,
+        Border, Container, CornerRadius, CrossAxisAlignment, Dismiss, Fill, Flex,
         MainAxisAlignment, MainAxisSize, MouseStateHandle, ParentElement, Radius, Stack,
     },
     fonts::Weight,
