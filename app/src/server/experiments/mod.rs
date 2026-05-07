@@ -66,7 +66,6 @@ impl ServerExperiment {
                 FeatureFlag::AgentMode.set_enabled(false);
             }
             Self::AgentModeAnalyticsExperiment => {
-                FeatureFlag::AgentModeAnalytics.set_enabled(true);
                 FeatureFlag::AIRules.set_enabled(true);
                 FeatureFlag::SuggestedRules.set_enabled(true);
             }

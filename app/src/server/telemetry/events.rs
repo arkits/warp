@@ -4872,12 +4872,8 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             | Self::ShowedSuggestedAgentModeWorkflowModal => {
                 EnablementState::Flag(FeatureFlag::SuggestedAgentModeWorkflows)
             }
-            Self::RepoOutlineConstructionSuccess { .. } => {
-                EnablementState::Flag(FeatureFlag::AgentModeAnalytics)
-            }
-            Self::RepoOutlineConstructionFailed { .. } => {
-                EnablementState::Flag(FeatureFlag::AgentModeAnalytics)
-            }
+            Self::RepoOutlineConstructionSuccess { .. } => EnablementState::Always,
+            Self::RepoOutlineConstructionFailed { .. } => EnablementState::Always,
             Self::FullEmbedCodebaseContextSearchFailed { .. }
             | Self::FullEmbedCodebaseContextSearchSuccess { .. } => {
                 EnablementState::Flag(FeatureFlag::FullSourceCodeEmbedding)
@@ -5254,9 +5250,7 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             | Self::AutoupdateForcekillFailed => EnablementState::Always,
             Self::ToggleCodebaseContext => EnablementState::Always,
             Self::ToggleAutoIndexing => EnablementState::Always,
-            Self::AgentModeRatedResponse => {
-                EnablementState::Flag(FeatureFlag::GlobalAIAnalyticsBanner)
-            }
+            Self::AgentModeRatedResponse => EnablementState::Always,
             Self::ExecutedWarpDrivePrompt => EnablementState::Flag(FeatureFlag::AgentModeWorkflows),
             Self::ImageReceived => EnablementState::Always,
             Self::FileExceededContextLimit => EnablementState::Always,
