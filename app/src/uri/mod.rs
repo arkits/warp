@@ -1108,28 +1108,6 @@ fn execute_file(window_id: WindowId, path_str: &str, ctx: &mut AppContext) {
     send_telemetry_from_app_ctx!(TelemetryEvent::CommandFileRun, ctx);
 }
 
-fn open_window_with_action(active_window_id: Option<WindowId>, action: &str, ctx: &mut AppContext) {
-    if let Some(primary_window_id) = active_window_id {
-        // Dispatch action to primary window
-        if let Some(root_view_id) = ctx.root_view_id(primary_window_id) {
-            ctx.dispatch_action(
-                primary_window_id,
-                &[root_view_id],
-                action,
-                &(),
-                log::Level::Info,
-            );
-        }
-    } else {
-        log::warn!("no primary window id to dispatch action to");
-
-        // Open a new window and dispatch action there
-        ctx.dispatch_global_action("root_view:open_new", &());
-        // TODO: Note we cannot just dispatch here as it will be a no-op.
-        // Need to send a callback once window is fully open.
-    }
-}
-
 fn find_workspace_for_terminal_view(
     terminal_view_id: EntityId,
     ctx: &mut AppContext,
