@@ -174,6 +174,38 @@ Phase 6 progress (incremental):
 - Removed `FeatureFlag::CocoaSentry`, `FeatureFlag::LogExpensiveFramesInSentry` (Sentry crash reporting was removed; these flags had zero call sites), and `FeatureFlag::CloudModeHostSelector` (no Cargo feature ever defined, never registered). Removed their Cargo feature entries from `app/Cargo.toml` and startup registrations from `app/src/lib.rs`.
 - Removed 19 additional orphaned flags with zero `FeatureFlag::X.is_enabled()` call sites across the entire project: `WelcomeTips`, `ThinStrokes`, `WelcomeBlock`, `CloudObjects`, `ContextChips`, `IntegratedGPU`, `AgentPredict`, `LazySceneBuilding`, `AIBlockOverflowMenu`, `AIGeneratedOnboardingSuggestions`, `AgentModePrimaryXML`, `AgentModePrePlanXML`, `GrepTool`, `FileRetrievalTools`, `ReloadStaleConversationFiles`, `RetryTruncatedCodeResponses`, `CodeModeChip`, `DefaultWaterfallMode`, `MarkdownImages`. Removed their Cargo feature definitions, `app/src/lib.rs` startup registrations, and `DOGFOOD_FLAGS` entries as applicable.
 - Code compiles with zero errors for both default and `--features local` builds.
+- Removed `FeatureFlag::SharedWithMe` (always-false in local builds):
+  - Simplified `supported_edit_mode`/`supported_view_mode` in `workflows/mod.rs` — always returns `Edit`.
+  - Simplified `owner_to_space` in `user_workspaces.rs` — removed `has_directly_shared_objects` call.
+  - Simplified `persistence.rs` in `cloud_object/model/` — guests/anyone_with_link always empty/None.
+  - Deleted 5 tests from `model_test.rs` that exercised SharedWithMe sharing logic.
+  - Simplified `warp_server_client` cloud object and persistence modules similarly.
+  - Removed `LeaveSharedObject` and `SharedWithMe`-gated menu items from `drive/index.rs`.
+  - Simplified `workflow_view.rs` editability and trash-menu conditions.
+- Removed `FeatureFlag::CloudConversations` (always-false in local builds):
+  - Simplified `agent_conversations_model.rs` — `link_preference` now only returns Session or None.
+  - Removed cloud metadata fetch from `history_model.rs`.
+  - Added early `return None` to `conversation_loader.rs`.
+  - Removed cloud delete calls from `conversation_utils.rs`.
+  - Removed "Share conversation" menu item from `terminal/view.rs`.
+  - `settings_view/privacy_page.rs` — `should_render` returns `false` immediately.
+  - `crates/warp_cli/src/lib.rs` — `--conversation` CLI flag always hidden.
+- Removed `FeatureFlag::HandoffCloudCloud` (always-false in local builds):
+  - `submit_cloud_followup` in `ambient_agent/model.rs` collapsed to no-op with warning log.
+- Removed `FeatureFlag::CreateEnvironmentSlashCommand` (always-false in local builds):
+  - Removed `CreateEnvironmentSlashCommand` guard from `terminal/view.rs`.
+- Removed `FeatureFlag::AgentModeAnalytics`, `FeatureFlag::GlobalAIAnalyticsBanner`, `FeatureFlag::GlobalAIAnalyticsCollection` (always-false in local builds):
+  - `telemetry_banner.rs` — `RespectUserSetting` arm always returns `false`.
+  - `auth_view_body.rs` — non-banner disclaimer is unconditional path.
+  - `workspace/view.rs` — `check_and_trigger_telemetry_banner_for_existing_users` is now a no-op.
+  - `terminal/view.rs` — removed analytics banner insertion/dismissal blocks.
+  - `server/experiments/mod.rs` — removed `AgentModeAnalytics.set_enabled(true)` from experiment handler.
+  - `server/telemetry/events.rs` — changed `EnablementState::Flag(AgentModeAnalytics/GlobalAIAnalyticsBanner)` to `EnablementState::Always` for relevant events.
+  - `settings/privacy.rs` — removed `AgentModeAnalytics` override from `should_disable_telemetry`.
+- Removed `FeatureFlag::SkipFirebaseAnonymousUser` (always-true in local builds):
+  - `root_view.rs` — removed the `else if SkipFirebaseAnonymousUser` branch; always skips login screen.
+  - `auth_view_modal.rs` and `login_slide.rs` — always emit `SkippedLogin`, no Firebase anonymous user creation.
+  - `settings_view/warp_drive_page.rs` and `drive/settings.rs` — use `AuthStateProvider` directly.
 - **Current Phase 6 status**: Remaining cloud flags (`CloudMode`, `OzHandoff`, `CloudModeSetupV2`, `CloudModeInputV2`, `CloudEnvironments`, etc.) are already behind Cargo features not included in the OSS build and will be removed when their gated code is deleted in Phases 4c/5a/5b.
 
 Phase 7 progress:
