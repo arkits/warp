@@ -525,7 +525,6 @@ default = [
     "integration_command",
     "artifact_command",
     "cloud_environments",
-    "create_environment_slash_command",
     "code_review_find",
     "shared_session_long_running_commands",
     "mcp_grouped_server_context",
@@ -829,7 +828,6 @@ inline_code_review = []
 integration_command = []
 artifact_command = []
 cloud_environments = []
-create_environment_slash_command = []
 summarize_conversation_command = []
 mcp_grouped_server_context = []
 web_search_ui = []
@@ -898,7 +896,6 @@ codex_notifications = []
 cloud_mode_setup_v2 = ["cloud_mode"]
 cloud_mode_input_v2 = ["cloud_mode"]
 configurable_context_window = []
-handoff_cloud_cloud = ["cloud_mode_setup_v2"]
 
 [package.metadata.bundle.bin.warp-oss]
 category = "public.app-category.developer-tools"

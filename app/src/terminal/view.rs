@@ -6569,11 +6569,6 @@ impl TerminalView {
             return false;
         }
 
-        if FeatureFlag::CreateEnvironmentSlashCommand.is_enabled()
-            && self.active_init_environment_block(app).is_some()
-        {
-            return false;
-        }
 
         if self.active_env_var_collection_block(app).is_some() {
             return false;

@@ -382,9 +382,6 @@ pub enum FeatureFlag {
     /// Enables cloud environments management via CLI.
     CloudEnvironments,
 
-    /// Enables the /create-environment slash command for setting up Warp Environments
-    CreateEnvironmentSlashCommand,
-
     /// Enables the local docker sandbox entrypoints in the client.
     LocalDockerSandbox,
 
@@ -718,8 +715,6 @@ pub enum FeatureFlag {
     /// `base_model_context_window_limit` is not sent on outbound requests, so
     /// the server falls back to its default.
     ConfigurableContextWindow,
-    /// Enables continuing cloud mode conversations in the cloud after an execution ends.
-    HandoffCloudCloud,
 }
 
 static FLAG_STATES: [AtomicBool; cardinality::<FeatureFlag>()] =
@@ -887,7 +882,6 @@ impl FeatureFlag {
                 Some("Enables rendering markdown images inline in AI block list responses.")
             }
             CloudEnvironments => Some("Enables creating and managing Warp Environments via the CLI."),
-            CreateEnvironmentSlashCommand => Some("Enables the /create environment slash command for setting up Warp Environments with custom configurations."),
             GlobalSearch => Some("Enables global search in the left panel"),
             BlocklistMarkdownTableRendering => {
                 Some("Enables rendering markdown tables inline in AI block list responses.")
