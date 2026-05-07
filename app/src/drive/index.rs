@@ -32,7 +32,7 @@ use crate::{
         cloud_objects::update_manager::{FetchSingleObjectOption, UpdateManager},
         ids::{ClientId, ObjectUid, ServerId, SyncId},
         sync_queue::SyncQueue,
-        telemetry::{AnonymousUserSignupEntrypoint, SharingDialogSource, TelemetryEvent},
+        telemetry::{AnonymousUserSignupEntrypoint, TelemetryEvent},
     },
     settings::app_installation_detection::{UserAppInstallDetectionSettings, UserAppInstallStatus},
     ui_components::{
@@ -262,9 +262,6 @@ pub enum DriveIndexAction {
     ToggleSortingMenu,
     ToggleItemOverflowMenu {
         space: Space,
-        warp_drive_item_id: WarpDriveItemId,
-    },
-    ToggleShareDialog {
         warp_drive_item_id: WarpDriveItemId,
     },
     ToggleSpaceOverflowMenu {
@@ -3988,16 +3985,6 @@ impl DriveIndex {
                                 .with_icon(Icon::Link)
                                 .into_item(),
                         );
-                        if editability.can_edit() {
-                            menu_items.push(
-                                MenuItemFields::new("Share")
-                                    .with_on_select_action(DriveIndexAction::ToggleShareDialog {
-                                        warp_drive_item_id: *warp_drive_item_id,
-                                    })
-                                    .with_icon(Icon::Share)
-                                    .into_item(),
-                            );
-                        }
                     }
                 }
 
@@ -4199,16 +4186,6 @@ impl DriveIndex {
                                     .into_item(),
                             );
                         }
-                        if editability.can_edit() {
-                            menu_items.push(
-                                MenuItemFields::new("Share")
-                                    .with_on_select_action(DriveIndexAction::ToggleShareDialog {
-                                        warp_drive_item_id: *warp_drive_item_id,
-                                    })
-                                    .with_icon(Icon::Share)
-                                    .into_item(),
-                            );
-                        }
                         if !warpui::platform::is_mobile_device()
                             && !ContextFlag::HideOpenOnDesktopButton.is_enabled()
                             && *UserAppInstallDetectionSettings::as_ref(app)
@@ -4370,16 +4347,6 @@ impl DriveIndex {
         self.menu_object_id_if_open = Some(*warp_drive_item_id);
         ctx.focus(&self.menu);
         ctx.notify();
-    }
-
-    pub fn toggle_share_dialog(
-        &mut self,
-        _warp_drive_item_id: &WarpDriveItemId,
-        _invitee_email: Option<String>,
-        _source: SharingDialogSource,
-        _ctx: &mut ViewContext<Self>,
-    ) {
-        // Sharing is disabled in local-only mode.
     }
 
     fn toggle_space_menu(&mut self, space: &Space, offset: Vector2F, ctx: &mut ViewContext<Self>) {
@@ -5079,14 +5046,6 @@ impl TypedActionView for DriveIndex {
                 UserWorkspaces::handle(ctx).update(ctx, move |user_workspaces, ctx| {
                     user_workspaces.generate_stripe_billing_portal_link(*team_uid, ctx);
                 });
-            }
-            DriveIndexAction::ToggleShareDialog { warp_drive_item_id } => {
-                self.toggle_share_dialog(
-                    warp_drive_item_id,
-                    None,
-                    SharingDialogSource::DriveIndex,
-                    ctx,
-                );
             }
             DriveIndexAction::SignupAnonymousUser => {
                 let entrypoint = AnonymousUserSignupEntrypoint::SignUpButton;

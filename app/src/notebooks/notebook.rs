@@ -74,7 +74,7 @@ use crate::{
         ids::{ClientId, ServerId, SyncId},
         telemetry::{
             CloudObjectTelemetryMetadata, NotebookActionEvent, NotebookTelemetryMetadata,
-            SharingDialogSource, TelemetryCloudObjectType, TelemetryEvent,
+            TelemetryCloudObjectType, TelemetryEvent,
         },
     },
     settings::{
@@ -274,11 +274,6 @@ pub enum NotebookEvent {
     MoveToSpace {
         cloud_object_type_and_id: CloudObjectTypeAndId,
         new_space: Space,
-    },
-    OpenDriveObjectShareDialog {
-        cloud_object_type_and_id: CloudObjectTypeAndId,
-        invitee_email: Option<String>,
-        source: SharingDialogSource,
     },
     AttachPlanAsContext(AIDocumentId),
 }
@@ -1606,17 +1601,7 @@ impl NotebookView {
             }
         });
         self.update_breadcrumbs(ctx);
-        if let Some(invitee_email) = settings.invitee_email.clone() {
-            let object_id_to_share = settings
-                .focused_folder_id
-                .map(|id| CloudObjectTypeAndId::Folder(SyncId::ServerId(id)))
-                .unwrap_or(CloudObjectTypeAndId::Notebook(notebook.id));
-            ctx.emit(NotebookEvent::OpenDriveObjectShareDialog {
-                cloud_object_type_and_id: object_id_to_share,
-                invitee_email: Some(invitee_email),
-                source: SharingDialogSource::InviteeRequest,
-            });
-        } else if let Some(focused_folder_id) = settings.focused_folder_id.map(SyncId::ServerId) {
+        if let Some(focused_folder_id) = settings.focused_folder_id.map(SyncId::ServerId) {
             self.view_in_warp_drive(
                 WarpDriveItemId::Object(CloudObjectTypeAndId::Folder(focused_folder_id)),
                 ctx,
