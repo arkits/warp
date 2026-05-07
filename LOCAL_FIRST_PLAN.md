@@ -207,6 +207,11 @@ Phase 6 progress (incremental):
   - `auth_view_modal.rs` and `login_slide.rs` — always emit `SkippedLogin`, no Firebase anonymous user creation.
   - `settings_view/warp_drive_page.rs` and `drive/settings.rs` — use `AuthStateProvider` directly.
 - **Current Phase 6 status**: Remaining cloud flags (`CloudMode`, `OzHandoff`, `CloudModeSetupV2`, `CloudModeInputV2`, `CloudEnvironments`, etc.) are already behind Cargo features not included in the OSS build and will be removed when their gated code is deleted in Phases 4c/5a/5b.
+- Removed `FeatureFlag::ConversationApi` (never registered, always-false): CLI `conversation` subcommand and `--conversation` flag are now unconditionally hidden/blocked.
+- Removed `FeatureFlag::SoloUserByok` (always-false without `solo_user_byok` Cargo feature): `is_byo_api_key_enabled` now returns `cfg!(feature = "local")` as the no-workspace fallback, ensuring BYO API keys always work in local builds. Updated test to use a workspace with BYO policy enabled.
+- Removed dead `From<ProfileData>` impl in `user_profiles.rs` — the session-sharing-protocol conversion was only used by deleted shared-session presence code.
+- Removed orphaned shared-session Cargo feature definitions: `agent_shared_sessions`, `shared_session_long_running_commands`, `hoa_remote_control` from the dogfood list and feature definitions.
+- Removed 26 additional orphaned Cargo feature definitions with zero `.rs` references: shared-session flags, cloud-object flags, billing flags, and various dead UI feature flags. Also cleaned up 7 orphaned entries from the `default` feature list.
 
 Phase 7 progress:
 - Added `WarpServerConfig::local()` and `OzConfig::local()` constructors to `crates/warp_core/src/channel/config.rs` — both return empty strings with no production credentials.
