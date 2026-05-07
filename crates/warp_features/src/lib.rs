@@ -487,9 +487,6 @@ pub enum FeatureFlag {
     /// Enables computer use functionality in local clients.
     LocalComputerUse,
 
-    /// Enables cloud conversation loading via the CLI --conversation flag.
-    CloudConversations,
-
     /// Enables the "New agent" prompt chip in terminal mode when AgentView is enabled.
     ///
     /// When disabled (the default), the terminal message bar is shown instead.

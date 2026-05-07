@@ -2619,8 +2619,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::AgentModeComputerUse,
         #[cfg(feature = "local_computer_use")]
         FeatureFlag::LocalComputerUse,
-        #[cfg(feature = "cloud_conversations")]
-        FeatureFlag::CloudConversations,
         #[cfg(feature = "agent_toolbar_editor")]
         FeatureFlag::AgentToolbarEditor,
         #[cfg(feature = "configurable_toolbar")]

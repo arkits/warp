@@ -12,7 +12,6 @@ use warpui::r#async::{SpawnedFutureHandle, Timer};
 use regex::Regex;
 use settings::Setting as _;
 use warp_core::context_flag::ContextFlag;
-use warp_core::features::FeatureFlag;
 use warp_core::ui::theme::WarpTheme;
 use warpui::elements::{
     Align, ChildAnchor, ChildView, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment,
@@ -1685,21 +1684,10 @@ impl SettingsWidget for CloudConversationStorageWidget {
         "sync cloud conversation store storage ai agent"
     }
 
-    fn should_render(&self, app: &AppContext) -> bool {
-        if !FeatureFlag::CloudConversations.is_enabled() {
-            return false;
-        }
-
-        // Hide the toggle entirely when AI is disabled: the setting has no
-        // effect without AI (no agent conversations are produced), so showing
-        // it is confusing.
-        if !AISettings::as_ref(app).is_any_ai_enabled(app) {
-            return false;
-        }
-
-        let privacy_settings = PrivacySettings::as_ref(app);
-        !privacy_settings.is_telemetry_force_enabled()
+    fn should_render(&self, _app: &AppContext) -> bool {
+        false
     }
+
 
     fn render(
         &self,
