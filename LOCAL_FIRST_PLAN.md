@@ -97,7 +97,20 @@ Phase 2b progress:
 - Removed `FeatureFlag::WorkflowAliases`; workflow aliases are now treated as an always-on local Drive feature, keeping alias autocomplete, execution, editing, and telemetry without server-controlled gating.
 - Removed the dead pane-header sharing object plumbing left behind after deleting the sharing dialog: `ShareableObject`, `PaneConfiguration::set_shareable_object`, the unhandled `ShareableObjectChanged` / `ToggleSharingDialog` events, and all call sites that only populated the deleted share button/dialog.
 - Deleted the now-unused `drive/sharing/style.rs` and the sharing-dialog-only `SubjectExt`, `UserKindExt`, and `TeamKindExt` helper traits. `drive/sharing/mod.rs` now only retains `ContentEditability` and server sharing type re-exports still referenced elsewhere.
+- **Phase 2b continued (sharing entrypoints):** Removed all remaining call sites that led to the now-no-op `toggle_share_dialog`:
+  - Deleted `app/src/terminal/view/block_onboarding/onboarding_drive_sharing_block.rs` (144 lines) — onboarding UI block with a "Share" button.
+  - Removed `DriveIndexAction::ToggleShareDialog` variant and two "Share" overflow-menu entries from `drive/index.rs`; removed `toggle_share_dialog` no-op method.
+  - Removed `open_object_sharing_settings` method from `drive/panel.rs`.
+  - Removed `WorkspaceAction::OpenObjectSharingSettings` variant from `workspace/action.rs`.
+  - Removed `open_object_sharing_settings` method, `check_and_trigger_drive_sharing_onboarding_block`, `pane_group::Event::OpenDriveObjectShareDialog` handler, and invitee-email sharing block from `workspace/view.rs`. Simplified workflow auto-run guard (removed `&& settings.invitee_email.is_none()`).
+  - Removed `NotebookEvent::OpenDriveObjectShareDialog` and its emission from `notebooks/notebook.rs`.
+  - Removed `WorkflowViewEvent::OpenDriveObjectShareDialog` and its emission from `workflows/workflow_view.rs`.
+  - Removed `Event::OpenDriveObjectShareDialog` variant from `pane_group/mod.rs`.
+  - Removed `OpenDriveObjectShareDialog` handler match arms from `pane_group/pane/notebook_pane.rs` and `pane_group/pane/workflow_pane.rs`.
+  - Removed `SharingDialogSource` enum (9 variants), `OpenedSharingDialogEvent` struct, `TelemetryEvent::OpenedSharingDialog` variant, and `DriveSharingOnboardingBlockShown` telemetry variant from `server/telemetry/events.rs`.
+  - Removed `sharing_onboarding_block_shown` setting from `drive/settings.rs`.
 - Code compiles with zero errors (`cargo check --package warp`; warnings only).
+- **Phase 5d (unused imports):** Removed 11 unused imports across 11 files revealed by the sharing-dialog cleanup: `AuthStateProvider` and `UserWorkspaces` from `cloud_object/model/persistence.rs`; dead `pub use decode_guests/decode_link_sharing` re-exports from `persistence/cloud_objects.rs`; `FeatureFlag` from `persistence/sqlite.rs` and `server/server_api/ai.rs`; `CloudModel` from `workspaces/user_workspaces.rs`; `AISettings` from `settings_view/privacy_page.rs`; `submit_run_followup` from `terminal/view/ambient_agent/model.rs`; `TelemetryBanner` from `terminal/view.rs`; `SingletonEntity` and `CloudViewModel` from `workflows/mod.rs`. Zero unused-import warnings remain under `--features local`.
 
 Phase 2c progress:
 - Added `cfg!(feature = "local")` early-return guard to `fetch_ambient_agent_tasks_and_cloud_convo_metadata` in `agent_conversations_model.rs`. When running with `--features local`, no cloud AI task/conversation-metadata fetches are attempted; conversations already stored in local SQLite continue to load normally.
