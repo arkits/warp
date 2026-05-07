@@ -1635,12 +1635,9 @@ impl RootView {
                             onboarding_view,
                             target: AuthOnboardingTarget::Workspace(workspace_args_box),
                         }
-                    } else if FeatureFlag::SkipFirebaseAnonymousUser.is_enabled() {
-                        // When SkipFirebaseAnonymousUser is enabled, skip the login screen
-                        // entirely and go directly into the workspace.
-                        AuthOnboardingState::Terminal(workspace_args.create_workspace(ctx))
                     } else {
-                        AuthOnboardingState::Auth(workspace_args.into())
+                        // Skip the login screen and go directly into the workspace.
+                        AuthOnboardingState::Terminal(workspace_args.create_workspace(ctx))
                     }
                 }
             }
