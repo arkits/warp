@@ -180,10 +180,6 @@ impl UserWorkspaces {
         None
     }
 
-    pub fn team_from_uid_across_all_workspaces(&self, _team_uid: ServerId) -> Option<&Team> {
-        None
-    }
-
     pub fn workspace_from_uid(&self, workspace_uid: WorkspaceUid) -> Option<&Workspace> {
         self.workspaces.iter().find(|w| w.uid == workspace_uid)
     }
@@ -243,10 +239,6 @@ impl UserWorkspaces {
     /// Return the uid of user's current team (if any) without refreshing.
     pub fn current_team_uid(&self) -> Option<ServerId> {
         self.current_team().map(|t| t.uid)
-    }
-
-    pub fn current_team_mut(&mut self) -> Option<&mut Team> {
-        None
     }
 
     /// Note that the team is populated with dummy data until
@@ -796,9 +788,6 @@ impl UserWorkspaces {
                 // TODO: We really need to stop having duplicate billing metadata...
                 if let Some(workspace) = self.current_workspace_mut() {
                     workspace.billing_metadata.ai_overages = Some(fresh_ai_overages.clone());
-                }
-                if let Some(team) = self.current_team_mut() {
-                    team.billing_metadata.ai_overages = Some(fresh_ai_overages);
                 }
 
                 ctx.emit(UserWorkspacesEvent::AiOveragesUpdated);
