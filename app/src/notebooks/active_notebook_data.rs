@@ -10,7 +10,7 @@ use crate::{
         },
         CloudObject, Owner, Space,
     },
-    drive::sharing::{ContentEditability, SharingAccessLevel},
+    drive::sharing::SharingAccessLevel,
     notebooks::CloudNotebook,
     server::{
         cloud_objects::update_manager::{
@@ -365,15 +365,6 @@ impl ActiveNotebookData {
         }
     }
 
-    /// Whether or not the current user can edit the notebook.
-    pub fn editability(&self, app: &AppContext) -> ContentEditability {
-        match &self.active_notebook {
-            ActiveNotebook::CommittedNotebook(object_id) => {
-                CloudViewModel::as_ref(app).object_editability(&object_id.uid(), app)
-            }
-            ActiveNotebook::None | ActiveNotebook::NewNotebook(_) => ContentEditability::Editable,
-        }
-    }
 }
 
 pub enum ActiveNotebookDataEvent {

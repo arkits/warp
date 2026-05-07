@@ -208,14 +208,6 @@ impl UserWorkspaces {
         }
     }
 
-    pub fn is_at_tier_limit_for_some_warp_drive_objects(
-        team_uid: ServerId,
-        ctx: &AppContext,
-    ) -> bool {
-        UserWorkspaces::is_at_tier_limit_for_object_type(team_uid, ObjectType::Notebook, ctx)
-            || UserWorkspaces::is_at_tier_limit_for_object_type(team_uid, ObjectType::Workflow, ctx)
-    }
-
     // Checks if the team has capacity for another shared notebook for their current
     // billing tier, given their current notebook count and delinquency status.
     pub fn has_capacity_for_shared_notebooks(
