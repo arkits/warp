@@ -14,8 +14,6 @@ use crate::workspaces::{
 };
 
 use ai::api_keys::ApiKeyManager;
-use warp_core::features::FeatureFlag;
-
 use super::*;
 
 fn create_test_workspace() -> (WorkspaceUid, Workspace) {
@@ -430,12 +428,13 @@ fn test_has_any_ai_remaining_false_with_byok_enabled_but_no_key() {
 }
 
 #[test]
-fn test_has_any_ai_remaining_true_with_byo_key_and_no_workspace() {
+fn test_has_any_ai_remaining_true_with_byo_key_and_workspace() {
     App::test((), |mut app| async move {
-        let _guard = FeatureFlag::SoloUserByok.override_enabled(true);
-
-        // No workspace — user is not on a team.
-        app.add_singleton_model(UserWorkspaces::default_mock);
+        // Workspace with BYO API key policy enabled.
+        let (_uid, mut workspace) = create_test_workspace();
+        workspace.billing_metadata.tier.byo_api_key_policy =
+            Some(ByoApiKeyPolicy { enabled: true });
+        add_user_workspaces_with_workspace(&mut app, workspace);
         let request_usage_model = add_request_usage_model(&mut app);
 
         ApiKeyManager::handle(&app).update(&mut app, |manager, ctx| {
@@ -449,7 +448,7 @@ fn test_has_any_ai_remaining_true_with_byo_key_and_no_workspace() {
 
             assert!(
                 model.has_any_ai_remaining(ctx),
-                "expected has_any_ai_remaining to be true when user has a BYO key but no workspace",
+                "expected has_any_ai_remaining to be true when user has a BYO key and BYO policy enabled",
             );
         });
     });

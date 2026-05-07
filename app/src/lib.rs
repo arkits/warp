@@ -2711,8 +2711,6 @@ pub fn enabled_features() -> HashSet<FeatureFlag> {
         FeatureFlag::TransferControlTool,
         #[cfg(feature = "warpify_footer")]
         FeatureFlag::WarpifyFooter,
-        #[cfg(feature = "solo_user_byok")]
-        FeatureFlag::SoloUserByok,
         #[cfg(feature = "hoa_onboarding_flow")]
         FeatureFlag::HOAOnboardingFlow,
         #[cfg(feature = "git_operations_in_code_review")]

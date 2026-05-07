@@ -661,9 +661,6 @@ pub enum FeatureFlag {
     /// Enables the ask_user_question tool allowing the agent to ask clarifying questions.
     AskUserQuestion,
 
-    /// When enabled, solo users (not on a team) can use BYO API keys.
-    SoloUserByok,
-
     /// Replaces the in-block warpification banner with a warpify footer.
     WarpifyFooter,
 
