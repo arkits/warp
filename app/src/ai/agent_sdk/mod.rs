@@ -500,17 +500,17 @@ fn run_task(
         TaskCommand::List(args) => ambient::list_ambient_agent_tasks(ctx, global_options, args),
         TaskCommand::Get(args) => {
             if args.conversation {
-                return Err(anyhow::anyhow!(
+                Err(anyhow::anyhow!(
                     "The --conversation flag is not available in this build"
-                ));
+                ))
             } else {
                 ambient::get_ambient_agent_task_status(ctx, global_options, args)
             }
         }
         TaskCommand::Conversation(_) => {
-            return Err(anyhow::anyhow!(
+            Err(anyhow::anyhow!(
                 "The 'conversation' subcommand is not available in this build"
-            ));
+            ))
         }
         TaskCommand::Message(message_cmd) => {
             if !FeatureFlag::OrchestrationV2.is_enabled() {

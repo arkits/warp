@@ -301,38 +301,6 @@ fn test_codebase_context_enabled_by_team_and_user() {
 }
 
 #[test]
-fn test_codebase_context_disabled_by_team() {
-    // Disable codebase context on a team level
-    let mut team = team_for_test();
-    team.organization_settings.codebase_context_settings.setting = AdminEnablementSetting::Disable;
-
-    // Enable codebase context on the user level (this doesn't matter since team overrides)
-    let mut workspace = workspace_for_test(&team);
-    workspace.settings.codebase_context_settings = CodebaseContextSettings {
-        setting: AdminEnablementSetting::Enable,
-    };
-
-    App::test((), |mut app| async move {
-        initialize_app(
-            &mut app,
-            CachedResources {
-                workspaces: vec![workspace],
-            },
-            Arc::new(MockWorkspaceClient::new()),
-        );
-
-        app.read(|ctx| {
-            let codebase_context_enabled = UserWorkspaces::as_ref(ctx)
-                .is_codebase_context_enabled(ctx);
-            assert!(
-                !codebase_context_enabled,
-                "codebase context should be off when it's disabled by the team, regardless of the user's settings"
-            );
-        });
-    })
-}
-
-#[test]
 fn test_codebase_context_respect_user_setting() {
     // Set team to respect user setting
     let mut team = team_for_test();
@@ -386,58 +354,6 @@ fn test_agent_attribution_default_with_no_workspace() {
                 setting,
                 AdminEnablementSetting::RespectUserSetting,
                 "attribution should default to RespectUserSetting when there is no workspace"
-            );
-        });
-    })
-}
-
-#[test]
-fn test_agent_attribution_forced_on_by_team() {
-    let mut team = team_for_test();
-    team.organization_settings.enable_warp_attribution = AdminEnablementSetting::Enable;
-    let workspace = workspace_for_test(&team);
-
-    App::test((), |mut app| async move {
-        initialize_app(
-            &mut app,
-            CachedResources {
-                workspaces: vec![workspace],
-            },
-            Arc::new(MockWorkspaceClient::new()),
-        );
-
-        app.read(|ctx| {
-            let setting = UserWorkspaces::as_ref(ctx).get_agent_attribution_setting();
-            assert_eq!(
-                setting,
-                AdminEnablementSetting::Enable,
-                "attribution should be Enable when forced on by the team"
-            );
-        });
-    })
-}
-
-#[test]
-fn test_agent_attribution_forced_off_by_team() {
-    let mut team = team_for_test();
-    team.organization_settings.enable_warp_attribution = AdminEnablementSetting::Disable;
-    let workspace = workspace_for_test(&team);
-
-    App::test((), |mut app| async move {
-        initialize_app(
-            &mut app,
-            CachedResources {
-                workspaces: vec![workspace],
-            },
-            Arc::new(MockWorkspaceClient::new()),
-        );
-
-        app.read(|ctx| {
-            let setting = UserWorkspaces::as_ref(ctx).get_agent_attribution_setting();
-            assert_eq!(
-                setting,
-                AdminEnablementSetting::Disable,
-                "attribution should be Disable when forced off by the team"
             );
         });
     })

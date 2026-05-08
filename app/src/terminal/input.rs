@@ -11707,7 +11707,11 @@ impl Input {
             // whitespace - trim it in-place.
             command_string.truncate(command_string.trim_end().len());
 
-            if let Some(alias) = WorkflowAliases::as_ref(ctx).match_alias(&command_string) {
+            if !ctx.has_singleton_model::<WorkflowAliases>() {
+                // WorkflowAliases not registered (some test contexts skip it)
+            } else if let Some(alias) =
+                WorkflowAliases::as_ref(ctx).match_alias(&command_string)
+            {
                 if let Some(workflow) = CloudModel::as_ref(ctx).get_workflow(&alias.workflow_id) {
                     let owner = workflow.clone().permissions.owner.into();
 

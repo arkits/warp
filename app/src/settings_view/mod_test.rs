@@ -640,7 +640,7 @@ fn realistic_nav_items() -> Vec<SettingsNavItem> {
             "Agents",
             SettingsSection::ai_subpages().to_vec(),
         )),
-        SettingsNavItem::Page(SettingsSection::BillingAndUsage),
+        SettingsNavItem::Page(SettingsSection::WarpDrive),
         SettingsNavItem::Umbrella(SettingsUmbrella::new(
             "Code",
             SettingsSection::code_subpages().to_vec(),
@@ -684,7 +684,7 @@ fn collapsed_umbrella_is_a_single_nav_stop() {
     ));
     assert!(matches!(
         stops[2],
-        NavStop::Section(SettingsSection::BillingAndUsage)
+        NavStop::Section(SettingsSection::WarpDrive)
     ));
     assert!(matches!(
         stops[3],
@@ -731,7 +731,7 @@ fn expanded_umbrella_produces_section_stop_per_subpage() {
             "AgentMCPServers",
             "Knowledge",
             "ThirdPartyCLIAgents",
-            "BillingAndUsage",
+            "WarpDrive",
             "Umbrella@3",
             "Umbrella@4",
         ]
@@ -803,14 +803,14 @@ fn filtered_out_top_level_page_is_skipped() {
     let nav_items = realistic_nav_items();
 
     let stops = build_nav_stops(&nav_items, |section| {
-        section != SettingsSection::BillingAndUsage
+        section != SettingsSection::WarpDrive
     });
 
     assert!(
         !stops
             .iter()
-            .any(|s| matches!(s, NavStop::Section(SettingsSection::BillingAndUsage))),
-        "BillingAndUsage should be filtered out entirely"
+            .any(|s| matches!(s, NavStop::Section(SettingsSection::WarpDrive))),
+        "WarpDrive should be filtered out entirely"
     );
     // But other pages remain.
     assert!(stops
@@ -825,7 +825,7 @@ fn current_stop_index_matches_section_stop() {
     let nav_items = realistic_nav_items();
     let stops = build_nav_stops(&nav_items, |_| true);
 
-    let idx = current_stop_index(&stops, &nav_items, SettingsSection::BillingAndUsage);
+    let idx = current_stop_index(&stops, &nav_items, SettingsSection::WarpDrive);
     assert_eq!(idx, Some(2));
 }
 
@@ -911,7 +911,7 @@ fn arrow_down_from_account_with_collapsed_agents_lands_on_first_subpage() {
     let stops = build_nav_stops(&nav_items, |_| true);
 
     // Pressing Down from Account should auto-expand Agents and select WarpAgent,
-    // not skip over to BillingAndUsage.
+    // not skip over to WarpDrive.
     let next = simulate_cycle(
         &nav_items,
         &stops,
@@ -926,14 +926,14 @@ fn arrow_up_from_billing_and_usage_with_collapsed_agents_lands_on_last_subpage()
     let nav_items = realistic_nav_items();
     let stops = build_nav_stops(&nav_items, |_| true);
 
-    // Pressing Up from BillingAndUsage should land on the collapsed Agents
+    // Pressing Up from WarpDrive should land on the collapsed Agents
     // umbrella, which resolves to ThirdPartyCLIAgents (last visible subpage)
     // so the user continues moving in natural reading order rather than being
     // jumped back to the top of the umbrella.
     let next = simulate_cycle(
         &nav_items,
         &stops,
-        SettingsSection::BillingAndUsage,
+        SettingsSection::WarpDrive,
         CycleDirection::Up,
     );
     assert_eq!(next, SettingsSection::ThirdPartyCLIAgents);
@@ -958,7 +958,7 @@ fn arrow_up_into_collapsed_umbrella_respects_search_filter_for_last_subpage() {
     let next = simulate_cycle(
         &nav_items,
         &stops,
-        SettingsSection::BillingAndUsage,
+        SettingsSection::WarpDrive,
         CycleDirection::Up,
     );
     assert_eq!(next, SettingsSection::AgentMCPServers);
@@ -978,7 +978,7 @@ fn arrow_down_from_expanded_last_subpage_leaves_umbrella() {
         SettingsSection::ThirdPartyCLIAgents,
         CycleDirection::Down,
     );
-    assert_eq!(next, SettingsSection::BillingAndUsage);
+    assert_eq!(next, SettingsSection::WarpDrive);
 }
 
 #[test]
@@ -992,7 +992,7 @@ fn arrow_down_across_adjacent_collapsed_umbrellas() {
     let next_after_billing = simulate_cycle(
         &nav_items,
         &stops,
-        SettingsSection::BillingAndUsage,
+        SettingsSection::WarpDrive,
         CycleDirection::Down,
     );
     assert_eq!(next_after_billing, SettingsSection::CodeIndexing);

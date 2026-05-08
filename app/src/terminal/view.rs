@@ -4840,7 +4840,6 @@ impl TerminalView {
                 response_stream_id,
                 ..
             } => {
-
                 // Close any open usage footer(s) when a new AI block is added
                 if !self.usage_footer_view_ids.is_empty() {
                     let owner_block_ids: Vec<EntityId> =
@@ -5108,20 +5107,12 @@ impl TerminalView {
                 // conversation completes.
                 // We only insert the tombstone once per session (when the conversation finishes).
                 // Skip during historical replay to avoid premature tombstone insertion.
-                let should_insert_tombstone = if !self.has_inserted_conversation_ended_tombstone
+                #[cfg(target_family = "wasm")]
+                let should_insert_tombstone = !self.has_inserted_conversation_ended_tombstone
                     && !self.model.lock().is_receiving_agent_conversation_replay()
-                {
-                    #[cfg(target_family = "wasm")]
-                    {
-                        self.model.lock().is_conversation_transcript_viewer()
-                    }
-                    #[cfg(not(target_family = "wasm"))]
-                    {
-                        false
-                    }
-                } else {
-                    false
-                };
+                    && self.model.lock().is_conversation_transcript_viewer();
+                #[cfg(not(target_family = "wasm"))]
+                let should_insert_tombstone = false;
 
                 if should_insert_tombstone {
                     if let Some(conversation) =
@@ -6559,7 +6550,6 @@ impl TerminalView {
         if self.has_active_init_project(app) && self.is_last_block_init_step(app) {
             return false;
         }
-
 
         if self.active_env_var_collection_block(app).is_some() {
             return false;
@@ -9316,9 +9306,7 @@ impl TerminalView {
             .current_workspace()
             .is_some_and(|w| matches!(w.billing_metadata.customer_type, CustomerType::Enterprise))
         {
-            return;
         }
-
     }
 
     fn hide_telemetry_banner_permanently(&mut self, ctx: &mut ViewContext<Self>) {
@@ -9488,7 +9476,6 @@ impl TerminalView {
                 );
             });
         }
-
     }
 
     fn active_block_is_considered_remote(&self, app: &AppContext) -> bool {
@@ -14955,9 +14942,9 @@ impl TerminalView {
                 true,
             ) => {
                 // If selection is empty, only show non-block related options
-                let items = Vec::new();
+                
 
-                items
+                Vec::new()
             }
             _ => vec![],
         };
@@ -15869,7 +15856,6 @@ impl TerminalView {
                 .into_item(),
         );
         items.push(MenuItem::Separator);
-
 
         items.push(
             MenuItemFields::new("Copy conversation text")

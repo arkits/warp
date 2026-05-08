@@ -81,8 +81,8 @@ use warpui::{
     elements::{
         Align, AnchorPair, Border, ChildAnchor, ChildView, ClippedScrollStateHandle,
         ClippedScrollable, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Dash,
-        DropTarget, DropTargetData, Empty, Flex, Hoverable, MainAxisAlignment,
-        MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor, ParentElement,
+        DropTarget, DropTargetData, Empty, Flex, Hoverable, MainAxisAlignment, MainAxisSize,
+        MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor, ParentElement,
         ParentOffsetBounds, PositionedElementAnchor, PositionedElementOffsetBounds,
         PositioningAxis, Radius, SavePosition, ScrollTarget, ScrollToPositionMode, ScrollbarWidth,
         Shrinkable, Stack, Text, XAxisAnchor, YAxisAnchor,
@@ -3731,8 +3731,7 @@ impl DriveIndex {
                         .into_item(),
                 );
 
-                if let Some(_object) = object {
-                }
+                if let Some(_object) = object {}
             }
         } else {
             if let Some(object) = object {
@@ -3869,8 +3868,7 @@ impl DriveIndex {
             // TODO: move this out of the -else- branch. Right now, we don't support bulk actions.
             match space {
                 Space::Personal => {
-                    if can_move_or_trash
-                    {
+                    if can_move_or_trash {
                         menu_items.extend(self.sections.iter().filter_map(|section| {
                             let DriveIndexSection::Space(space) = section;
                             match space {
@@ -3957,12 +3955,10 @@ impl DriveIndex {
                             .into_item(),
                     )
                 }
-
             }
         }
 
-        if can_move_or_trash
-        {
+        if can_move_or_trash {
             menu_items.push(
                 MenuItemFields::new("Trash")
                     .with_on_select_action(DriveIndexAction::TrashObject {

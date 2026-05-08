@@ -123,7 +123,9 @@ impl SettingsWidget for WarpDriveHeaderWidget {
     }
 
     fn should_render(&self, app: &AppContext) -> bool {
-        AuthStateProvider::as_ref(app).get().is_anonymous_or_logged_out()
+        AuthStateProvider::as_ref(app)
+            .get()
+            .is_anonymous_or_logged_out()
     }
 
     fn render(
@@ -209,8 +211,9 @@ impl SettingsWidget for WarpDriveToggleWidget {
         app: &AppContext,
     ) -> Box<dyn Element> {
         let settings = WarpDriveSettings::as_ref(app);
-        let is_anonymous_or_logged_out =
-            AuthStateProvider::as_ref(app).get().is_anonymous_or_logged_out();
+        let is_anonymous_or_logged_out = AuthStateProvider::as_ref(app)
+            .get()
+            .is_anonymous_or_logged_out();
 
         render_body_item::<WarpDriveSettingsPageAction>(
             "Warp Drive".into(),

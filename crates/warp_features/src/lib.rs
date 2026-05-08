@@ -162,7 +162,6 @@ pub enum FeatureFlag {
     /// Enables support for Warp Packs.
     WarpPacks,
 
-
     /// Enables Agent Mode onboarding.
     AgentOnboarding,
 
@@ -653,7 +652,6 @@ pub enum FeatureFlag {
     /// Enables the install/update chip for the Gemini CLI Warp extension.
     /// Requires HOANotifications to also be enabled.
     GeminiNotifications,
-
 
     /// Enables tab configs — user-definable TOML templates for launching custom tab layouts.
     TabConfigs,

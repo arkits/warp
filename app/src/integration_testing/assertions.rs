@@ -9,7 +9,10 @@ use crate::{
     },
     util::bindings::keybinding_name_to_display_string,
     workflows::workflow::Workflow,
-    workspaces::{team::Team, user_workspaces::UserWorkspaces, workspace::Workspace},
+    workspaces::{
+        user_workspaces::UserWorkspaces,
+        workspace::{Team, Workspace},
+    },
 };
 use warpui::{async_assert, async_assert_eq, integration::TestStep, SingletonEntity};
 

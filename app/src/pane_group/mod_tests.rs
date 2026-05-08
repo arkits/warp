@@ -52,7 +52,7 @@ use crate::{
     terminal::{
         alt_screen_reporting::AltScreenReporting,
         keys::TerminalKeybindings,
-        local_tty::{spawner::PtySpawner, TerminalManager},
+        local_tty::spawner::PtySpawner,
     },
     test_util::settings::initialize_settings_for_tests,
     undo_close::UndoCloseStack,
@@ -536,46 +536,6 @@ fn test_restored_hidden_child_pane_reapplies_ambient_task_id_to_controller() {
                 ),
                 Some(task_id)
             );
-        });
-    });
-}
-
-#[test]
-fn test_restored_remote_hidden_child_pane_enters_existing_ambient_session() {
-    let _orchestration_v2 = FeatureFlag::OrchestrationV2.override_enabled(true);
-
-    App::test((), |mut app| async move {
-        initialize_app(&mut app);
-        let pane_group = mock_pane_group(&mut app, Default::default());
-
-        pane_group.update(&mut app, |panes, ctx| {
-            let parent_pane_id = get_newly_created_pane_id(panes, &[]);
-            let parent_conversation_id = start_parent_conversation(panes, parent_pane_id, ctx);
-            let task_id = new_ambient_agent_task_id();
-
-            let mut child_conversation = AIConversation::new(false);
-            child_conversation.set_parent_conversation_id(parent_conversation_id);
-            child_conversation.set_task_id(task_id);
-            child_conversation.mark_as_remote_child();
-            let child_conversation_id = child_conversation.id();
-
-            panes.create_hidden_child_agent_pane(child_conversation, parent_pane_id, ctx);
-
-            let child_pane_id = panes
-                .child_agent_panes
-                .get(&child_conversation_id)
-                .copied()
-                .expect("restored remote hidden child pane should be tracked");
-
-            let (ambient_task_id, is_agent_running, active_conversation_id) =
-                ambient_child_session_state(panes, child_pane_id, ctx);
-
-            assert_eq!(ambient_task_id, Some(task_id));
-            assert!(
-                is_agent_running,
-                "remote child restore should view the existing ambient session"
-            );
-            assert_eq!(active_conversation_id, Some(child_conversation_id));
         });
     });
 }

@@ -4,9 +4,7 @@ use settings::{RespectUserSyncSetting, SyncToCloud};
 use warpui::{App, ModelHandle};
 
 use crate::auth::auth_manager::AuthManager;
-use crate::auth::user::TEST_USER_UID;
 use crate::auth::AuthStateProvider;
-use crate::auth::UserUid;
 use crate::cloud_object::model::actions::ObjectActions;
 use crate::cloud_object::model::generic_string_model::GenericStringModel;
 use crate::cloud_object::model::view::CloudViewModel;
@@ -35,7 +33,6 @@ use crate::server::server_api::object::ObjectClient;
 use crate::server::server_api::ServerApiProvider;
 use crate::server::sync_queue::SyncQueue;
 use crate::server::telemetry::context_provider::AppTelemetryContextProvider;
-use crate::settings::init_and_register_user_preferences;
 use crate::settings::Preference;
 use crate::system::SystemStats;
 use crate::workspaces::team_tester::TeamTesterStatus;

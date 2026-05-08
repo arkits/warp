@@ -35,6 +35,7 @@ pub fn initialize_settings_for_tests_with_mode(
         undo_close::UndoCloseSettings,
         user_config::WarpConfig,
         window_settings::WindowSettings,
+        workflows::aliases::WorkflowAliases,
         workspace::tab_settings::TabSettings,
     };
     use warp_core::{execution_mode::AppExecutionMode, semantic_selection::SemanticSelection};
@@ -95,6 +96,7 @@ pub fn initialize_settings_for_tests_with_mode(
     VimBannerSettings::register(app);
     WarpDriveSettings::register(app);
     WindowSettings::register(app);
+    WorkflowAliases::register(app);
     CodeSettings::register(app);
     SemanticSelection::register(app);
 

@@ -632,7 +632,6 @@ fn all_commands() -> Vec<StaticCommand> {
 
     commands.push(OPEN_CODE_REVIEW);
 
-
     if FeatureFlag::CreateProjectFlow.is_enabled() {
         commands.push(CREATE_NEW_PROJECT.clone());
     }

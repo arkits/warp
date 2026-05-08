@@ -113,9 +113,7 @@ use crate::resource_center::{
     mark_feature_used_and_write_to_user_defaults, Tip, TipAction, TipsCompleted,
 };
 use crate::server::ids::{ObjectUid, SyncId};
-use crate::server::telemetry::{
-    AnonymousUserSignupEntrypoint, PaletteSource, TelemetryEvent,
-};
+use crate::server::telemetry::{AnonymousUserSignupEntrypoint, PaletteSource, TelemetryEvent};
 use crate::session_management::SessionNavigationData;
 use crate::settings_view::mcp_servers_page::MCPServersSettingsPage;
 use crate::terminal::general_settings::{GeneralSettings, GeneralSettingsChangedEvent};
@@ -1750,17 +1748,16 @@ impl PaneGroup {
                 let restore_kind = match &task_data {
                     Some((_, Some(task))) => {
                         let item = ConversationOrTask::Task(task);
-                        match item.get_open_action(None, ctx) {
-                            // Transcript viewer and other non-session actions depend on conversation metadata from
-                            // BlocklistAIHistoryModel, which is loaded asynchronously.
-                            // Defer to the pending-restoration handler so it can retry once that metadata arrives.
-                            _ => task_data
-                                .as_ref()
-                                .map(|(tid, _)| AmbientRestoreKind::PendingRestoration {
-                                    task_id: *tid,
-                                })
-                                .unwrap_or(AmbientRestoreKind::NewCloudConversation),
-                        }
+                        let _ = item.get_open_action(None, ctx);
+                        // Transcript viewer and other non-session actions depend on conversation metadata from
+                        // BlocklistAIHistoryModel, which is loaded asynchronously.
+                        // Defer to the pending-restoration handler so it can retry once that metadata arrives.
+                        task_data
+                            .as_ref()
+                            .map(|(tid, _)| AmbientRestoreKind::PendingRestoration {
+                                task_id: *tid,
+                            })
+                            .unwrap_or(AmbientRestoreKind::NewCloudConversation)
                     }
                     Some((task_id, None)) => {
                         AmbientRestoreKind::PendingRestoration { task_id: *task_id }

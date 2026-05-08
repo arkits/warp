@@ -1,6 +1,6 @@
 use super::workspace::{
-    AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting,
-    Team, UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
+    AdminEnablementSetting, CustomerType, EnterpriseSecretRegex, HostEnablementSetting, Team,
+    UgcCollectionEnablementSetting, Workspace, WorkspaceUid,
 };
 use crate::{
     ai::llms::LLMModelHost,
@@ -32,7 +32,7 @@ use crate::server::server_api::workspace::MockWorkspaceClient;
 
 #[cfg(test)]
 use crate::workspaces::workspace::{
-    AIAutonomyPolicy, BillingMetadata, WorkspaceMember, WorkspaceSettings,
+    AIAutonomyPolicy, BillingMetadata, MembershipRole, WorkspaceMember, WorkspaceSettings,
 };
 
 #[cfg(test)]
@@ -437,11 +437,7 @@ impl UserWorkspaces {
             return vec![Space::Shared];
         }
 
-        let mut spaces = Vec::new();
-
-        spaces.push(Space::Personal);
-
-        spaces
+        vec![Space::Personal]
     }
 
     // Returns the [`Owner`] for the user's personal drive. If the user is not authenticated, this
@@ -647,9 +643,7 @@ impl UserWorkspaces {
     ) {
         match result {
             Ok(result) => {
-                let wrapped = WorkspacesMetadataWithPricing {
-                    metadata: result,
-                };
+                let wrapped = WorkspacesMetadataWithPricing { metadata: result };
                 self.on_workspaces_updated(Ok(wrapped), ctx);
                 ctx.emit(UserWorkspacesEvent::UpdateWorkspaceSettingsSuccess);
             }
@@ -688,9 +682,7 @@ impl UserWorkspaces {
     ) {
         match result {
             Ok(result) => {
-                let wrapped = WorkspacesMetadataWithPricing {
-                    metadata: result,
-                };
+                let wrapped = WorkspacesMetadataWithPricing { metadata: result };
                 self.on_workspaces_updated(Ok(wrapped), ctx);
                 ctx.emit(UserWorkspacesEvent::PurchaseAddonCreditsSuccess);
             }

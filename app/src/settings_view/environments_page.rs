@@ -7,8 +7,7 @@ use super::{
     },
     editor_text_colors,
     settings_page::{
-        MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsWidget,
-        CONTENT_FONT_SIZE,
+        MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsWidget, CONTENT_FONT_SIZE,
     },
     update_environment_form::{
         EnvironmentFormInitArgs, EnvironmentFormValues, GithubAuthRedirectTarget,

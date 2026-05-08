@@ -13,8 +13,8 @@ use crate::workspaces::{
     },
 };
 
-use ai::api_keys::ApiKeyManager;
 use super::*;
+use ai::api_keys::ApiKeyManager;
 
 fn create_test_workspace() -> (WorkspaceUid, Workspace) {
     let server_id: crate::server::ids::ServerId = 1_i64.into();

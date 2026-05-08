@@ -6,18 +6,12 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use super::{
-    about_page::AboutPageView,
-    ai_page::AISettingsPageAction,
-    appearance_page::AppearanceSettingsPageView,
-    code_page::CodeSettingsPageView,
-    features_page::FeaturesPageView,
-    keybindings::KeybindingsView,
-    mcp_servers_page::MCPServersSettingsPageView,
-    privacy_page::PrivacyPageView,
-    show_blocks_view::ShowBlocksView,
-    warp_drive_page::WarpDriveSettingsPageView,
-    warpify_page::WarpifyPageView,
-    SettingsSection,
+    about_page::AboutPageView, ai_page::AISettingsPageAction,
+    appearance_page::AppearanceSettingsPageView, code_page::CodeSettingsPageView,
+    features_page::FeaturesPageView, keybindings::KeybindingsView,
+    mcp_servers_page::MCPServersSettingsPageView, privacy_page::PrivacyPageView,
+    show_blocks_view::ShowBlocksView, warp_drive_page::WarpDriveSettingsPageView,
+    warpify_page::WarpifyPageView, SettingsSection,
 };
 use crate::{
     appearance::Appearance,

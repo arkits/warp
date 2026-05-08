@@ -27,7 +27,6 @@ use repo_metadata::watcher::DirectoryWatcher;
 use repo_metadata::CanonicalizedPath;
 #[cfg(feature = "local_fs")]
 use repo_metadata::RepoMetadataModel;
-use session_sharing_protocol::sharer::SessionSourceType;
 use std::collections::HashMap;
 #[cfg(feature = "local_fs")]
 use tempfile::TempDir;

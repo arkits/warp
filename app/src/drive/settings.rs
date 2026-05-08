@@ -34,8 +34,9 @@ impl WarpDriveSettings {
     /// regardless of the user setting.
     pub fn is_warp_drive_enabled(app: &warpui::AppContext) -> bool {
         use warpui::SingletonEntity as _;
-        let is_anonymous_or_logged_out =
-            crate::auth::AuthStateProvider::as_ref(app).get().is_anonymous_or_logged_out();
+        let is_anonymous_or_logged_out = crate::auth::AuthStateProvider::as_ref(app)
+            .get()
+            .is_anonymous_or_logged_out();
         *Self::as_ref(app).enable_warp_drive && !is_anonymous_or_logged_out
     }
 }

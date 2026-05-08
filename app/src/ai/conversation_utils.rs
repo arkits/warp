@@ -53,7 +53,6 @@ pub fn remove_conversation(
 
     BlocklistAIHistoryModel::handle(ctx).update(ctx, |history, model_ctx| {
         history.remove_conversation(conversation_id, terminal_view_id, model_ctx);
-
     });
 }
 

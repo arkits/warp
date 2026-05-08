@@ -339,21 +339,18 @@ impl TerminalManager {
 
         ctx.subscribe_to_model(
             &agent_view_controller,
-            move |_agent_view_controller, event, ctx| match event {
-                AgentViewControllerEvent::ExitedAgentView {
+            move |_agent_view_controller, event, ctx| if let AgentViewControllerEvent::ExitedAgentView {
                     origin,
                     final_exchange_count,
                     ..
-                } => {
-                    send_telemetry_from_ctx!(
-                        TelemetryEvent::AgentViewExited {
-                            origin: TelemetryAgentViewEntryOrigin::from(*origin),
-                            was_empty: *final_exchange_count == 0,
-                        },
-                        ctx
-                    );
-                }
-                _ => {}
+                } = event {
+                send_telemetry_from_ctx!(
+                    TelemetryEvent::AgentViewExited {
+                        origin: TelemetryAgentViewEntryOrigin::from(*origin),
+                        was_empty: *final_exchange_count == 0,
+                    },
+                    ctx
+                );
             },
         );
 
@@ -579,6 +576,11 @@ impl TerminalManager {
 
     /// Sends bindkey to notify shell process to switch to PS1 logic for prompt
     /// with the combined prompt/command grid (we restore the saved PS1 value).
+    #[cfg(feature = "integration_tests")]
+    pub fn pid(&self) -> Option<u32> {
+        self.pid
+    }
+
     pub fn send_switch_to_ps1_bindkey(&self, app_ctx: &mut AppContext) {
         self.pty_controller.update(app_ctx, |pty_controller, ctx| {
             pty_controller.send_switch_to_ps1_bindkey(ctx);

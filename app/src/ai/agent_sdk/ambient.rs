@@ -1333,7 +1333,6 @@ impl super::output::TableFormat for AgentMessageHeader {
     }
 }
 
-
 impl warpui::Entity for AmbientAgentRunner {
     type Event = ();
 }

@@ -364,7 +364,6 @@ impl ActiveNotebookData {
             ActiveNotebook::None | ActiveNotebook::NewNotebook(_) => SharingAccessLevel::Full,
         }
     }
-
 }
 
 pub enum ActiveNotebookDataEvent {

@@ -4618,4 +4618,9 @@ impl AppContext {
             }
         }
     }
+
+    pub fn has_singleton_model<T: SingletonEntity>(&self) -> bool {
+        self.singleton_models
+            .contains_key(&std::any::TypeId::of::<T>())
+    }
 }

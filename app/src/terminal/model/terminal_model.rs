@@ -57,6 +57,8 @@ use crate::terminal::model::ansi::{
 use crate::terminal::model::grid::IndexRegion;
 use crate::terminal::model::session::SessionInfo;
 use crate::terminal::shell::ShellType;
+#[cfg(test)]
+use crate::terminal::shell::ShellName;
 
 use crate::terminal::model::secrets::ObfuscateSecrets;
 #[cfg(not(target_family = "wasm"))]

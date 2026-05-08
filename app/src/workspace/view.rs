@@ -9818,6 +9818,7 @@ impl Workspace {
     /// Checks if the provided tab indices need to be confirmed before closing, unless skip_confirmation is true.
     /// If none of them need confirmation (or the confirm setting is turned off), we close all the provided tabs.
     /// Returns true iff all of the tabs were closed.
+    #[allow(clippy::only_used_in_recursion)]
     fn close_tabs(
         &mut self,
         tab_indices: impl Iterator<Item = usize>,
@@ -14688,7 +14689,6 @@ impl Workspace {
                 self.maybe_refresh_workflow_info_box_and_input(&workflow_id, ctx)
             }
         }
-
     }
 
     fn restore_previous_workspace_state(&mut self, ctx: &mut ViewContext<Self>) {

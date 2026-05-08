@@ -391,8 +391,7 @@ impl EnvVarCollectionView {
         }
 
         // Add "Trash" to menu
-        if self.is_online(ctx)
-        {
+        if self.is_online(ctx) {
             menu_items.push(
                 MenuItemFields::new("Trash")
                     .with_on_select_action(EnvVarCollectionAction::Trash)

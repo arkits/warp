@@ -878,66 +878,6 @@ fn test_render_docker_image_field_shows_github_auth_required_message() {
 }
 
 #[test]
-fn test_create_environment_form_with_team_can_toggle_share_with_team_and_renders_warning_when_disabled(
-) {
-    App::test((), |mut app| async move {
-        init_update_environment_form_test_models(&mut app);
-        let window_id = create_test_window(&mut app);
-
-        app.update(|ctx| {
-            let team = team_for_test();
-            let workspace = workspace_for_test(&team);
-            let workspace_uid = workspace.uid;
-
-            UserWorkspaces::handle(ctx).update(ctx, |user_workspaces, ctx| {
-                user_workspaces.update_workspaces(vec![workspace], ctx);
-                user_workspaces.set_current_workspace_uid(workspace_uid, ctx);
-            });
-
-            let view_handle = ctx.add_typed_action_view(window_id, |ctx| {
-                UpdateEnvironmentForm::new_for_test(EnvironmentFormInitArgs::Create, ctx)
-            });
-
-            assert!(
-                view_handle.as_ref(ctx).share_with_team,
-                "Expected share_with_team to default to true when user has a team"
-            );
-
-            let element = view_handle.as_ref(ctx).render(ctx);
-            let text_content = element.debug_text_content().unwrap_or_default();
-            assert!(
-                text_content.contains("Share with team"),
-                "Expected 'Share with team' checkbox label in rendered content: {text_content}"
-            );
-            assert!(
-                !text_content.contains(
-                    "Personal environments cannot be used with external integrations or team API keys",
-                ),
-                "Did not expect the warning to render when share_with_team is enabled: {text_content}"
-            );
-
-            view_handle.update(ctx, |view, ctx| {
-                view.handle_action(&UpdateEnvironmentFormAction::ToggleShareWithTeam, ctx);
-            });
-
-            assert!(
-                !view_handle.as_ref(ctx).share_with_team,
-                "Expected share_with_team to be disabled after toggle"
-            );
-
-            let element = view_handle.as_ref(ctx).render(ctx);
-            let text_content = element.debug_text_content().unwrap_or_default();
-            assert!(
-                text_content.contains(
-                    "Personal environments cannot be used with external integrations or team API keys",
-                ),
-                "Expected the warning to render when share_with_team is disabled: {text_content}"
-            );
-        });
-    })
-}
-
-#[test]
 fn test_create_environment_form_without_team_does_not_render_checkbox_and_defaults_disabled() {
     App::test((), |mut app| async move {
         init_update_environment_form_test_models(&mut app);

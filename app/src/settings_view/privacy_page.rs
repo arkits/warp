@@ -1688,7 +1688,6 @@ impl SettingsWidget for CloudConversationStorageWidget {
         false
     }
 
-
     fn render(
         &self,
         _view: &Self::View,

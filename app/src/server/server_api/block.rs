@@ -10,10 +10,8 @@ use cynic::{MutationBuilder, QueryBuilder};
 use mockall::automock;
 use std::convert::TryFrom;
 use warp_graphql::{
-    mutations::{
-        unshare_block::{
-            UnshareBlock, UnshareBlockInput, UnshareBlockResult, UnshareBlockVariables,
-        },
+    mutations::unshare_block::{
+        UnshareBlock, UnshareBlockInput, UnshareBlockResult, UnshareBlockVariables,
     },
     queries::get_blocks_for_user::{
         Block as GqlBlock, GetBlocksForUser, GetBlocksForUserVariables,
@@ -77,7 +75,6 @@ impl BlockClient for ServerApi {
             }
         }
     }
-
 }
 
 impl TryFrom<GqlBlock> for Block {

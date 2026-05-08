@@ -275,7 +275,6 @@ impl OneTimeModalModel {
         self.set_openwarp_launch_modal_open(should_show_openwarp_modal, ctx);
         should_show_openwarp_modal
     }
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

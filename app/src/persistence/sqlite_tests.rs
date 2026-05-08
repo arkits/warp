@@ -1,6 +1,5 @@
 use std::{path::PathBuf, sync::Arc};
 
-use warp_core::features::FeatureFlag;
 use warp_graphql::scalars::time::ServerTimestamp;
 
 use crate::{
@@ -381,7 +380,6 @@ fn test_path_encode_decode() {
 
 #[test]
 fn test_deserialize_corrupted_guests() {
-    let _ = FeatureFlag::SharedWithMe.override_enabled(true);
     // Use a hardcoded timestamp to ensure this test works on systems with more-than-microsecond
     // precision.
     let permissions_ts_micros = 123456;

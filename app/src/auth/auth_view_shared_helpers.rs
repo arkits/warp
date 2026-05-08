@@ -590,6 +590,5 @@ pub fn render_privacy_settings_toggles<A: Action + Clone + 'static>(
         ]);
     }
 
-
     col.finish()
 }

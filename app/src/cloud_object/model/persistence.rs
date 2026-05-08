@@ -1113,7 +1113,6 @@ impl CloudModel {
             .any(|(_, object)| !object.metadata().is_welcome_object)
     }
 
-
     pub fn get_folder_by_uid(&self, uid: &str) -> Option<&CloudFolder> {
         self.objects_by_id.get(uid).and_then(|object| object.into())
     }

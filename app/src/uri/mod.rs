@@ -126,17 +126,14 @@ impl UriHost {
                     });
             }
             UriHost::Team => {
-                match url.path_segments().into_iter().flatten().last() {
-                    Some("settings") => {
-                        dispatch_action_in_new_or_existing_window(
-                            primary_window_id,
-                            "root_view:open_settings_page_in_existing_window",
-                            "root_view:open_settings_page_in_new_window",
-                            &SettingsSection::Account,
-                            ctx,
-                        );
-                    }
-                    _ => {}
+                if let Some("settings") = url.path_segments().into_iter().flatten().last() {
+                    dispatch_action_in_new_or_existing_window(
+                        primary_window_id,
+                        "root_view:open_settings_page_in_existing_window",
+                        "root_view:open_settings_page_in_new_window",
+                        &SettingsSection::Account,
+                        ctx,
+                    );
                 };
                 send_telemetry_from_app_ctx!(TelemetryEvent::OpenTeamFromURI, ctx);
             }

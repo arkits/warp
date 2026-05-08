@@ -186,6 +186,7 @@ integration_tests! {
     #[ignore]
     test_ask_warp_ai_keybinding_for_selected_block,
 
+    #[ignore = "Cloud feature removed in dewarp branch"]
     test_create_folder_from_command_palette,
 
     test_tab_behavior_setting,
@@ -198,6 +199,7 @@ integration_tests! {
 
     test_websocket_begins_on_startup,
     test_websocket_does_not_begin_on_startup,
+    #[ignore = "Cloud team feature removed in dewarp branch"]
     test_websocket_begins_after_joining_a_team,
     test_websocket_begins_after_creating_an_object,
 
@@ -232,6 +234,7 @@ integration_tests! {
 
     test_open_workflow_in_pane,
     test_create_personal_workflow_pane_from_command_palette,
+    #[ignore = "Cloud team feature removed in dewarp branch"]
     test_create_team_workflow_pane_from_command_palette,
 
     // TODO(alokedesai): Fix this on the latest version of Bash.

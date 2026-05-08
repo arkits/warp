@@ -49,9 +49,7 @@ use warpui::{
     },
 };
 use warpui::{fonts::Weight, keymap::ContextPredicate};
-use warpui::{
-    Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
-};
+use warpui::{Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext};
 
 const PHOTO_SIZE: f32 = 40.;
 const REGULAR_TEXT_FONT_SIZE: f32 = 12.;

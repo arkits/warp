@@ -338,7 +338,11 @@ impl SessionContext {
         current_working_directory: TypedPathBuf,
         #[allow(unused_variables)] ctx: &AppContext,
     ) -> Self {
-        let workflow_aliases = WorkflowAliases::as_ref(ctx).autocomplete_data(ctx);
+        let workflow_aliases = if ctx.has_singleton_model::<WorkflowAliases>() {
+            WorkflowAliases::as_ref(ctx).autocomplete_data(ctx)
+        } else {
+            Default::default()
+        };
 
         cfg_if::cfg_if! {
             if #[cfg(feature = "completions_v2")] {

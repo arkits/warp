@@ -506,7 +506,6 @@ impl AIRequestUsageModel {
             .map(|grant| grant.request_credits_remaining)
             .sum()
     }
-
 }
 
 /// Voice request usage, only available if built with voice input support.

@@ -380,24 +380,6 @@ fn session_join_info_prefers_session_link_and_tolerates_missing_session_id() {
 }
 
 #[test]
-fn session_join_info_falls_back_to_session_id() {
-    let session_id = SessionId::new();
-    let task = task_with(
-        AmbientAgentTaskState::InProgress,
-        Some(session_id.to_string()),
-        None,
-    );
-
-    let join_info = SessionJoinInfo::from_task(&task).expect("expected join info");
-
-    assert_eq!(join_info.session_id, Some(session_id));
-    assert_eq!(
-        join_info.session_link,
-        format!("local-session-disabled:{}", session_id)
-    );
-}
-
-#[test]
 fn session_join_info_ignores_empty_link_and_invalid_session_id() {
     let task = task_with(
         AmbientAgentTaskState::InProgress,
