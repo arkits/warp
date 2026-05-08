@@ -5,9 +5,7 @@ use crate::appearance::Appearance;
 use crate::drive::settings::WarpDriveSettings;
 use crate::features::FeatureFlag;
 use crate::pane_group::SplitPaneState;
-use crate::settings::{
-    AISettings, DebugSettings, EnforceMinimumContrast, PrivacySettings, TerminalSpacing,
-};
+use crate::settings::{AISettings, EnforceMinimumContrast, PrivacySettings, TerminalSpacing};
 use crate::terminal::alt_screen::{should_intercept_mouse, should_intercept_scroll};
 use crate::terminal::block_list_viewport::AutoscrollBehavior;
 use crate::terminal::input::inline_menu::InlineMenuPositioner;
@@ -3250,53 +3248,6 @@ impl Element for BlockListElement {
         // Explicitly drop `viewport_iter` so that we're not longer holding on to any immutable
         // references to the terminal model
         drop(viewport_iter);
-
-        if DebugSettings::as_ref(app).should_show_memory_stats() {
-            for block_index in &visible_block_indices {
-                if let Some(block) = model.block_list().block_at(*block_index) {
-                    if !block.has_footer() {
-                        continue;
-                    }
-
-                    fn adjusted_bytes(bytes: usize) -> byte_unit::AdjustedByte {
-                        let unit = if bytes >= 1_000_000 {
-                            byte_unit::Unit::MB
-                        } else {
-                            byte_unit::Unit::KB
-                        };
-                        byte_unit::Byte::from(bytes).get_adjusted_unit(unit)
-                    }
-
-                    let grid_storage_lines = block.grid_storage_lines();
-                    let grid_storage_bytes = block.grid_storage_bytes();
-                    let flat_storage_lines = block.flat_storage_lines();
-                    let flat_storage_bytes = block.flat_storage_bytes();
-
-                    let total_lines = grid_storage_lines + flat_storage_lines;
-                    let total_bytes = grid_storage_bytes + flat_storage_bytes;
-                    let text = format!("\
-                            Lines: {total_lines} (grid: {grid_storage_lines}, flat: {flat_storage_lines}); \
-                            Size: {:#.1} (grid: {:#.1}, flat: {:#.1})\
-                        ",
-                        adjusted_bytes(total_bytes),
-                        adjusted_bytes(grid_storage_bytes),
-                        adjusted_bytes(flat_storage_bytes),
-                    );
-
-                    let mut element = Text::new_inline(text, self.ui_font_family, self.font_size)
-                        .with_style(Properties::default().weight(self.font_weight))
-                        .with_color(
-                            self.warp_theme
-                                .sub_text_color(self.warp_theme.background())
-                                .into(),
-                        )
-                        .finish();
-
-                    element.layout(constraint, ctx, app);
-                    self.block_footer_elements.insert(*block_index, element);
-                }
-            }
-        }
 
         // Explicitly drop the terminal model mutex guard so that it can be freed up for other
         // threads
