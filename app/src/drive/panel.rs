@@ -346,46 +346,29 @@ impl DrivePanel {
         cloud_object_type_and_id: &CloudObjectTypeAndId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // Check if object being duplicated is in team space, if it is, then check
-        // corresponding object limits for that team.
-        if let Some(space) =
+        if let Some(Space::Personal) =
             CloudViewModel::as_ref(ctx).object_space(&cloud_object_type_and_id.uid(), ctx)
         {
-            match space {
-                Space::Team { team_uid } => match cloud_object_type_and_id {
-                    CloudObjectTypeAndId::Notebook(_) => {
-                        if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1) {}
+            match cloud_object_type_and_id {
+                CloudObjectTypeAndId::Notebook(_) => {
+                    if has_feature_gated_anonymous_user_reached_notebook_limit(ctx) {
+                        return;
                     }
-                    CloudObjectTypeAndId::Workflow(_) => {
-                        if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1) {}
+                }
+                CloudObjectTypeAndId::Workflow(_) => {
+                    if has_feature_gated_anonymous_user_reached_workflow_limit(ctx) {
+                        return;
                     }
-                    _ => (),
-                },
-                Space::Personal => match cloud_object_type_and_id {
-                    CloudObjectTypeAndId::Notebook(_) => {
-                        if has_feature_gated_anonymous_user_reached_notebook_limit(ctx) {
-                            return;
-                        }
+                }
+                CloudObjectTypeAndId::GenericStringObject {
+                    object_type: GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
+                    id: _,
+                } => {
+                    if has_feature_gated_anonymous_user_reached_env_var_limit(ctx) {
+                        return;
                     }
-                    CloudObjectTypeAndId::Workflow(_) => {
-                        if has_feature_gated_anonymous_user_reached_workflow_limit(ctx) {
-                            return;
-                        }
-                    }
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
-                        id: _,
-                    } => {
-                        if has_feature_gated_anonymous_user_reached_env_var_limit(ctx) {
-                            return;
-                        }
-                    }
-                    _ => {}
-                },
-                // We're reliant on server checks here, since the client doesn't know how many
-                // objects are in the owning drive.
-                Space::Shared => (),
+                }
+                _ => {}
             }
         }
 

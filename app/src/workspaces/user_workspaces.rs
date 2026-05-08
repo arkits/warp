@@ -6,9 +6,7 @@ use crate::{
     ai::llms::LLMModelHost,
     auth::{AuthStateProvider, UserUid},
     channel::ChannelState,
-    cloud_object::{
-        CloudObjectEventEntrypoint, ObjectType, Owner, Space,
-    },
+    cloud_object::{CloudObjectEventEntrypoint, Owner, Space},
     report_error,
     server::{
         experiments::{ServerExperiment, ServerExperiments, ServerExperimentsEvent},
@@ -189,43 +187,6 @@ impl UserWorkspaces {
         workspace_uid: WorkspaceUid,
     ) -> Option<&mut Workspace> {
         self.workspaces.iter_mut().find(|w| w.uid == workspace_uid)
-    }
-
-    pub fn is_at_tier_limit_for_object_type(
-        team_uid: ServerId,
-        object_type: ObjectType,
-        ctx: &AppContext,
-    ) -> bool {
-        match object_type {
-            ObjectType::Notebook => {
-                !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1)
-            }
-            ObjectType::Workflow => {
-                !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1)
-            }
-            ObjectType::Folder => false,
-            ObjectType::GenericStringObject(_) => false,
-        }
-    }
-
-    // Checks if the team has capacity for another shared notebook for their current
-    // billing tier, given their current notebook count and delinquency status.
-    pub fn has_capacity_for_shared_notebooks(
-        _team_uid: ServerId,
-        _ctx: &AppContext,
-        _new_shared_notebooks: usize,
-    ) -> bool {
-        true
-    }
-
-    // Checks if the team has capacity for another shared workflow for their current
-    // billing tier, given their current workflow count and delinquency status.
-    pub fn has_capacity_for_shared_workflows(
-        _team_uid: ServerId,
-        _ctx: &AppContext,
-        _new_shared_workflows: usize,
-    ) -> bool {
-        true
     }
 
     /// Return the uid of user's current team (if any) without refreshing.

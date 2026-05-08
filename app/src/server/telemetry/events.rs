@@ -2066,7 +2066,6 @@ pub enum TelemetryEvent {
     },
 
     TierLimitHit(TierLimitHitEvent),
-    SharedObjectLimitHitBannerViewPlansButtonClicked,
     ResourceUsageStats {
         cpu: CpuUsageStats,
         mem: MemoryUsageStats,
@@ -3933,7 +3932,6 @@ impl TelemetryEvent {
             | TelemetryEvent::UpdateBlockFilterQuery
             | TelemetryEvent::BlockFilterToolbeltButtonClicked
             | TelemetryEvent::PaneDragInitiated
-            | TelemetryEvent::SharedObjectLimitHitBannerViewPlansButtonClicked
             | TelemetryEvent::AgentModePotentialAutoDetectionFalsePositive(
                 AgentModeAutoDetectionFalsePositivePayload::ExternalUsers,
             )
@@ -4636,7 +4634,6 @@ impl TelemetryEvent {
             | TelemetryEvent::ToggleCodeSuggestionsSetting { .. }
             | TelemetryEvent::ToggleVoiceInputSetting { .. }
             | TelemetryEvent::TierLimitHit(_)
-            | TelemetryEvent::SharedObjectLimitHitBannerViewPlansButtonClicked
             | TelemetryEvent::ResourceUsageStats { .. }
             | TelemetryEvent::MemoryUsageStats { .. }
             | TelemetryEvent::MemoryUsageHigh { .. }
@@ -5125,7 +5122,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             Self::TierLimitHit => EnablementState::Always,
             Self::WebCloudObjectOpenedOnDesktop => EnablementState::Always,
             Self::ToggleShowBlockDividers => EnablementState::Flag(FeatureFlag::MinimalistUI),
-            Self::SharedObjectLimitHitBannerViewPlansButtonClicked => EnablementState::Always,
             Self::ResourceUsageStats => EnablementState::Always,
             Self::ToggleGlobalAI => EnablementState::Always,
             Self::ToggleActiveAI => EnablementState::Always,
@@ -5609,9 +5605,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             Self::DeletedNotebook => "Deleted Notebook",
             Self::ToggleApprovalsModal => "Toggle Approvals Modal",
             Self::TierLimitHit => "Tier Limit Hit",
-            Self::SharedObjectLimitHitBannerViewPlansButtonClicked => {
-                "Shared Object Limit Hit Banner View Plans Button Clicked"
-            }
             Self::AgentModeUserAttemptedQueryAtRequestLimit => "AgentMode.QueryAttemptAtLImit",
             Self::AgentModeClickedEntrypoint => "AgentMode.ClickedEntrypoint",
             Self::AgentModeAttachedBlockContext => "AgentMode.AttachedContext",
@@ -6305,9 +6298,6 @@ impl TelemetryEventDesc for TelemetryEventDiscriminants {
             Self::PaneDropped => "Ended dragging a pane via the pane header",
             Self::AgentModeCreatedAIBlock => "Created an AI block in agent mode",
             Self::TierLimitHit => "User hit the tier limit for a feature",
-            Self::SharedObjectLimitHitBannerViewPlansButtonClicked => {
-                "Clicked the 'View Plans' button on the persistent drive banner"
-            }
             Self::AgentModeUserAttemptedQueryAtRequestLimit => {
                 "Tried to send an Agent Mode query but they already reached the query limit"
             }

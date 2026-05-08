@@ -81,7 +81,7 @@ use warpui::{
     elements::{
         Align, AnchorPair, Border, ChildAnchor, ChildView, ClippedScrollStateHandle,
         ClippedScrollable, ConstrainedBox, Container, CornerRadius, CrossAxisAlignment, Dash,
-        DropTarget, DropTargetData, Empty, Flex, Highlight, Hoverable, MainAxisAlignment,
+        DropTarget, DropTargetData, Empty, Flex, Hoverable, MainAxisAlignment,
         MainAxisSize, MouseStateHandle, OffsetPositioning, OffsetType, ParentAnchor, ParentElement,
         ParentOffsetBounds, PositionedElementAnchor, PositionedElementOffsetBounds,
         PositioningAxis, Radius, SavePosition, ScrollTarget, ScrollToPositionMode, ScrollbarWidth,
@@ -180,20 +180,6 @@ const ZERO_STATE_NOTEBOOK_LABEL: &str = "Notebook";
 const SORTING_BUTTON_TOOLTIP_LABEL: &str = "Sort by";
 
 const RETRY_BUTTON_TOOLTIP_LABEL: &str = "Retry sync";
-
-const SHARED_OBJECT_LIMIT_HIT_BANNER_LINE: &str =
-    "Upgrade for access to more notebooks, workflows, shared sessions, and AI credits.";
-
-const PAYMENT_ISSUE_BANNER_LINE_1: &str =
-    "Shared objects have been restricted due to a subscription payment issue.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN: &str =
-    "Please update your payment information to restore access.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_ADMIN_ENTERPRISE: &str =
-    "Please contact support@warp.dev to restore access.";
-
-const PAYMENT_ISSUE_BANNER_LINE_2_NONADMIN: &str = "Please contact a team admin to restore access.";
 
 /// Struct to hold different state-related information on per-space basis.
 /// Currently, we only have 1 space (1 Team), but as we're working on personal space, and add
@@ -340,12 +326,6 @@ pub enum DriveIndexAction {
     EscapeKey,
     /// Hitting cmd+enter on a WD item toggles the context menu.
     ToggleDriveItemContextMenu,
-    ViewPlans {
-        team_uid: ServerId,
-    },
-    ManageBilling {
-        team_uid: ServerId,
-    },
     SignupAnonymousUser,
     DismissPersonalObjectLimits,
     AttachPlanAsContext(AIDocumentId),
@@ -384,19 +364,13 @@ impl DriveIndexAction {
     }
 
     pub fn blocked_for_anonymous_user(&self) -> bool {
-        use DriveIndexAction::*;
-        matches!(self, ViewPlans { .. } | ManageBilling { .. })
+        false
     }
 }
 
 impl From<&DriveIndexAction> for LoginGatedFeature {
-    fn from(val: &DriveIndexAction) -> LoginGatedFeature {
-        use DriveIndexAction::*;
-        match val {
-            ViewPlans { .. } => "View Plans",
-            ManageBilling { .. } => "Manage Billing",
-            _ => "Unknown reason",
-        }
+    fn from(_val: &DriveIndexAction) -> LoginGatedFeature {
+        "Unknown reason"
     }
 }
 
@@ -460,8 +434,6 @@ struct MouseStateHandles {
     retry_button_mouse_state: MouseStateHandle,
     trash_row_mouse_state: MouseStateHandle,
     exit_trash_button_mouse_state: MouseStateHandle,
-    shared_object_limit_hit_banner_button_mouse_state: MouseStateHandle,
-    payment_issue_banner_button_mouse_state: MouseStateHandle,
     anonymous_sign_up_button_mouse_state: MouseStateHandle,
     anonymous_object_limit_close_button_mouse_state: MouseStateHandle,
     search_button_mouse_state: MouseStateHandle,
@@ -2872,20 +2844,6 @@ impl DriveIndex {
             return;
         }
 
-        // Check if object is being moved into team space, if it is, then check
-        // corresponding object limits for that team.
-        if let CloudObjectLocation::Space(Space::Team { team_uid }) = new_location {
-            match *cloud_object_type_and_id {
-                CloudObjectTypeAndId::Notebook(_) => {
-                    if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1) {}
-                }
-                CloudObjectTypeAndId::Workflow(_) => {
-                    if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1) {}
-                }
-                _ => (),
-            }
-        }
-
         // Otherwise allow object move to go through.
         UpdateManager::handle(ctx).update(ctx, move |update_manager, ctx| {
             update_manager.move_object_to_location(*cloud_object_type_and_id, new_location, ctx);
@@ -2978,11 +2936,6 @@ impl DriveIndex {
                     return;
                 }
 
-                // If the new notebook is being created in the team space, check if the team has
-                // reached the limit for notebooks.
-                if let Space::Team { team_uid } = space {
-                    if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1) {}
-                }
                 ctx.emit(DriveIndexEvent::CreateNotebook {
                     space,
                     title,
@@ -3091,87 +3044,29 @@ impl DriveIndex {
         cloud_object_type_and_id: &CloudObjectTypeAndId,
         ctx: &mut ViewContext<Self>,
     ) {
-        // Check if object being untrashed is in team space, if it is, then check
-        // corresponding object limits for that team.
-        if let Some(space) =
+        if let Some(Space::Personal) =
             CloudViewModel::as_ref(ctx).object_space(&cloud_object_type_and_id.uid(), ctx)
         {
-            match space {
-                Space::Team { team_uid } => {
-                    match cloud_object_type_and_id {
-                        CloudObjectTypeAndId::Notebook(_) => {
-                            if !UserWorkspaces::has_capacity_for_shared_notebooks(team_uid, ctx, 1)
-                            {
-                            }
-                        }
-                        CloudObjectTypeAndId::Workflow(_) => {
-                            if !UserWorkspaces::has_capacity_for_shared_workflows(team_uid, ctx, 1)
-                            {
-                            }
-                        }
-                        CloudObjectTypeAndId::Folder(folder_id) => {
-                            let cloud_model = CloudModel::handle(ctx);
-
-                            // When untrashing a folder, check to see if there are any notebooks or workflows
-                            // in the trashed folder and make sure they are within limits.
-                            let trashed_object_types = cloud_model
-                                .as_ref(ctx)
-                                .trashed_cloud_object_types_in_location_with_descendants(
-                                    CloudObjectLocation::Folder(*folder_id),
-                                    ctx,
-                                );
-                            let notebooks_in_trashed_folder = trashed_object_types
-                                .clone()
-                                .into_iter()
-                                .filter(|object_type| *object_type == ObjectType::Notebook)
-                                .count();
-
-                            // Check # of notebooks in the trashed folder and make sure they are within limits
-                            if !UserWorkspaces::has_capacity_for_shared_notebooks(
-                                team_uid,
-                                ctx,
-                                notebooks_in_trashed_folder,
-                            ) {}
-
-                            // Check # of workflows in the trashed folder and make sure they are within limits
-                            let workflows_in_trashed_folder = trashed_object_types
-                                .into_iter()
-                                .filter(|object_type| *object_type == ObjectType::Workflow)
-                                .count();
-                            if !UserWorkspaces::has_capacity_for_shared_workflows(
-                                team_uid,
-                                ctx,
-                                workflows_in_trashed_folder,
-                            ) {}
-                        }
-                        _ => (),
+            match cloud_object_type_and_id {
+                CloudObjectTypeAndId::Notebook(_) => {
+                    if has_feature_gated_anonymous_user_reached_notebook_limit(ctx) {
+                        return;
                     }
                 }
-                Space::Personal => match cloud_object_type_and_id {
-                    CloudObjectTypeAndId::Notebook(_) => {
-                        if has_feature_gated_anonymous_user_reached_notebook_limit(ctx) {
-                            return;
-                        }
+                CloudObjectTypeAndId::Workflow(_) => {
+                    if has_feature_gated_anonymous_user_reached_workflow_limit(ctx) {
+                        return;
                     }
-                    CloudObjectTypeAndId::Workflow(_) => {
-                        if has_feature_gated_anonymous_user_reached_workflow_limit(ctx) {
-                            return;
-                        }
+                }
+                CloudObjectTypeAndId::GenericStringObject {
+                    object_type: GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
+                    id: _,
+                } => {
+                    if has_feature_gated_anonymous_user_reached_env_var_limit(ctx) {
+                        return;
                     }
-                    CloudObjectTypeAndId::GenericStringObject {
-                        object_type:
-                            GenericStringObjectFormat::Json(JsonObjectType::EnvVarCollection),
-                        id: _,
-                    } => {
-                        if has_feature_gated_anonymous_user_reached_env_var_limit(ctx) {
-                            return;
-                        }
-                    }
-                    _ => {}
-                },
-                // We have to rely on server checks here, since the client doesn't know how many
-                // objects are in the owning drive.
-                Space::Shared => (),
+                }
+                _ => {}
             }
         }
 
@@ -3691,177 +3586,6 @@ impl DriveIndex {
                     .finish(),
             )
             .finish()
-    }
-
-    fn render_shared_object_limit_hit_banner(
-        &self,
-        appearance: &Appearance,
-        team_uid: ServerId,
-        object_type: ObjectType,
-    ) -> Box<dyn Element> {
-        let theme = appearance.theme();
-        let background_color = theme.surface_2();
-
-        let highlight =
-            Highlight::new().with_properties(Properties::default().weight(Weight::Bold));
-
-        let banner_line_1 = format!("You've run out of {object_type}s on your plan.");
-        let body = Container::new(
-            appearance
-                .ui_builder()
-                .wrappable_text(
-                    format!("{banner_line_1} {SHARED_OBJECT_LIMIT_HIT_BANNER_LINE}"),
-                    true,
-                )
-                .with_highlights((0..banner_line_1.len()).collect::<Vec<_>>(), highlight)
-                .with_style(UiComponentStyles {
-                    font_size: Some(12.),
-                    font_color: Some(appearance.theme().main_text_color(background_color).into()),
-                    ..Default::default()
-                })
-                .build()
-                .finish(),
-        )
-        .with_margin_bottom(16.)
-        .finish();
-
-        let button = appearance
-            .ui_builder()
-            .button(
-                ButtonVariant::Accent,
-                self.mouse_state_handles
-                    .shared_object_limit_hit_banner_button_mouse_state
-                    .clone(),
-            )
-            .with_centered_text_label("Compare plans".into())
-            .with_style(UiComponentStyles {
-                font_size: Some(14.),
-                font_weight: Some(Weight::Light),
-                padding: Some(Coords {
-                    top: 8.,
-                    bottom: 8.,
-                    left: 12.,
-                    right: 12.,
-                }),
-                ..Default::default()
-            })
-            .build()
-            .with_cursor(Cursor::PointingHand)
-            .on_click(move |ctx, _, _| {
-                ctx.dispatch_typed_action(DriveIndexAction::ViewPlans { team_uid })
-            })
-            .finish();
-
-        Container::new(
-            Container::new(
-                Flex::column()
-                    .with_main_axis_alignment(MainAxisAlignment::Center)
-                    .with_cross_axis_alignment(CrossAxisAlignment::Center)
-                    .with_child(body)
-                    .with_child(button)
-                    .finish(),
-            )
-            .with_background(background_color)
-            .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-            .with_uniform_padding(16.)
-            .finish(),
-        )
-        .with_uniform_padding(8.)
-        .with_border(Border::top(1.).with_border_color(background_color.into()))
-        .finish()
-    }
-
-    fn render_payment_issue_banner(
-        &self,
-        appearance: &Appearance,
-        team_uid: ServerId,
-        has_admin_permissions: bool,
-        is_on_stripe_paid_plan: bool,
-    ) -> Box<dyn Element> {
-        let theme = appearance.theme();
-        let background_color = theme.surface_2();
-
-        let mut body = Flex::column()
-            .with_main_axis_alignment(MainAxisAlignment::Center)
-            .with_cross_axis_alignment(CrossAxisAlignment::Center);
-
-        let highlight =
-            Highlight::new().with_properties(Properties::default().weight(Weight::Bold));
-
-        let banner_line_2 = if has_admin_permissions && is_on_stripe_paid_plan {
-            PAYMENT_ISSUE_BANNER_LINE_2_ADMIN
-        } else if has_admin_permissions && !is_on_stripe_paid_plan {
-            PAYMENT_ISSUE_BANNER_LINE_2_ADMIN_ENTERPRISE
-        } else {
-            PAYMENT_ISSUE_BANNER_LINE_2_NONADMIN
-        };
-
-        body.add_child(
-            Container::new(
-                appearance
-                    .ui_builder()
-                    .wrappable_text(
-                        format!("{PAYMENT_ISSUE_BANNER_LINE_1} {banner_line_2}").to_string(),
-                        true,
-                    )
-                    .with_highlights(
-                        (0..PAYMENT_ISSUE_BANNER_LINE_1.len()).collect::<Vec<_>>(),
-                        highlight,
-                    )
-                    .with_style(UiComponentStyles {
-                        font_size: Some(12.),
-                        font_color: Some(
-                            appearance.theme().main_text_color(background_color).into(),
-                        ),
-                        ..Default::default()
-                    })
-                    .build()
-                    .finish(),
-            )
-            .finish(),
-        );
-
-        // Only show a manage billing button if they are an admin and on a paid stripe plan
-        if has_admin_permissions && is_on_stripe_paid_plan {
-            let button = appearance
-                .ui_builder()
-                .button(
-                    ButtonVariant::Accent,
-                    self.mouse_state_handles
-                        .payment_issue_banner_button_mouse_state
-                        .clone(),
-                )
-                .with_centered_text_label("Manage billing".into())
-                .with_style(UiComponentStyles {
-                    font_size: Some(14.),
-                    font_weight: Some(Weight::Light),
-                    padding: Some(Coords {
-                        top: 8.,
-                        bottom: 8.,
-                        left: 12.,
-                        right: 12.,
-                    }),
-                    ..Default::default()
-                })
-                .build()
-                .with_cursor(Cursor::PointingHand)
-                .on_click(move |ctx, _, _| {
-                    ctx.dispatch_typed_action(DriveIndexAction::ManageBilling { team_uid })
-                })
-                .finish();
-            body.add_child(Container::new(button).with_margin_top(16.).finish());
-        }
-
-        Container::new(
-            Container::new(body.finish())
-                .with_background(background_color)
-                .with_corner_radius(CornerRadius::with_all(Radius::Pixels(4.)))
-                .with_uniform_padding(16.)
-                .finish(),
-        )
-        .with_uniform_padding(8.)
-        .with_border(Border::top(1.).with_border_color(background_color.into()))
-        .finish()
     }
 
     fn menu_items(
@@ -4532,7 +4256,6 @@ impl View for DriveIndex {
 
     fn render(&self, app: &AppContext) -> Box<dyn warpui::Element> {
         let appearance = Appearance::as_ref(app);
-        let workspaces = UserWorkspaces::as_ref(app);
 
         // The content of the index is all spaces rendered into a flex column.
         let content = Flex::column().with_children(self.render_all_sections(app));
@@ -4598,40 +4321,6 @@ impl View for DriveIndex {
                 drive.add_child(Shrinkable::new(1., index_content).finish());
             }
         };
-
-        if let Some(team) = workspaces.current_team() {
-            if team.billing_metadata.is_delinquent_due_to_payment_issue() {
-                let current_user_email = self.auth_state.user_email().unwrap_or_default();
-                let has_admin_permissions = team.has_admin_permissions(&current_user_email);
-                let is_on_stripe_paid_plan = team.billing_metadata.is_on_stripe_paid_plan();
-                drive.add_child(self.render_payment_issue_banner(
-                    appearance,
-                    team.uid,
-                    has_admin_permissions,
-                    is_on_stripe_paid_plan,
-                ));
-            } else if UserWorkspaces::is_at_tier_limit_for_object_type(
-                team.uid,
-                ObjectType::Workflow,
-                app,
-            ) {
-                drive.add_child(self.render_shared_object_limit_hit_banner(
-                    appearance,
-                    team.uid,
-                    ObjectType::Workflow,
-                ));
-            } else if UserWorkspaces::is_at_tier_limit_for_object_type(
-                team.uid,
-                ObjectType::Notebook,
-                app,
-            ) {
-                drive.add_child(self.render_shared_object_limit_hit_banner(
-                    appearance,
-                    team.uid,
-                    ObjectType::Notebook,
-                ));
-            }
-        }
 
         drive.finish()
     }
@@ -5033,18 +4722,6 @@ impl TypedActionView for DriveIndex {
             }
             DriveIndexAction::InvokeEnvVarCollectionInSubshell(id) => {
                 ctx.emit(DriveIndexEvent::InvokeEnvVarCollectionInSubshell(*id))
-            }
-            DriveIndexAction::ViewPlans { team_uid } => {
-                ctx.open_url(UserWorkspaces::upgrade_link_for_team(*team_uid).as_str());
-                send_telemetry_from_ctx!(
-                    TelemetryEvent::SharedObjectLimitHitBannerViewPlansButtonClicked,
-                    ctx
-                );
-            }
-            DriveIndexAction::ManageBilling { team_uid } => {
-                UserWorkspaces::handle(ctx).update(ctx, move |user_workspaces, ctx| {
-                    user_workspaces.generate_stripe_billing_portal_link(*team_uid, ctx);
-                });
             }
             DriveIndexAction::SignupAnonymousUser => {
                 let entrypoint = AnonymousUserSignupEntrypoint::SignUpButton;
