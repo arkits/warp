@@ -236,6 +236,14 @@ Settings cleanup progress:
 - Removed orphaned shared-session Cargo feature definitions: `agent_shared_sessions`, `shared_session_long_running_commands`, `hoa_remote_control` from the dogfood list and feature definitions.
 - Removed 26 additional orphaned Cargo feature definitions with zero `.rs` references: shared-session flags, cloud-object flags, billing flags, and various dead UI feature flags. Also cleaned up 7 orphaned entries from the `default` feature list.
 
+Drive billing/capacity cleanup:
+- Removed `render_shared_object_limit_hit_banner` and `render_payment_issue_banner` from `drive/index.rs` along with their call site (`if let Some(team) = workspaces.current_team()` block). `current_team()` always returns `None` in local mode, so these banners are unreachable.
+- Removed the unused `ViewPlans` and `ManageBilling` `DriveIndexAction` variants and their handlers.
+- Removed empty `Space::Team` capacity-check arms in `drive/index.rs` (move/create/untrash flows) and `drive/panel.rs::duplicate_object`.
+- Deleted the now-unused `has_capacity_for_shared_notebooks`, `has_capacity_for_shared_workflows`, and `is_at_tier_limit_for_object_type` helpers from `workspaces/user_workspaces.rs`.
+- Removed the `SharedObjectLimitHitBannerViewPlansButtonClicked` telemetry event and all its match arms.
+- Net: -429 lines of dead code, two banner mouse-state fields removed, builds clean for both default and `--features local` with zero warnings.
+
 Phase 7 progress:
 - Added `WarpServerConfig::local()` and `OzConfig::local()` constructors to `crates/warp_core/src/channel/config.rs` — both return empty strings with no production credentials.
 - Updated `app/src/bin/oss.rs` to use these local constructors when compiled with `--features local`. A local-first OSS build now embeds no Warp server URLs, no Firebase API key, and no Oz root URL.
