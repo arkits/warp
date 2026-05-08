@@ -3192,7 +3192,7 @@ impl BackingView for WorkflowView {
         }
 
         // Add "Trash" to menu
-        let access_level = self.access_level(ctx);
+        let _access_level = self.access_level(ctx);
         if self.is_online(ctx)
         {
             menu_items.push(

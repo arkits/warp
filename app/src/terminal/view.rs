@@ -9310,7 +9310,7 @@ impl TerminalView {
     }
 
     /// Inserts telemetry policy banner into the blocklist.
-    pub fn insert_telemetry_banner(&mut self, is_onboarded: bool, ctx: &mut ViewContext<Self>) {
+    pub fn insert_telemetry_banner(&mut self, _is_onboarded: bool, ctx: &mut ViewContext<Self>) {
         // Don't ever show telemetry banner for enterprise users.
         if UserWorkspaces::as_ref(ctx)
             .current_workspace()
@@ -15756,7 +15756,7 @@ impl TerminalView {
     fn ai_block_copying_menu_items(
         &self,
         ai_block_view_id: EntityId,
-        ai_conversation_id: AIConversationId,
+        _ai_conversation_id: AIConversationId,
         hovered_link: Option<RichContentLink>,
         model: &TerminalModel,
         ctx: &mut ViewContext<Self>,

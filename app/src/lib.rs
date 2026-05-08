@@ -1,5 +1,7 @@
 // Suppress warnings about rustdoc style.
 #![allow(clippy::doc_lazy_continuation)]
+// Some product surfaces are compiled in local builds before every event/API path is wired.
+#![allow(dead_code)]
 
 mod ai;
 mod alloc;

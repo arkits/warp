@@ -1317,7 +1317,7 @@ impl NotebookView {
     /// Items to show in the pane header overflow menu.
     fn overflow_menu_items(&self, ctx: &AppContext) -> Vec<MenuItem<NotebookAction>> {
         let active_notebook_data = self.active_notebook_data.as_ref(ctx);
-        let access_level = active_notebook_data.access_level(ctx);
+        let _access_level = active_notebook_data.access_level(ctx);
         let mut menu_items = Vec::new();
 
         if !active_notebook_data.is_on_server()

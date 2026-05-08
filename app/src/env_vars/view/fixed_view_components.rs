@@ -45,7 +45,7 @@ impl EnvVarCollectionView {
 
     pub(super) fn render_trash_banner(
         &self,
-        access_level: SharingAccessLevel,
+        _access_level: SharingAccessLevel,
         app: &AppContext,
     ) -> Option<Box<dyn Element>> {
         let deleted = match self
@@ -153,7 +153,7 @@ impl EnvVarCollectionView {
 
     pub(super) fn render_variables_section_header(
         &self,
-        editability: ContentEditability,
+        _editability: ContentEditability,
         appearance: &Appearance,
     ) -> Box<dyn Element> {
         let mut variables_section_row = Flex::row()

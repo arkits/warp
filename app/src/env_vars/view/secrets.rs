@@ -144,7 +144,7 @@ impl EnvVarCollectionView {
         menu_button_mouse_state: MouseStateHandle,
         row_index: usize,
         is_focused: bool,
-        editability: ContentEditability,
+        _editability: ContentEditability,
     ) -> Box<dyn Element> {
         let (display_name, action, menu, icon) = match secret {
             EnvVarValue::Secret(sec) => (
@@ -201,7 +201,7 @@ impl EnvVarCollectionView {
             ..default_button_styles
         };
 
-        let mut button = appearance
+        let button = appearance
             .ui_builder()
             .button(ButtonVariant::Outlined, menu_button_mouse_state)
             .with_style(default_button_styles)

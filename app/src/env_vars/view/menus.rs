@@ -361,7 +361,7 @@ impl EnvVarCollectionView {
         let mut menu_items = Vec::new();
 
         let active_collection_data = self.active_env_var_collection_data.as_ref(ctx);
-        let access_level = active_collection_data.access_level(ctx);
+        let _access_level = active_collection_data.access_level(ctx);
         let space = active_collection_data.space(ctx);
 
         if !active_collection_data.is_on_server()
