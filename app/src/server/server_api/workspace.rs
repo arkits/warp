@@ -1,10 +1,8 @@
 use super::ServerApi;
-use crate::workspaces::user_workspaces::WorkspacesMetadataResponse;
-use crate::workspaces::workspace::AiOverages;
+use crate::workspaces::{user_workspaces::WorkspacesMetadataResponse, workspace::AiOverages};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use cynic::{MutationBuilder, QueryBuilder};
-use warp_graphql::error::UserFacingErrorInterface;
 use warp_graphql::mutations::purchase_addon_credits::{
     PurchaseAddonCredits, PurchaseAddonCreditsInput, PurchaseAddonCreditsResult,
     PurchaseAddonCreditsVariables,
@@ -20,6 +18,10 @@ use warp_graphql::mutations::update_workspace_settings::{
 };
 use warp_graphql::queries::get_ai_overages_for_workspace::{
     GetAiOveragesForWorkspace, GetAiOveragesForWorkspaceVariables, UserResult,
+};
+use warp_graphql::queries::get_workspaces_metadata_for_user::{
+    GetWorkspacesMetadataForUser, GetWorkspacesMetadataForUserVariables,
+    UserResult as WorkspacesMetadataUserResult,
 };
 
 use crate::server::graphql::{get_request_context, get_user_facing_error_message};
@@ -41,8 +43,6 @@ pub trait WorkspaceClient: 'static + Send + Sync {
         max_monthly_spend_cents: Option<u32>,
     ) -> Result<WorkspacesMetadataResponse>;
 
-    async fn refresh_ai_overages(&self) -> Result<AiOverages>;
-
     async fn purchase_addon_credits(
         &self,
         team_uid: ServerId,
@@ -56,11 +56,86 @@ pub trait WorkspaceClient: 'static + Send + Sync {
         max_monthly_spend_cents: Option<i32>,
         selected_auto_reload_credit_denomination: Option<i32>,
     ) -> Result<WorkspacesMetadataResponse>;
+
+    async fn refresh_ai_overages(&self) -> Result<AiOverages>;
 }
 
 #[cfg_attr(not(target_family = "wasm"), async_trait)]
 #[cfg_attr(target_family = "wasm", async_trait(?Send))]
 impl WorkspaceClient for ServerApi {
+    async fn update_usage_based_pricing_settings(
+        &self,
+        team_uid: ServerId,
+        usage_based_pricing_enabled: bool,
+        max_monthly_spend_cents: Option<u32>,
+    ) -> Result<WorkspacesMetadataResponse> {
+        let max_monthly_spend_cents = max_monthly_spend_cents.map(|cents| {
+            i32::try_from(cents).map_err(|_| anyhow!("Max monthly spend is too large"))
+        });
+        let max_monthly_spend_cents = match max_monthly_spend_cents {
+            Some(cents) => Some(cents?),
+            None => None,
+        };
+
+        self.update_workspace_settings(UpdateWorkspaceSettingsInput {
+            workspace_uid: team_uid.to_string(),
+            set_usage_based_pricing_settings: Some(UsageBasedPricingSettingsInput {
+                enabled: Some(usage_based_pricing_enabled),
+                max_monthly_spend_cents,
+            }),
+            set_addon_credits_settings: None,
+        })
+        .await
+    }
+
+    async fn purchase_addon_credits(
+        &self,
+        team_uid: ServerId,
+        credits: i32,
+    ) -> Result<WorkspacesMetadataResponse> {
+        let variables = PurchaseAddonCreditsVariables {
+            input: PurchaseAddonCreditsInput {
+                team_uid: team_uid.into(),
+                credits,
+            },
+            request_context: get_request_context(),
+        };
+        let operation = PurchaseAddonCredits::build(variables);
+        let response = self.send_graphql_request(operation, None).await?;
+
+        match response.purchase_addon_credits {
+            PurchaseAddonCreditsResult::PurchaseAddonCreditsOutput(output) if output.success => {
+                self.refresh_workspaces_metadata().await
+            }
+            PurchaseAddonCreditsResult::PurchaseAddonCreditsOutput(_) => {
+                Err(anyhow!("Failed to purchase add-on credits"))
+            }
+            PurchaseAddonCreditsResult::UserFacingError(error) => {
+                Err(anyhow!(get_user_facing_error_message(error)))
+            }
+            PurchaseAddonCreditsResult::Unknown => Err(anyhow!("Unknown error")),
+        }
+    }
+
+    async fn update_addon_credits_settings(
+        &self,
+        team_uid: ServerId,
+        auto_reload_enabled: Option<bool>,
+        max_monthly_spend_cents: Option<i32>,
+        selected_auto_reload_credit_denomination: Option<i32>,
+    ) -> Result<WorkspacesMetadataResponse> {
+        self.update_workspace_settings(UpdateWorkspaceSettingsInput {
+            workspace_uid: team_uid.to_string(),
+            set_usage_based_pricing_settings: None,
+            set_addon_credits_settings: Some(AddonCreditsSettingsInput {
+                auto_reload_enabled,
+                max_monthly_spend_cents,
+                selected_auto_reload_credit_denomination,
+            }),
+        })
+        .await
+    }
+
     async fn generate_stripe_billing_portal_link(&self, team_uid: ServerId) -> Result<String> {
         let variables = StripeBillingPortalVariables {
             input: StripeBillingPortalInput {
@@ -77,46 +152,6 @@ impl WorkspaceClient for ServerApi {
                 Err(anyhow!(get_user_facing_error_message(error)))
             }
             StripeBillingPortalResult::Unknown => Err(anyhow!("Unknown error")),
-        }
-    }
-
-    async fn update_usage_based_pricing_settings(
-        &self,
-        team_uid: ServerId,
-        usage_based_pricing_enabled: bool,
-        max_monthly_spend_cents: Option<u32>,
-    ) -> Result<WorkspacesMetadataResponse> {
-        if let Some(cents) = max_monthly_spend_cents {
-            if cents > i32::MAX as u32 {
-                return Err(anyhow!(
-                    "Maximum monthly spend cannot exceed {} cents",
-                    i32::MAX
-                ));
-            }
-        }
-
-        let variables = UpdateWorkspaceSettingsVariables {
-            input: UpdateWorkspaceSettingsInput {
-                workspace_uid: team_uid.to_string(),
-                set_usage_based_pricing_settings: Some(UsageBasedPricingSettingsInput {
-                    enabled: Some(usage_based_pricing_enabled),
-                    max_monthly_spend_cents: max_monthly_spend_cents.map(|cents| cents as i32),
-                }),
-                set_addon_credits_settings: None,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = UpdateWorkspaceSettings::build(variables);
-        let response = self.send_graphql_request(operation, None).await?;
-
-        match response.update_workspace_settings {
-            UpdateWorkspaceSettingsResult::UpdateWorkspaceSettingsOutput(_) => {
-                Ok(WorkspacesMetadataResponse::local_empty())
-            }
-            UpdateWorkspaceSettingsResult::UserFacingError(error) => {
-                Err(anyhow!(get_user_facing_error_message(error)))
-            }
-            UpdateWorkspaceSettingsResult::Unknown => Err(anyhow!("Unknown error")),
         }
     }
 
@@ -146,59 +181,15 @@ impl WorkspaceClient for ServerApi {
             UserResult::Unknown => Err(anyhow!("Unknown error")),
         }
     }
+}
 
-    async fn purchase_addon_credits(
+impl ServerApi {
+    async fn update_workspace_settings(
         &self,
-        team_uid: ServerId,
-        credits: i32,
-    ) -> Result<WorkspacesMetadataResponse> {
-        let variables = PurchaseAddonCreditsVariables {
-            input: PurchaseAddonCreditsInput {
-                team_uid: team_uid.into(),
-                credits,
-            },
-            request_context: get_request_context(),
-        };
-        let operation = PurchaseAddonCredits::build(variables);
-        let response = self.send_graphql_request(operation, None).await;
-
-        match response {
-            Err(_) => Err(anyhow!("Failed to purchase add-on credits")),
-            Ok(response) => match response.purchase_addon_credits {
-                PurchaseAddonCreditsResult::PurchaseAddonCreditsOutput(_) => {
-                    Ok(WorkspacesMetadataResponse::local_empty())
-                }
-                PurchaseAddonCreditsResult::UserFacingError(error) => match error.error {
-                    UserFacingErrorInterface::BudgetExceededError(budget_error) => {
-                        Err(budget_error.into())
-                    }
-                    UserFacingErrorInterface::PaymentMethodDeclinedError(
-                        payment_declined_error,
-                    ) => Err(payment_declined_error.into()),
-                    _ => Err(anyhow!(get_user_facing_error_message(error))),
-                },
-                PurchaseAddonCreditsResult::Unknown => Err(anyhow!("Unknown error")),
-            },
-        }
-    }
-
-    async fn update_addon_credits_settings(
-        &self,
-        team_uid: ServerId,
-        auto_reload_enabled: Option<bool>,
-        max_monthly_spend_cents: Option<i32>,
-        selected_auto_reload_credit_denomination: Option<i32>,
+        input: UpdateWorkspaceSettingsInput,
     ) -> Result<WorkspacesMetadataResponse> {
         let variables = UpdateWorkspaceSettingsVariables {
-            input: UpdateWorkspaceSettingsInput {
-                workspace_uid: team_uid.to_string(),
-                set_usage_based_pricing_settings: None,
-                set_addon_credits_settings: Some(AddonCreditsSettingsInput {
-                    auto_reload_enabled,
-                    max_monthly_spend_cents,
-                    selected_auto_reload_credit_denomination,
-                }),
-            },
+            input,
             request_context: get_request_context(),
         };
         let operation = UpdateWorkspaceSettings::build(variables);
@@ -206,12 +197,25 @@ impl WorkspaceClient for ServerApi {
 
         match response.update_workspace_settings {
             UpdateWorkspaceSettingsResult::UpdateWorkspaceSettingsOutput(_) => {
-                Ok(WorkspacesMetadataResponse::local_empty())
+                self.refresh_workspaces_metadata().await
             }
             UpdateWorkspaceSettingsResult::UserFacingError(error) => {
                 Err(anyhow!(get_user_facing_error_message(error)))
             }
             UpdateWorkspaceSettingsResult::Unknown => Err(anyhow!("Unknown error")),
+        }
+    }
+
+    async fn refresh_workspaces_metadata(&self) -> Result<WorkspacesMetadataResponse> {
+        let variables = GetWorkspacesMetadataForUserVariables {
+            request_context: get_request_context(),
+        };
+        let operation = GetWorkspacesMetadataForUser::build(variables);
+        let response = self.send_graphql_request(operation, None).await?;
+
+        match response.user {
+            WorkspacesMetadataUserResult::UserOutput(user_output) => Ok(user_output.user.into()),
+            WorkspacesMetadataUserResult::Unknown => Err(anyhow!("Unknown error")),
         }
     }
 }
