@@ -7,8 +7,8 @@ use super::{
     },
     editor_text_colors,
     settings_page::{
-        MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsPageViewHandle,
-        SettingsWidget, CONTENT_FONT_SIZE,
+        MatchData, PageType, SettingsPageEvent, SettingsPageMeta, SettingsWidget,
+        CONTENT_FONT_SIZE,
     },
     update_environment_form::{
         EnvironmentFormInitArgs, EnvironmentFormValues, GithubAuthRedirectTarget,
@@ -2085,12 +2085,6 @@ impl BackingView for EnvironmentsPageView {
         // Use a lower minimum width when used as a pane to allow narrow layouts.
         // This affects when the SettingsPage switches into horizontal-scroll mode.
         self.page.set_min_page_width(260.);
-    }
-}
-
-impl From<ViewHandle<EnvironmentsPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<EnvironmentsPageView>) -> Self {
-        SettingsPageViewHandle::CloudEnvironments(view_handle)
     }
 }
 

@@ -4,8 +4,8 @@ use super::{
         ExpireApiKeyButtonEvent,
     },
     settings_page::{
-        MatchData, PageType, SettingsPageMeta, SettingsPageViewHandle, SettingsWidget,
-        CONTENT_FONT_SIZE, SUBHEADER_FONT_SIZE,
+        MatchData, PageType, SettingsPageMeta, SettingsWidget, CONTENT_FONT_SIZE,
+        SUBHEADER_FONT_SIZE,
     },
     SettingsSection,
 };
@@ -669,11 +669,5 @@ impl SettingsPageMeta for PlatformPageView {
 
     fn clear_highlighted_widget(&mut self) {
         self.page.clear_highlighted_widget();
-    }
-}
-
-impl From<ViewHandle<PlatformPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<PlatformPageView>) -> Self {
-        SettingsPageViewHandle::OzCloudAPIKeys(view_handle)
     }
 }

@@ -81,8 +81,8 @@ use super::{
         build_sub_header, build_toggle_element, render_body_item_label,
         render_body_item_label_with_icon, render_dropdown_item, render_dropdown_item_label,
         render_full_pane_width_ai_button, render_input_list, render_separator, InputListItem,
-        LocalOnlyIconState, MatchData, PageType, SettingsPageMeta, SettingsPageViewHandle,
-        SettingsWidget, ToggleState, HEADER_PADDING, TOGGLE_BUTTON_RIGHT_PADDING,
+        LocalOnlyIconState, MatchData, PageType, SettingsPageMeta, SettingsWidget, ToggleState,
+        HEADER_PADDING, TOGGLE_BUTTON_RIGHT_PADDING,
     },
     SettingActionPairContexts, SettingActionPairDescriptions, SettingsAction, SettingsSection,
     ToggleSettingActionPair,
@@ -3049,12 +3049,6 @@ impl SettingsPageMeta for AISettingsPageView {
 
     fn clear_highlighted_widget(&mut self) {
         self.page.clear_highlighted_widget();
-    }
-}
-
-impl From<ViewHandle<AISettingsPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<AISettingsPageView>) -> Self {
-        SettingsPageViewHandle::AI(view_handle)
     }
 }
 

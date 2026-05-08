@@ -2,8 +2,7 @@ use super::{
     flags,
     settings_page::{
         render_body_item, render_customer_type_badge, AdditionalInfo, LocalOnlyIconState,
-        MatchData, PageType, SettingsPageMeta, SettingsPageViewHandle, SettingsWidget, ToggleState,
-        HEADER_PADDING,
+        MatchData, PageType, SettingsPageMeta, SettingsWidget, ToggleState, HEADER_PADDING,
     },
     SettingsAction, SettingsSection, ToggleSettingActionPair,
 };
@@ -51,7 +50,7 @@ use warpui::{
 };
 use warpui::{fonts::Weight, keymap::ContextPredicate};
 use warpui::{
-    Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext, ViewHandle,
+    Entity, ModelHandle, SingletonEntity, TypedActionView, View, ViewContext,
 };
 
 const PHOTO_SIZE: f32 = 40.;
@@ -1039,11 +1038,5 @@ impl SettingsPageMeta for MainSettingsPageView {
 
     fn clear_highlighted_widget(&mut self) {
         self.page.clear_highlighted_widget();
-    }
-}
-
-impl From<ViewHandle<MainSettingsPageView>> for SettingsPageViewHandle {
-    fn from(view_handle: ViewHandle<MainSettingsPageView>) -> Self {
-        SettingsPageViewHandle::Main(view_handle)
     }
 }

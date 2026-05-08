@@ -164,6 +164,13 @@ Phase 4b progress:
 - Note: The cloud_environments data types and QueueItem::UpdateCloudEnvironment are still present in the codebase because they are part of the cloud_object sync system (which is already a no-op via LocalObjectClient). Full deletion is deferred to Phase 5b/5d when the sync infrastructure is removed.
 - CloudMode, CloudEnvironments, OzHandoff feature flags are already behind Cargo features that are not included in `--features local`, so cloud mode UI never activates in local builds.
 - Code compiles with zero errors (`cargo check --package warp --features local`).
+- **In progress (uncommitted):** Dropped the cloud-only settings pages from the settings view entirely:
+  - Removed `Main` (Account), `AI`, `OzCloudAPIKeys` (platform), and `CloudEnvironments` variants from `SettingsPageViewHandle` and stopped constructing `MainSettingsPageView`, `AISettingsPageView`, `PlatformPageView`, and `EnvironmentsPageView` in `SettingsView::new`.
+  - Removed the corresponding `From<ViewHandle<…>> for SettingsPageViewHandle` impls in `ai_page.rs`, `main_page.rs`, `platform_page.rs`, and `environments_page.rs`.
+  - Default settings section is now `Appearance`; `SettingsSection::from_str` redirects legacy strings (`Account`, `AI`, `Teams`, `Warp Agent`, `Profiles`, `MCP servers`, `Knowledge`, `Third party CLI agents`, `CloudEnvironments`, `OzCloudAPIKeys`) to `Appearance`.
+  - Added `SettingsSection::replacement_for_removed_page` so deep links into removed sections fall back to `Appearance`.
+  - Removed `SettingsAction::MainPageToggle` and `SettingsAction::AI` variants and their dispatch arms.
+  - Page-file modules (`main_page.rs`, `ai_page.rs`, `platform_page.rs`, `environments_page.rs`) remain on disk but are no longer wired into the settings view; full deletion deferred until any remaining external imports are unwound.
 
 Phase 5c progress (partial):
 - Added `cfg!(feature = "local")` guards in `server/experiments/model.rs`:  
@@ -218,6 +225,9 @@ Phase 6 progress (incremental):
 - Removed `FeatureFlag::SkipFirebaseAnonymousUser` (always-true in local builds):
   - `root_view.rs` — removed the `else if SkipFirebaseAnonymousUser` branch; always skips login screen.
   - `auth_view_modal.rs` and `login_slide.rs` — always emit `SkippedLogin`, no Firebase anonymous user creation.
+
+Settings cleanup progress:
+- Removed Account, Agents, and Cloud platform settings surfaces from the settings container and sidebar. Legacy/deep-link requests for those removed sections now land on Appearance instead of constructing cloud/account/agent settings pages. MCP Servers remains available as its standalone settings page for local agent tooling.
   - `settings_view/warp_drive_page.rs` and `drive/settings.rs` — use `AuthStateProvider` directly.
 - **Current Phase 6 status**: Remaining cloud flags (`CloudMode`, `OzHandoff`, `CloudModeSetupV2`, `CloudModeInputV2`, `CloudEnvironments`, etc.) are already behind Cargo features not included in the OSS build and will be removed when their gated code is deleted in Phases 4c/5a/5b.
 - Removed `FeatureFlag::ConversationApi` (never registered, always-false): CLI `conversation` subcommand and `--conversation` flag are now unconditionally hidden/blocked.
